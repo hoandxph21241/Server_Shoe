@@ -1,4 +1,26 @@
 <!-- Header -->
+<style>
+    body {
+        overflow-x: hidden;
+    }
+
+    main {
+        overflow-y: auto;
+        height: calc(100vh - 56px);
+    }
+    .p-0 {  
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+
+    .p-1 {
+        padding-top: 56px; 
+        overflow-y: auto;
+    }
+   
+</style>
 
 <body>
     <div class="container-fluid">
@@ -24,30 +46,24 @@
                             <div class="collapse" id="managementMenu">
                                 <ul class="nav flex-column ml-3">
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark fw-bold" href="#">Sản phẩm</a>
+                                        <a class="nav-link text-dark fw-bold" href="/manager/productlist">Sản phẩm</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark fw-bold" href="#">Banner</a>
+                                        <a class="nav-link text-dark fw-bold" href="/manager/bannerlist">Banner</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link text-dark fw-bold" href="#">Giảm giá</a>
+                                        <a class="nav-link text-dark fw-bold" href="/manager/vorcherlist">Giảm giá</a>
                                     </li>
                                 </ul>
                             </div>
                         </li>
                         <!-- User Icon -->
                         <li class="nav-item">
-                                <a href=""  class="nav-link d-flex align-items-center text-dark">
+                                <a href="/auth/userlist"  class="nav-link d-flex align-items-center text-dark">
                                     <img src="/images/icon-user.png" alt="" class="me-2">Người dùng
                                 </a>
                         </li>
 
-                        <!-- Dashboard Icon -->
-                        <li class="nav-item" >
-                            <a href="/dashboard" class="nav-link d-flex align-items-center text-dark">
-                                <img src="/images/icon-order.png" alt="" class="me-2">Đơn hàng
-                            </a>
-                        </li>
 
                         <!-- Order Icon -->
                         <li class="nav-item">
@@ -56,8 +72,9 @@
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link d-flex align-items-center text-dark">
+                         <!-- Dashboard Icon -->
+                         <li class="nav-item" >
+                            <a href="/dashboard" class="nav-link d-flex align-items-center text-dark">
                                 <img src="/images/icon-statistical.png" alt="" class="me-2">Thống kê
                             </a>
                         </li>

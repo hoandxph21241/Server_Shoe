@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+    <%- include('../../inc/top.ejs') %>
+        <div class="content">
+            <div class="row d-flex align-items-center my-3">
+                <div class="col-auto">
+                    <h3>Banner</h3>
+                </div>
+                <div class="col-auto ms-2">
+                    <button class="btn btn-dark">Add</button>
+                </div>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-secondary">Ảnh banner</th>
+                        <th class="text-secondary">Ảnh thumbnail</th>
+                        <th class="text-secondary">Tiêu đề</th>
+                        <th class="text-secondary">Miêu tả</th>
+                        <th class="text-secondary">Loại banner</th>
+                        <th class="text-secondary">Ẩn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><img src="/images/banner.png" alt="" width="80px" height="50px"></td>
+                        <td><img src="/images/banner.png" alt="" width="80px" height="50px"></td>
+                        <td>hkahbdhabsk</td>
+                        <td>jdnfkdb</td>
+                        <td>akjnka</td>
+                        <td> <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <%- include('../../inc/end.ejs') %>
+</body>
+
+</html>
