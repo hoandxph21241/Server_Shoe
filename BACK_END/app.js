@@ -3,8 +3,12 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-
 var app = express();
+const mongoose = require("mongoose");
+mongoose
+  .connect("mongodb+srv://vanphuc_mongodb:1E7V8mnJNV4X9ead@cluster0.iit1hgd.mongodb.net/Shoe")
+  .then(() => console.log('>>>>>>>>>> DB Connected!!!!!!'))
+  .catch(err => console.log('>>>>>>>>> DB Error: ', err));
 
 //session
 var session = require('express-session')
