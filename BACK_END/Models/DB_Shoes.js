@@ -92,7 +92,7 @@ var OderSchema = new db.mongoose.Schema(
   },
   {
     collation: { locale: "en_US", strength: 1 },
-    collection: "OderModel",
+    collection: "Oder",
   }
 );
 let OderModel = db.mongoose.model("OderModel", OderSchema);
@@ -106,7 +106,7 @@ var OderDetailSchema = new db.mongoose.Schema(
   },
   {
     collation: { locale: "en_US", strength: 1 },
-    collection: "OderDetailModel",
+    collection: "OderDetail",
   }
 );
 let OderDetailModel = db.mongoose.model("OderDetailModel", OderDetailSchema);
@@ -121,7 +121,7 @@ var CartSchema = new db.mongoose.Schema(
   },
   {
     collation: { locale: "en_US", strength: 1 },
-    collection: "CartModel",
+    collection: "Cart",
   }
 );
 let CartModel = db.mongoose.model("CartModel", CartSchema);
