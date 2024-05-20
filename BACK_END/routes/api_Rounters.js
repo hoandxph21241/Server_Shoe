@@ -22,7 +22,7 @@ router.delete("/deleteAddress", address.userDeleteAddress)
 // http://localhost:3000/api/userfavourite
 router.post("/userfavourite", favourites.userFavourite);
 // http://localhost:3000/api/addDiscount
-router.post("/addDiscount", discount.addDiscount);
+// router.post("/addDiscount", discount.addDiscount);
 // http://localhost:3000/api/checkDiscount
 router.post("/checkDiscount", discount.checkDiscount);
 // http://localhost:3000/api/addReview

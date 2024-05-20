@@ -52,6 +52,12 @@ app.use("/dashboard", DashboardRounter);
 //manager
 var ManagerRouter = require('./routes/Manager_Router');
 app.use("/manager",ManagerRouter);
+
+const IFUser = require("./routes/IFUser_Router");
+app.use("/ifUser", IFUser);
+
+const discountRouter = require('./routes/Discount_rounters');
+app.use("/discount", discountRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);

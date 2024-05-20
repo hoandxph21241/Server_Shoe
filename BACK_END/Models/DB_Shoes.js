@@ -24,7 +24,7 @@ var userSchema = new Schema(
     collection: "users",
   }
 );
-let UserModel = mongodb.models.users || mongodb.model("users", userSchema);
+const UserModel = mongodb.models.users || mongodb.model("users", userSchema);
 
 const address = new Schema({
   addressId: ObjectId,
