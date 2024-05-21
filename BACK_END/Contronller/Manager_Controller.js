@@ -2,6 +2,10 @@ exports.ProductList = async (req,res,next) => {
     res.render('manager/product/product.ejs');
 };
 
+exports.AddProduct = async (req,res,next) => {
+    res.render('manager/product/add_product.ejs');
+};
+
 exports.VorcherList = async (req,res,next) => {
     res.render('manager/vorcher/vorcher.ejs');
 };
