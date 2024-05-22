@@ -14,7 +14,8 @@
         crossorigin="anonymous"></script>
     <style>
         .main-content {
-            padding: 20px;
+           margin-left: 20px;
+           margin-right: 20px;
         }
 
         .dashboard-cards .card {
@@ -45,17 +46,8 @@
             margin-right: 10px;
         }
 
-        .btn-time {
-            border-radius: 10px;
-            margin-left: 10px;
-            background-color: white;
-            color: black;
-        }
+      
 
-        .btn-time.active {
-            background-color: black;
-            color: white;
-        }
     </style>
 </head>
 
@@ -151,9 +143,9 @@
                     <div class="d-flex align-items-center"> <!-- Add this div -->
                         <h6 class="me-3">Sale Graph</h6> <!-- Add class "me-3" for margin on the right -->
                         <div class="ms-auto"> <!-- Add this div for pushing buttons to the right -->
-                            <button class="btn-time weekly">WEEKLY</button>
-                            <button class="btn-time monthly">MONTHLY</button>
-                            <button class="btn-time yearly">YEARLY</button>
+                            <button type="button" class=" btn btn-outline-dark">WEEKLY</button>
+                            <button type="button" class=" btn btn-outline-dark">MONTHLY</button>
+                            <button type="button" class=" btn btn-outline-dark">YEARLY</button>
                         </div>
                     </div> <!-- Close the div -->
                     <div class="my-4 w-100" id="myChart" width="900" height="380"></div>
