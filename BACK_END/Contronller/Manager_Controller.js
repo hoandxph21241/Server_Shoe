@@ -14,6 +14,11 @@ exports.VorcherList = async (req,res,next) => {
     res.render('manager/vorcher/vorcher.ejs');
 };
 
+
 exports.BannerList = async (req,res,next) => {
     res.render('manager/banner/banner.ejs');
+};
+
+exports.AddBanner = async (req,res,next) => {
+    res.render('manager/banner/add_banner.ejs');
 };
