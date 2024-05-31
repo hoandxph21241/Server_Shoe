@@ -15,6 +15,8 @@
             width: 80px;
             height: auto;
             margin: 0 10px;
+            /* border: grey 1px solid; */
+            border-radius: 20px;
         }
 
         .product-card {
@@ -92,8 +94,35 @@
         .sales.card {
             margin-bottom: 8px;
         }
+
         .card .progress {
             height: 6px;
+        }
+
+        .pagination .page-item {
+            margin-right: 5px;
+        }
+
+        .action-menu {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .action-menu button {
+            display: block;
+            width: 100%;
+            border: none;
+            background: none;
+            padding: 10px 20px;
+            text-align: left;
+        }
+
+        .action-menu button:hover {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
@@ -106,9 +135,15 @@
                     <h3>Brands</h3>
                 </div>
                 <div class="col-auto ms-2">
-                    <button class="btn btn-dark">Add</button>
+                    <button class="btn btn-dark" style="border-radius: 50px;" data-toggle="modal"
+                        data-target="#hideModalBrands">Add</button>
+                </div>
+                <div class="col flex-grow-1"></div>
+                <div class="col-auto">
+                    <a href="#">Xem tất cả</a>
                 </div>
             </div>
+            
             <div class="brand-logos mb-3 d-flex justify-content-between">
                 <img src="/images/adidas.png" alt="Nike">
                 <img src="/images/chanel.png" alt="Puma">
@@ -119,7 +154,7 @@
             </div>
             <div class="d-flex justify-content-between align-items-center my-3">
                 <h2>All Products</h2>
-                <button class="btn btn-dark">Add New Product</button>
+                <a href="/manager/addproduct" class="btn btn-dark">Add New Product</a>
             </div>
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
                 <!-- Repeat this card for each product -->
@@ -133,8 +168,14 @@
                                 <div class="col">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h5 class="card-title m-0">Adidas Ultra boost</h5>
-                                        <div class="action">
-                                            <button class="btn btn-light">...</button>
+                                        <div class="action position-relative">
+                                            <button class="btn btn-light" id="actionButton">...</button>
+                                            <div class="action-menu" id="actionMenu">
+                                                <button class="action-hide" data-toggle="modal"
+                                                    data-target="#hideModal">Ẩn</button>
+                                                <form action="/manager/edit-product"><button
+                                                        class="action-edit">Sửa</button></form>
+                                            </div>
                                         </div>
                                     </div>
                                     <span>Sneaker</span>
@@ -166,11 +207,109 @@
                         </div>
                     </div>
                 </div>
+
+                <!--Modal sửa sản phầm-->
+                <div class="modal fade" id="hideModal" tabindex="-1" role="dialog" aria-labelledby="hideModalLabel"
+                    aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="hideModalLabel">Ẩn sản phẩm</h5>
+                            </div>
+                            <div class="modal-body">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent lobortis velit mollis
+                                erat pellentesque, eu varius neque scelerisque. Curabitur sem ligula, sodales in est
+                                eget, faucibus vehicula ligula. Suspendisse cursus cursus nisl, a mattis dolor rhoncus
+                                in. Integer quis sapien sollicitudin, semper tortor vel, porttitor justo.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                <button type="button" class="btn btn-primary"
+                                    style="background-color: #4340da;">Lưu</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- End of card repeat -->
+
+                <!-- Modal thêm brands -->
+                <div class="modal fade" id="hideModalBrands" tabindex="-1" role="dialog"
+                    aria-labelledby="hideModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="hideModalLabel">Thêm hãng</h5>
+                                <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form>
+                                    <div class="form-group" style="margin-bottom: 10px;">
+                                        <label for="imageUpload" class="form-label">Image:</label>
+                                        <input type="file" class="form-control" id="imageUpload" accept="image/*">
+                                    </div>
+                                    <div class="text-center">
+                                        <img id="imagePreview" src="/images/image_brand.png" alt="Image preview"
+                                            class="img-fluid" style="display: none; border-radius: 20px;">
+                                    </div>
+                                    <div class=" form-group" style="margin-top: 10px;">
+                                        <label for="brandName">Tên hãng</label>
+                                        <input type="text" class="form-control" id="brandName" placeholder="Tên hãng">
+                                    </div>
+                                </form>
+
+                            </div>
+                            <div class="modal-footer ">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                <button type="button" class="btn btn-primary">Lưu</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Kết thúc modal thêm brands -->
             </div>
             <nav aria-label="Page navigation example">
                 <ul class="pagination justify-content-start">
                     <li class="page-item"><a class="page-link text-dark " href="#">1</a></li>
                     <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
                     <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
-<%- include('../../inc/end.ejs') %>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', (event) => {
+                            const actionButton = document.getElementById('actionButton');
+                            const actionMenu = document.getElementById('actionMenu');
+                            const imageUpload = document.getElementById('imageUpload');
+                            const imagePreview = document.getElementById('imagePreview');
+
+                            actionButton.addEventListener('click', () => {
+                                actionMenu.style.display = actionMenu.style.display === 'block' ? 'none' : 'block';
+                            });
+
+                            document.addEventListener('click', (event) => {
+                                if (!actionButton.contains(event.target) && !actionMenu.contains(event.target)) {
+                                    actionMenu.style.display = 'none';
+                                }
+                            });
+
+
+                            imageUpload.addEventListener('change', (event) => {
+                                const file = event.target.files[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        imagePreview.src = e.target.result;
+                                        imagePreview.style.display = 'block'
+                                    };
+                                    reader.readAsDataURL(file);
+                                } else {
+                                    // Display a default image when no file is selected
+                                    imagePreview.style.display = 'none';
+
+                                }
+                            });
+                        });
+
+
+                    </script>
+                    <%- include('../../inc/end.ejs') %>
