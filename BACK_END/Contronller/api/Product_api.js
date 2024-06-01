@@ -108,3 +108,68 @@ exports.DeleteBrand = async (req, res, next) => {
     return res.status(500).json({ success: false, message: "Lỗi máy chủ" });
   }
 };
+
+exports.createTypeShoe = async (req, res) => {
+  try {
+    const newTypeShoe = new Model.TypeShoeModel(req.body);
+    await newTypeShoe.save();
+    return res.status(201).json(newTypeShoe);
+  } catch (error) {
+    console.error("Error creating:", error);
+    return res.status(500).json({ msg: "Có lỗi xảy ra khi tạo" });
+  }
+};
+exports.getAllTypeShoes = async (req, res) => {
+  try {
+    const typeShoes = await Model.TypeShoeModel.find();
+    return res.status(200).json(typeShoes);
+  } catch (error) {
+    console.error("Error fetching:", error);
+    return res.status(500).json({ msg: "Có lỗi xảy ra khi lấy danh sách" });
+  }
+};
+exports.getTypeShoeById = async (req, res) => {
+  try {
+    const typeShoeId = req.params.id;
+    const typeShoe = await Model.TypeShoeModel.findById(typeShoeId);
+    if (!typeShoe) {
+      return res.status(404).json({ msg: "Không tìm thấy ID này" });
+    }
+    return res.status(200).json(typeShoe);
+  } catch (error) {
+    console.error("Error fetching:", error);
+    return res.status(500).json({ msg: "Có lỗi xảy ra khi lấy thông tin" });
+  }
+};
+exports.updateTypeShoe = async (req, res) => {
+  try {
+    const typeShoeId = req.params.id;
+    const updatedTypeShoe = await Model.TypeShoeModel.findByIdAndUpdate(
+      typeShoeId,
+      req.body,
+      { new: true }
+    );
+    if (!updatedTypeShoe) {
+      return res.status(404).json({ msg: "Không tìm thấy ID này" });
+    }
+    return res.status(200).json(updatedTypeShoe);
+  } catch (error) {
+    console.error("Error updating:", error);
+    return res.status(500).json({ msg: "Có lỗi xảy ra khi cập nhật" });
+  }
+};
+exports.deleteTypeShoe = async (req, res) => {
+  try {
+    const typeShoeId = req.params.id;
+    const deletedTypeShoe = await Model.TypeShoeModel.findByIdAndDelete(
+      typeShoeId
+    );
+    if (!deletedTypeShoe) {
+      return res.status(404).json({ msg: "Không tìm thấy ID này" });
+    }
+    return res.status(200).json({ msg: "Xóa thành công" });
+  } catch (error) {
+    console.error("Error deleting TypeShoe:", error);
+    return res.status(500).json({ msg: "Có lỗi xảy ra khi xóa" });
+  }
+};

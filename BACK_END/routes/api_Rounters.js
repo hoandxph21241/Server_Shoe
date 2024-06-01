@@ -42,4 +42,12 @@ router.post("/updatebrand/:id", Product_API.UpdateBrand);
 
 router.delete("/deletebrand/:id", Product_API.DeleteBrand);
 
+
+//Type Rounter
+router.post('/typeshoe', Product_API.createTypeShoe);
+router.get('/typeshoes', Product_API.getAllTypeShoes);
+router.get('/typeshoe/:id', Product_API.getTypeShoeById);
+router.put('/typeshoe/:id', Product_API.updateTypeShoe);
+router.delete('/typeshoe/:id', Product_API.deleteTypeShoe);
+
 module.exports = router;
