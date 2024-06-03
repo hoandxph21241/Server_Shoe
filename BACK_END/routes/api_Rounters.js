@@ -23,8 +23,12 @@ router.post("/finduser/:id", Users_API.FindUser);
 router.get("/updateuser/:id", Users_API.UpdateUser);
 router.post("/updateuser/:id", Users_API.UpdateUser);
 
+
+////////////////////////////////////////////////////
 router.get("/resetpassword/:id", Users_API.ResetPassword);
 router.post("/resetpassword/:id", Users_API.ResetPassword);
+///////////////////////////////////////////////////
+
 
 router.get("/sendotp/:id", Users_API.ResetPassword_Mail);
 router.post("/sendotp/:id", Users_API.ResetPassword_Mail);
@@ -42,12 +46,21 @@ router.post("/updatebrand/:id", Product_API.UpdateBrand);
 
 router.delete("/deletebrand/:id", Product_API.DeleteBrand);
 
-
 //Type Rounter
 router.post('/typeshoe', Product_API.createTypeShoe);
 router.get('/typeshoes', Product_API.getAllTypeShoes);
 router.get('/typeshoe/:id', Product_API.getTypeShoeById);
 router.put('/typeshoe/:id', Product_API.updateTypeShoe);
 router.delete('/typeshoe/:id', Product_API.deleteTypeShoe);
+
+//Shoes Rounter
+router.get("/getallproduct",Product_API.AllProduct);
+router.get("/findproduct/:id",Product_API.FindProduct);
+//  "/findproduct/?name="
+router.get("/findproduct",Product_API.FindByName);
+router.put("/hidden/:id", Product_API.HiddenProduct);
+//  "Find by hiden"
+router.get("/findproductbyidbrand/:id", Product_API.FindProductsByBrandId);
+router.get('/filterdata/:idBrand?/:sizeId?/:idColor?/:shoeId?', Product_API.findShoes_DATA);
 
 module.exports = router;

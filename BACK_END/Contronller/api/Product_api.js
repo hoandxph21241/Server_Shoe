@@ -173,3 +173,173 @@ exports.deleteTypeShoe = async (req, res) => {
     return res.status(500).json({ msg: "Có lỗi xảy ra khi xóa" });
   }
 };
+
+
+
+exports.AllProduct = async (req, res, next) => {
+  try {
+    let shoe = await Model.ShoeModel.find()
+      .populate({
+        path: "shoeDetail",
+        select: "sizeShoe imageShoe colorShoe -_id",
+        populate: [
+          {
+            path: "sizeShoe",
+            match: { isEnable: true },
+            select: "size quanlity _id",
+          },
+          { path: "imageShoe", select: "imageShoe _id" },
+          { path: "colorShoe", select: "textColor codeColor _id" },
+        ],
+      })
+      .populate("brandShoe", "_id");
+
+    if (shoe) {
+      console.log(shoe);
+      return res.status(200).json(shoe);
+    } else {
+      return res.status(404).json({ msg: "Không tìm sản phẩm" });
+    }
+  } catch (error) {
+    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+  }
+  // res.status(200).json({msg});
+};
+
+exports.FindProduct = async (req, res, next) => {
+  try {
+    let shoeId = req.params.id;
+    let shoe = await Model.ShoeModel.findById(shoeId);
+    if (shoe) {
+      console.log(shoe);
+      return res.status(200).json(shoe);
+    } else {
+      return res.status(404).json({ msg: "Không tìm sản phẩm với id này" });
+    }
+  } catch (error) {
+    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+  }
+  // res.status(200).json({msg});
+};
+
+exports.FindByName = async (req, res, next) => {
+  try {
+    let conditions = {};
+    if (req.query.name) {
+      const productName = decodeURIComponent(req.query.name);
+      conditions.name = new RegExp(productName, "i");
+    }
+    const shoes = await Model.ShoeModel.find(conditions);
+    console.log("=Tìm Kiếm=");
+    console.log("Số sản phẩm phù hợp: " + shoes.length);
+    console.log("=Tìm Kiếm END=");
+    return res.status(200).json(shoes);
+  } catch (error) {
+    console.error("Lỗi khi tìm kiếm sản phẩm:", error);
+    return res.status(500).json({ msg: "Có lỗi xảy ra khi tìm kiếm sản phẩm" });
+  }
+};
+
+
+exports.HiddenProduct = async (req, res, next) => {
+  try {
+    let shoeId = req.params.id;
+    let shoe = await Model.ShoeModel.findByIdAndUpdate(shoeId).populate();
+    if (!shoe) {
+      return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
+    }
+    shoe.hidden = !shoe.hidden;
+    await shoe.save();
+    return res.status(200).json(shoe);
+  } catch (error) {
+    console.error("Lỗi khi chuyển đổi trạng thái ẩn hiện của sản phẩm:", error);
+    return res.status(500).json({
+      msg: "Có lỗi xảy ra khi chuyển đổi trạng thái ẩn hiện của sản phẩm",
+    });
+  }
+};
+
+
+exports.FindProductsByBrandId = async (req, res, next) => {
+  try {
+    let brandId = req.params.id;
+    let shoes = await Model.ShoeModel.find({ brandShoe: brandId })
+      // .populate({
+      //   path: 'shoeDetail',
+      //   populate: [
+      //     { path: 'sizeShoe', match: { isEnable: true } },
+      //     { path: 'imageShoe' },
+      //     { path: 'colorShoe' },
+      //   ]
+      // })
+      .populate("brandShoe");
+
+    if (shoes.length > 0) {
+      shoes = shoes.map((shoe) => {
+        if (shoe.shoeDetail) {
+          shoe.shoeDetail.sizeShoe = shoe.shoeDetail.sizeShoe.filter(
+            (size) => size.isEnable
+          );
+        }
+        return shoe;
+      });
+
+      console.log(shoes);
+      return res.status(200).json(shoes);
+    } else {
+      return res
+        .status(404)
+        .json({ msg: "Không tìm thấy sản phẩm nào của thương hiệu này" });
+    }
+  } catch (error) {
+    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+  }
+};
+
+
+exports.findShoes_DATA = async (req, res, next) => {
+  try {
+    const { idBrand, sizeId, idColor, shoeId } = req.params;
+    let query = {};
+    let populateOptions = [];
+    if (idBrand && idBrand !== 'null') query.brandShoe = idBrand;
+    if (shoeId && shoeId !== 'null') query.shoeId = shoeId;
+    if (sizeId && sizeId !== 'null') {
+      populateOptions.push({
+        path: 'sizeShoe',
+        match: { sizeId: sizeId }
+      });
+    } else {
+      populateOptions.push({ path: 'sizeShoe' });
+    }
+
+    if (idColor && idColor !== 'null') {
+      populateOptions.push({
+        path: 'colorShoe',
+        match: { _id: idColor }
+      });
+    } else {
+      populateOptions.push({ path: 'colorShoe' });
+    }
+
+    // Tìm kiếm và populate dữ liệu
+    const shoes = await Model.ShoeModel.find(query).populate({
+      path: 'shoeDetail',
+      populate: populateOptions
+    });
+
+    // Lọc và trả về kết quả dựa trên điều kiện match
+    const filteredShoes = shoes.filter(shoe => {
+      const detail = shoe.shoeDetail;
+      return detail && (!sizeId || sizeId === 'null' || detail.sizeShoe.length > 0) && (!idColor || idColor === 'null' || detail.colorShoe);
+    });
+
+    if (filteredShoes.length > 0) {
+      return res.status(200).json(filteredShoes);
+    } else {
+      return res.status(404).json({ msg: "Không tìm thấy sản phẩm nào phù hợp" });
+    }
+  } catch (error) {
+    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+  }
+};
