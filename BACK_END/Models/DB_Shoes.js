@@ -1,5 +1,4 @@
 const mongodb = require("mongoose");
-const { type } = require("os");
 const Schema = mongodb.Schema;
 const ObjectId = Schema.ObjectId;
 var userSchema = new Schema(
@@ -83,7 +82,7 @@ const DiscountModel =
 // const ShoeModel = mongodb.models.shoes || mongodb.model("shoes", shoe);
 
 
-var TypeShoeSchema = new db.mongoose.Schema(
+var TypeShoeSchema = new mongodb.mongoose.Schema(
   {
     typeId: { type: String, require: true },
     nameType: { type: String, require: false },
@@ -94,9 +93,9 @@ var TypeShoeSchema = new db.mongoose.Schema(
     collection: "TypeShoe",
   }
 );
-let TypeShoeModel = db.mongoose.model("TypeShoeModel", TypeShoeSchema);
+let TypeShoeModel = mongodb.mongoose.model("TypeShoeModel", TypeShoeSchema);
 
-var SizeShoeSchema = new db.mongoose.Schema(
+var SizeShoeSchema = new mongodb.mongoose.Schema(
   {
     sizeId: { type: String, require: false },
     nameSize: { type: String, require: true },
@@ -106,9 +105,9 @@ var SizeShoeSchema = new db.mongoose.Schema(
     collection: "SizeShoe",
   }
 );
-let SizeShoeModel = db.mongoose.model("SizeShoeModel", SizeShoeSchema);
+let SizeShoeModel = mongodb.mongoose.model("SizeShoeModel", SizeShoeSchema);
 
-var ColorShoeSchema = new db.mongoose.Schema(
+var ColorShoeSchema = new mongodb.mongoose.Schema(
   {
     colorId: { type: String, require: true },
     nameColor: { type: String, require: false },
@@ -119,33 +118,33 @@ var ColorShoeSchema = new db.mongoose.Schema(
     collection: "ColorShoe",
   }
 );
-let ColorShoeModel = db.mongoose.model("ColorShoeModel", ColorShoeSchema);
+let ColorShoeModel = mongodb.mongoose.model("ColorShoeModel", ColorShoeSchema);
 
-var ShoeSchema = new db.mongoose.Schema(
+var ShoeSchema = new mongodb.mongoose.Schema(
   { 
     shoeId: { type: String, require: true },
     nameShoe: { type: String, require: true },
     imageShoe: { type: [String], require: false }, // Mảng Ảnh
     price: { type: Number, require: false },
     description: { type: String, require: false },
-    sizeShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
-    colorShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
+    sizeShoe: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
+    colorShoe: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
     numberShoe: { type: Number, require: false },
     hiddenShoe: { type: Boolean, require: true, default: false },
-    typeShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: "TypeShoeModel" },
+    typeShoe: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "TypeShoeModel" },
   },
   {
     collation: { locale: "en_US", strength: 1 },
     collection: "Shoe",
   }
 );
-let ShoeModel = db.mongoose.model("ShoeModel", ShoeSchema);
+let ShoeModel = mongodb.mongoose.model("ShoeModel", ShoeSchema);
 
 
-var OderSchema = new db.mongoose.Schema(
+var OderSchema = new mongodb.mongoose.Schema(
   {
     oderId: { type: String, require: true },
-    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    userId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     name: { type: String, require: false },
     phoneNumber: { type: String, require: false },
     adress: { type: String, require: false },
@@ -158,13 +157,13 @@ var OderSchema = new db.mongoose.Schema(
     collection: "Oder",
   }
 );
-let OderModel = db.mongoose.model("OderModel", OderSchema);
+const OderModel = mongodb.mongoose.model("OderModel", OderSchema);
 
-var OderDetailSchema = new db.mongoose.Schema(
+var OderDetailSchema = new mongodb.mongoose.Schema(
   {
     oderDetailId: { type: String, require: true },
-    oderId: { type: db.mongoose.Schema.Types.ObjectId, ref: "OderModel" },
-    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    oderId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "OderModel" },
+    shoeId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     quanlity: { type: String, require: false },
   },
   {
@@ -172,14 +171,14 @@ var OderDetailSchema = new db.mongoose.Schema(
     collection: "OderDetail",
   }
 );
-let OderDetailModel = db.mongoose.model("OderDetailModel", OderDetailSchema);
+let OderDetailModel = mongodb.mongoose.model("OderDetailModel", OderDetailSchema);
 
 
-var CartSchema = new db.mongoose.Schema(
+var CartSchema = new mongodb.mongoose.Schema(
   {
     cartId: { type: String, require: true },
-    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
-    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    userId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    shoeId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     numberShoe: { type: String, require: false },
   },
   {
@@ -187,7 +186,7 @@ var CartSchema = new db.mongoose.Schema(
     collection: "Cart",
   }
 );
-let CartModel = db.mongoose.model("CartModel", CartSchema);
+let CartModel = mongodb.mongoose.model("CartModel", CartSchema);
 
 module.exports = {
   UserModel,
