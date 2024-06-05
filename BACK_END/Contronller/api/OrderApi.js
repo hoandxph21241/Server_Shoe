@@ -85,7 +85,7 @@ const getOrderById = (req, res) => {
 //   orderList,
 //   updateOrder,
 // };
-const getAllOrderByUserId = function (req, res) {
+ const getAllOrderByUserId = function (req, res) {
   const { userId } = req.params;
   OderModel.find({ userId })
     .then((orders) => {
