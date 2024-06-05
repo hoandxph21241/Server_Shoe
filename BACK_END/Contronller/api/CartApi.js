@@ -49,5 +49,5 @@ module.exports = {
     addCart,
     deleteCart,
     updateNumberShoe,
-    cartList,
+    cartListByUserId,
 }

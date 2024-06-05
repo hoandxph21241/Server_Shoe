@@ -61,6 +61,11 @@ app.use("/discount", discountRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
+const NavigationRouter = require("./routes/Navigation_Route");
+app.use("/navigation", NavigationRouter);
+const CartRouter = require("./routes/Cart_Route");
+app.use("/cart", CartRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
