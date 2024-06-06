@@ -55,6 +55,7 @@ router.delete('/typeshoe/:id', Product_API.deleteTypeShoe);
 
 //Shoes Rounter
 router.get("/getallproduct",Product_API.AllProduct);
+router.post("/addshoe",Product_API.ADD_Product);
 router.get("/findproduct/:id",Product_API.FindProduct);
 //  "/findproduct/?name="
 router.get("/findproduct",Product_API.FindByName);
