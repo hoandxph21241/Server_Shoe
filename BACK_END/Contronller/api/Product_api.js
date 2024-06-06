@@ -343,3 +343,84 @@ exports.findShoes_DATA = async (req, res, next) => {
     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
   }
 };
+
+
+const formatString = (inputString) => {
+  return inputString.toLowerCase().replace(/\s+/g, '-');
+};
+
+exports.ADD_Product = async (req, res) => {
+  try {
+    const {
+      name,
+      price,
+      description,
+      brandShoeId,
+      thumbnail,
+      hidden,
+      sizes,
+      imageShoe,
+      colorShoe
+    } = req.body;
+
+    let shoe = await Model.ShoeModel.findOne({ name });
+    if (shoe) {
+      return res.status(400).json({ message: 'Shoe already exists' });
+    }
+
+    const brand = await Model.TypeShoeModel.findById(brandShoeId);
+    const shoeId = formatString(brand.nameType);
+
+    shoe = new Model.ShoeModel({
+      shoeId,
+      name,
+      price,
+      description,
+      brandShoe: brandShoeId,
+      thumbnail,
+      hidden,
+      shoeDetail: null
+    });
+
+    const savedShoe = await shoe.save();
+    console.log('Shoe created successfully:', savedShoe);
+
+    const sizeIds = [];
+    for (const size of sizes) {
+      let newSize = new Model.SizeShoeModel({
+        size: size.size,
+        quanlity: size.quanlity,
+        isEnable: true,
+        sizeId: formatString(size.size)
+      });
+      await newSize.save();
+      sizeIds.push(newSize._id);
+    }
+
+    const newImage = new Model.ImageShoeModel({
+      shoeId: savedShoe._id,
+      imageShoe: imageShoe
+    });
+    const savedImage = await newImage.save();
+    console.log('Image Array created:', savedImage);
+
+    const newShoeDetail = new Model.ShoeDetailModel({
+      shoeId: savedShoe._id,
+      sizeShoe: sizeIds,
+      imageShoe: savedImage._id,
+      colorShoe: colorShoe
+    });
+    const savedShoeDetail = await newShoeDetail.save();
+    console.log('ShoeDetail created:', savedShoeDetail);
+
+    const updatedShoe = await Model.ShoeModel.findByIdAndUpdate(
+      savedShoe._id,
+      { shoeDetail: savedShoeDetail._id },
+      { new: true }
+    );
+    res.status(201).json({ message: 'Shoe and ShoeDetail created successfully', shoe: updatedShoe });
+  } catch (error) {
+    console.error('Error during shoe creation: ', error);
+    res.status(500).json({ message: 'Internal Server Error', error });
+  }
+};
