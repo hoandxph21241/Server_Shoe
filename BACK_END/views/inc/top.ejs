@@ -1,0 +1,129 @@
+<!-- Header -->
+<style>
+    body {
+        overflow-x: hidden;
+    }
+
+    main {
+        overflow-y: auto;
+        height: calc(100vh - 56px);
+    }
+    .p-0 {  
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+
+    .p-1 {
+        padding-top: 56px; 
+        overflow-y: auto;
+    }
+   
+</style>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-2 d-none d-md-block bg-dark-subtle sidebar text-dark bg-opacity-75 min-vh-100">
+                <div class="sidebar-sticky">
+                    <p class="text-capitalize text-center fs-3 font-monospace fw-bold">shoes shop</p>
+                    <ul class="nav flex-column">
+
+                        <!-- Home Icon -->
+                        <li class="nav-item">
+                            <a href="/home" class="nav-link d-flex align-items-center text-dark">
+                                <img src="/images/icons.png" alt="" class="me-2">Home
+                            </a>
+                        </li>
+
+                        <!-- Dropdown Menu -->
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-toggle text-dark" role="button" data-toggle="collapse" data-target="#managementMenu" aria-expanded="false" aria-controls="managementMenu">
+                                <img src="/images/icon (1).png" alt=""> Quản lý
+                            </a>
+                            <div class="collapse" id="managementMenu">
+                                <ul class="nav flex-column ml-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark fw-bold" href="/manager/productlist">Sản phẩm</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark fw-bold" href="/manager/bannerlist">Banner</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark fw-bold" href="/manager/vorcherlist">Giảm giá</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <!-- User Icon -->
+                        <li class="nav-item">
+                                <a href="/auth/userlist"  class="nav-link d-flex align-items-center text-dark">
+                                    <img src="/images/icon-user.png" alt="" class="me-2">Người dùng
+                                </a>
+                        </li>
+
+
+                        <!-- Order Icon -->
+                        <li class="nav-item">
+                            <a href="/order/orderlist" class="nav-link d-flex align-items-center text-dark">
+                                <img src="/images/icon-order.png" alt="" class="me-2">Đơn hàng
+                            </a>
+                        </li>
+
+                         <!-- Dashboard Icon -->
+                         <li class="nav-item" >
+                            <a href="/dashboard" class="nav-link d-flex align-items-center text-dark">
+                                <img src="/images/icon-statistical.png" alt="" class="me-2">Thống kê
+                            </a>
+                        </li>
+                        <!-- Sign_Out Icon -->
+                        <li class="nav-item">
+                                <a href="/auth/signout"  class="nav-link d-flex align-items-center text-dark">
+                                    <img src="/images/icon-signout.png" alt="" class="me-2">Đăng xuất
+                                </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main role="main" class="col px-0 overflow-auto">
+                <div class="d-flex flex-column mb-2">
+
+                    <div class="p-0">
+                        <div
+                            class="d-flex justify-content-end align-items-center pt-3 pb-2 mb-3 border-bottom bg-body-tertiary bg-gradient w-100">
+                            <div class="btn-toolbar mb-2 mb-md-0">
+
+                                <!-- Find Icon -->
+                                <form class="d-flex me-3" role="search">
+                                    <input class="form-control me-2" type="search" placeholder="" aria-label="">
+                                    <button class="btn btn-white" type="submit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path
+                                                d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                                        </svg>
+                                    </button>
+                                </form>
+
+                                <!-- Notification Icon -->
+                                <button type="button" id='notification' class="me-3"
+                                    style='border:none; background-color: transparent;'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-bell-fill" viewBox="0 0 16 16">
+                                        <path
+                                            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901" />
+                                    </svg>
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-1">
+
+                        <!-- Header -->
