@@ -10,8 +10,11 @@ var userSchema = new db.mongoose.Schema(
     fullName: { type: String, require: false },
     gmail: { type: String, require: false },
     grender: { type: String, require: false },
+    // Phân Quyền
     role: { type: Number, require: true, default: 1 },
+    // Khóa Tài Khoản
     locked: { type: Boolean, require: true, default: false },
+    // OTP đổi mật khẩu
     otp: { type: String, require: false },
   },
   {
@@ -200,6 +203,8 @@ var CartSchema = new db.mongoose.Schema(
   }
 );
 let CartModel = db.mongoose.model("CartModel", CartSchema);
+
+
 
 module.exports = {
   UserModel,
