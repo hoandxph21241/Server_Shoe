@@ -178,32 +178,31 @@ exports.deleteTypeShoe = async (req, res) => {
 
 exports.AllProduct = async (req, res, next) => {
   try {
-    let shoe = await Model.ShoeModel.find()
+    let shoes = await Model.ShoeModel.find()
       .populate({
-        path: "shoeDetail",
-        select: "sizeShoe imageShoe colorShoe -_id",
-        populate: [
-          {
-            path: "sizeShoe",
-            match: { isEnable: true },
-            select: "size quanlity _id",
-          },
-          { path: "imageShoe", select: "imageShoe _id" },
-          { path: "colorShoe", select: "textColor codeColor _id" },
-        ],
+        path: "sizeShoe",
+        match: { isEnable: true },
+        select: "size sizeId -_id"
       })
-      .populate("brandShoe", "_id");
+      .populate({
+        path: "imageShoe",
+        select: "imageUrl -_id"
+      })
+      .populate({
+        path: "colorShoe",
+        select: "textColor codeColor -_id"
+      })
+      .populate("brandShoe", "nameType -_id")
+      .select("-__v");
 
-    if (shoe) {
-      console.log(shoe);
-      return res.status(200).json(shoe);
+    if (shoes.length > 0) {
+      return res.status(200).json(shoes);
     } else {
-      return res.status(404).json({ msg: "Không tìm sản phẩm" });
+      return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
     }
   } catch (error) {
     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
   }
-  // res.status(200).json({msg});
 };
 
 exports.FindProduct = async (req, res, next) => {
@@ -241,23 +240,7 @@ exports.FindByName = async (req, res, next) => {
 };
 
 
-exports.HiddenProduct = async (req, res, next) => {
-  try {
-    let shoeId = req.params.id;
-    let shoe = await Model.ShoeModel.findByIdAndUpdate(shoeId).populate();
-    if (!shoe) {
-      return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
-    }
-    shoe.hidden = !shoe.hidden;
-    await shoe.save();
-    return res.status(200).json(shoe);
-  } catch (error) {
-    console.error("Lỗi khi chuyển đổi trạng thái ẩn hiện của sản phẩm:", error);
-    return res.status(500).json({
-      msg: "Có lỗi xảy ra khi chuyển đổi trạng thái ẩn hiện của sản phẩm",
-    });
-  }
-};
+
 
 
 exports.FindProductsByBrandId = async (req, res, next) => {
@@ -299,39 +282,31 @@ exports.FindProductsByBrandId = async (req, res, next) => {
 
 exports.findShoes_DATA = async (req, res, next) => {
   try {
-    const { idBrand, sizeId, idColor, shoeId } = req.params;
+    const { idBrand, sizeId, textColor, shoeId } = req.params;
     let query = {};
-    let populateOptions = [];
+
     if (idBrand && idBrand !== 'null') query.brandShoe = idBrand;
     if (shoeId && shoeId !== 'null') query.shoeId = shoeId;
-    if (sizeId && sizeId !== 'null') {
-      populateOptions.push({
+
+    let shoes = await Model.ShoeModel.find(query)
+      .populate('brandShoe', 'nameType -_id')
+      .populate({
         path: 'sizeShoe',
-        match: { sizeId: sizeId }
-      });
-    } else {
-      populateOptions.push({ path: 'sizeShoe' });
-    }
-
-    if (idColor && idColor !== 'null') {
-      populateOptions.push({
+        match: sizeId && sizeId !== 'null' ? { sizeId: sizeId } : {},
+        select: 'size sizeId -_id'
+      })
+      .populate({
         path: 'colorShoe',
-        match: { _id: idColor }
-      });
-    } else {
-      populateOptions.push({ path: 'colorShoe' });
-    }
+        match: textColor && textColor !== 'null' ? { textColor: textColor } : {},
+        select: 'textColor codeColor -_id'
+      })
+      .select('-__v');
 
-    // Tìm kiếm và populate dữ liệu
-    const shoes = await Model.ShoeModel.find(query).populate({
-      path: 'shoeDetail',
-      populate: populateOptions
-    });
-
-    // Lọc và trả về kết quả dựa trên điều kiện match
-    const filteredShoes = shoes.filter(shoe => {
-      const detail = shoe.shoeDetail;
-      return detail && (!sizeId || sizeId === 'null' || detail.sizeShoe.length > 0) && (!idColor || idColor === 'null' || detail.colorShoe);
+    // Lọc kết quả dựa trên sizeId và textColor
+    let filteredShoes = shoes.filter(shoe => {
+      const matchesSize = !sizeId || sizeId === 'null' || shoe.sizeShoe.some(size => size.sizeId === sizeId);
+      const matchesColor = !textColor || textColor === 'null' || shoe.colorShoe.some(color => color.textColor === textColor);
+      return matchesSize && matchesColor;
     });
 
     if (filteredShoes.length > 0) {
@@ -357,7 +332,7 @@ exports.ADD_Product = async (req, res) => {
       description,
       brandShoeId,
       thumbnail,
-      hidden,
+      status,
       sizes,
       imageShoe,
       colorShoe
@@ -371,6 +346,25 @@ exports.ADD_Product = async (req, res) => {
     const brand = await Model.TypeShoeModel.findById(brandShoeId);
     const shoeId = formatString(brand.nameType);
 
+    const sizeIds = await Promise.all(sizes.map(async (size) => {
+      let newSize = new Model.SizeShoeModel({
+        size: size.size,
+        isEnable: true,
+        sizeId: formatString(size.size)
+      });
+      await newSize.save();
+      return newSize._id;
+    }));
+
+    const colorIds = await Promise.all(colorShoe.map(async (color) => {
+      let newColor = new Model.ColorShoeModel({
+        textColor: color.textColor,
+        codeColor: color.codeColor
+      });
+      await newColor.save();
+      return newColor._id;
+    }));
+
     shoe = new Model.ShoeModel({
       shoeId,
       name,
@@ -378,47 +372,17 @@ exports.ADD_Product = async (req, res) => {
       description,
       brandShoe: brandShoeId,
       thumbnail,
-      hidden,
-      shoeDetail: null
+      status,
+      sizeShoe: sizeIds,
+      imageShoe: imageShoe,
+      colorShoe: colorIds,
     });
 
     const savedShoe = await shoe.save();
     console.log('Shoe created successfully:', savedShoe);
 
-    const sizeIds = [];
-    for (const size of sizes) {
-      let newSize = new Model.SizeShoeModel({
-        size: size.size,
-        quanlity: size.quanlity,
-        isEnable: true,
-        sizeId: formatString(size.size)
-      });
-      await newSize.save();
-      sizeIds.push(newSize._id);
-    }
+    res.status(201).json({ message: 'Shoe created successfully', data: savedShoe });
 
-    const newImage = new Model.ImageShoeModel({
-      shoeId: savedShoe._id,
-      imageShoe: imageShoe
-    });
-    const savedImage = await newImage.save();
-    console.log('Image Array created:', savedImage);
-
-    const newShoeDetail = new Model.ShoeDetailModel({
-      shoeId: savedShoe._id,
-      sizeShoe: sizeIds,
-      imageShoe: savedImage._id,
-      colorShoe: colorShoe
-    });
-    const savedShoeDetail = await newShoeDetail.save();
-    console.log('ShoeDetail created:', savedShoeDetail);
-
-    const updatedShoe = await Model.ShoeModel.findByIdAndUpdate(
-      savedShoe._id,
-      { shoeDetail: savedShoeDetail._id },
-      { new: true }
-    );
-    res.status(201).json({ message: 'Shoe and ShoeDetail created successfully', shoe: updatedShoe });
   } catch (error) {
     console.error('Error during shoe creation: ', error);
     res.status(500).json({ message: 'Internal Server Error', error });

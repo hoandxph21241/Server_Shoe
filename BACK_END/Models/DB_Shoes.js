@@ -53,25 +53,11 @@ var TypeShoeSchema = new db.mongoose.Schema(
 );
 let TypeShoeModel = db.mongoose.model("TypeShoeModel", TypeShoeSchema);
 
-var ImageShoeSchema = new db.mongoose.Schema(
-  {
-    typeId: { type: String, require: false },
-    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    imageShoe: [{ type: String, require: true }],
-  },
-  {
-    collation: { locale: "en_US", strength: 1 },
-    collection: "ImageShoe",
-  }
-);
-let ImageShoeModel = db.mongoose.model("ImageShoeModel", ImageShoeSchema);
-
 var SizeShoeSchema = new db.mongoose.Schema(
   {
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     sizeId: { type: String, require: false },
     size: { type: String, require: true },
-    quanlity: { type: Number, require: true },
     isEnable: { type: Boolean, require: false, default: true },
   },
   {
@@ -81,28 +67,12 @@ var SizeShoeSchema = new db.mongoose.Schema(
 );
 let SizeShoeModel = db.mongoose.model("SizeShoeModel", SizeShoeSchema);
 
-const ShoeDetailSchema = new db.mongoose.Schema(
-  {
-    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel", required: true },
-    sizeShoe: [{ type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" }],
-    imageShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: "ImageShoeModel" },
-    colorShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
-  },
-  {
-    collation: { locale: "en_US", strength: 1 },
-    collection: "ShoeDetail",
-  }
-);
-
-let ShoeDetailModel = db.mongoose.model("ShoeDetailModel", ShoeDetailSchema);
-
 var ColorShoeSchema = new db.mongoose.Schema(
   {
-    ColorId: { type: String, require: true },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    colorId: { type: String, require: false },
     textColor: { type: String, require: false },
     codeColor: { type: String, require: false },
-    quanlity: { type: String, require: false },
     isEnable: { type: Boolean, require: false, default: true },
   },
   {
@@ -121,11 +91,68 @@ var ShoeSchema = new db.mongoose.Schema(
     number: { type: Number, require: false },
     gender: { type: String, require: false },
     thumbnail: { type: String, require: false },
-    shoeDetail: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ShoeDetailModel' },
-    hidden: { type: Boolean, require: true, default: false },
+    status: { type: Number, require: true, default: 0 },
     brandShoe: {
       type: db.mongoose.Schema.Types.ObjectId,
       ref: "TypeShoeModel",
+    },
+    imageShoe: [{ type: String, require: true }],
+    sizeShoe: [
+        { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
+    ],
+    colorShoe: [
+      { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
+    ],
+    storageShoe: [
+      {
+        colorShoe: {
+          colorId: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "ColorShoeModel",
+          },
+          textColor: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "ColorShoeModel",
+          },
+          codeColor: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "ColorShoeModel",
+          },
+        },
+        sizeShoe: {
+          sizeId: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "SizeShoeModel",
+          },
+          size: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "SizeShoeModel",
+          },
+        },
+        importQuanlity: { type: Number, require: false },
+        soldQuanlity: { type: Number, require: false },
+        importQuaquanlity: { type: Number, require: false },
+      },
+    ],
+    importQuanlityAll: { type: Number, require: false },
+    soldQuanlityAll: { type: Number, require: false },
+    quanlityAll: { type: Number, require: false },
+    gender: { type: Number, require: true, default: 0 },
+    importPrice: { type: Number, require: false },
+    sellPrice: { type: Number, require: false },
+    discountPrice: { type: Number, require: false },
+    rateShoe: {
+      starRate: { type: Number, require: false },
+      comment: [
+        {
+          userName: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "UserModel",
+          },
+          commetText: { type: String, require: false },
+          rateNumber: { type: Number, require: false },
+        },
+      ],
     },
   },
   {
@@ -204,17 +231,13 @@ var CartSchema = new db.mongoose.Schema(
 );
 let CartModel = db.mongoose.model("CartModel", CartSchema);
 
-
-
 module.exports = {
   UserModel,
   BannerModel,
   TypeShoeModel,
   ShoeModel,
-  ShoeDetailModel,
   SizeShoeModel,
   ColorShoeModel,
-  ImageShoeModel,
   OderModel,
   DiscountModel,
   OderDetailModel,
