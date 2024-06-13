@@ -17,7 +17,7 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 //session check
@@ -45,6 +45,9 @@ app.use("/order", OrderRounter);
 var DashboardRounter = require("./routes/Dashboard_Rounters");
 app.use("/dashboard", DashboardRounter);
 
+//manager
+var ManagerRouter = require('./routes/Manager_Router');
+app.use("/manager",ManagerRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
