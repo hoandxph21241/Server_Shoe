@@ -26,7 +26,7 @@ let UserModel = db.mongoose.model("UserModel", userSchema);
 var BannerSchema = new db.mongoose.Schema(
   {
     bannerId: { type: String, require: true },
-    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    imageThumbnail: { type: String, require: false },
     thumbnail: { type: String, require: false },
     image: { type: String, require: false },
     title: { type: String, require: false },
@@ -98,7 +98,7 @@ var ShoeSchema = new db.mongoose.Schema(
     },
     imageShoe: [{ type: String, require: true }],
     sizeShoe: [
-        { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
+      { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
     ],
     colorShoe: [
       { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
