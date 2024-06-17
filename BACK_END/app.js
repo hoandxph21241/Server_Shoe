@@ -6,7 +6,7 @@ var logger = require("morgan");
 var app = express();
 const mongoose = require("mongoose");
 mongoose
-  .connect("mongodb+srv://vanphuc_mongodb:1E7V8mnJNV4X9ead@cluster0.iit1hgd.mongodb.net/Shoe")
+  .connect("mongodb+srv://hoandxph21241:hoan123@shoesdatabase.ck50y7r.mongodb.net/Shoes_Database")
   .then(() => console.log('>>>>>>>>>> DB Connected!!!!!!'))
   .catch(err => console.log('>>>>>>>>> DB Error: ', err));
 
