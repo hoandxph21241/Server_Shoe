@@ -32,6 +32,7 @@ var BannerSchema = new db.mongoose.Schema(
     title: { type: String, require: false },
     type: { type: String, require: false },
     description: { type: String, require: false },
+    hide:{type:Boolean,default: false}
   },
   {
     collation: { locale: "en_US", strength: 1 },

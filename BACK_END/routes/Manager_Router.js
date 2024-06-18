@@ -27,5 +27,5 @@ router.get('/bannerlist',ManagerController.BannerList);
 // router.get('/bannerlist',ManagerController.BannerList);
 router.get('/add-banner',ManagerController.AddBanner);
 router.post('/add-banner', upload.fields([{ name: 'image' }, { name: 'imageThumbnail' }]), ManagerController.AddBanner);
-
+router.post('/hide-banner/:_id', ManagerController.HideBanner);
 module.exports = router;

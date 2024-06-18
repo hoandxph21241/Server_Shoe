@@ -74,3 +74,20 @@ exports.AddBanner = async (req, res, next) => {
         res.render('manager/banner/add_banner.ejs', { error: 'Đã có lỗi khi thêm banner. Vui lòng thử lại.' });
     }
 };
+
+exports.HideBanner = async (req,res,next) => {
+    try {
+        const bannerId = req.params._id;
+        
+        const banner = await Banner.BannerModel.findById(bannerId);
+        if(!banner) {
+            console.log("Không tìm thấy banner");
+        }
+        banner.hide  = !banner.hide;
+        await banner.save();
+
+        res.redirect('/manager/bannerlist');
+    } catch (error) {
+        console.log("Đã có lỗi ẩn banner : "+error);
+    }
+}
