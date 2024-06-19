@@ -333,10 +333,10 @@ exports.ADD_Product = async (req, res) => {
       brandShoeId,
       thumbnail,
       status,
-      sizes,
-      imageShoe,
-      colorShoe
+      storageShoe,
+      imageShoe
     } = req.body;
+    console.log("data add " + req.body);
 
     let shoe = await Model.ShoeModel.findOne({ name });
     if (shoe) {
@@ -346,36 +346,57 @@ exports.ADD_Product = async (req, res) => {
     const brand = await Model.TypeShoeModel.findById(brandShoeId);
     const shoeId = formatString(brand.nameType);
 
-    const sizeIds = await Promise.all(sizes.map(async (size) => {
-      let newSize = new Model.SizeShoeModel({
-        size: size.size,
-        isEnable: true,
-        sizeId: formatString(size.size)
-      });
-      await newSize.save();
-      return newSize._id;
-    }));
+    const colorIds = new Set();
+    const sizeIds = new Set();
 
-    const colorIds = await Promise.all(colorShoe.map(async (color) => {
-      let newColor = new Model.ColorShoeModel({
-        textColor: color.textColor,
-        codeColor: color.codeColor
-      });
-      await newColor.save();
-      return newColor._id;
-    }));
+
+    let importQuanlityAll = 0;
+    let soldQuanlityAll = 0;
+    const storage = [];
+    for (const storageItem of storageShoe) {
+      const colorDoc = await Model.ColorShoeModel.findById(storageItem.colorShoe);
+      colorIds.add(colorDoc._id); 
+
+      for (const size of storageItem.sizeShoe) {
+        const sizeId = formatString(size.size); 
+        const sizeDoc = await Model.SizeShoeModel.findOneAndUpdate(
+          { size: size.size },
+          { $setOnInsert: { size: size.size, isEnable: true, sizeId: sizeId } },
+          { new: true, upsert: true }
+        );
+        sizeIds.add(sizeDoc._id);
+
+        const importQuantity = parseInt(size.quantity);
+        const soldQuantity = parseInt(size.quantity);
+
+        importQuanlityAll += importQuantity;
+        soldQuanlityAll += soldQuantity;
+
+        storage.push({
+          colorShoe: colorDoc._id,
+          sizeShoe: sizeDoc._id,
+          importQuanlity: parseInt(size.quantity),
+          sellQuanlity: 0,
+          soldQuanlity: parseInt(size.quantity) 
+        });
+        
+      }
+    }
 
     shoe = new Model.ShoeModel({
       shoeId,
       name,
       price,
       description,
-      brandShoe: brandShoeId,
+      brandShoe: brand._id,
       thumbnail,
       status,
-      sizeShoe: sizeIds,
-      imageShoe: imageShoe,
-      colorShoe: colorIds,
+      imageShoe,
+      colorShoe: [...colorIds],
+      sizeShoe: [...sizeIds],
+      storageShoe: storage,
+      importQuanlityAll,
+      soldQuanlityAll
     });
 
     const savedShoe = await shoe.save();
@@ -384,7 +405,45 @@ exports.ADD_Product = async (req, res) => {
     res.status(201).json({ message: 'Shoe created successfully', data: savedShoe });
 
   } catch (error) {
-    console.error('Error during shoe creation: ', error);
+    console.error('Error during shoe creation:', error);
+    res.status(500).json({ message: 'Internal Server Error', error });
+  }
+};
+
+
+
+exports.rateShoe = async (req, res) => {
+  try {
+    const { shoeId, userId, rateNumber, commentText } = req.body;
+
+    const shoe = await Model.ShoeModel.findById(shoeId);
+    if (!shoe) {
+      return res.status(404).json({ message: 'Shoe not found' });
+    }
+
+    const user = await Model.UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const newComment = {
+      userName: user._id,
+      commentText: commentText,
+      rateNumber: rateNumber
+    };
+
+    shoe.rateShoe.comment.push(newComment);
+
+let totalRating = shoe.rateShoe.comment.reduce((acc, curr) => acc + curr.rateNumber, 0);
+shoe.rateShoe.starRate = parseFloat((totalRating / shoe.rateShoe.comment.length).toFixed(1));
+
+
+    const updatedShoe = await shoe.save();
+    
+    res.status(200).json({ message: 'Rating added successfully', data: updatedShoe });
+
+  } catch (error) {
+    console.error('Error during rating:', error);
     res.status(500).json({ message: 'Internal Server Error', error });
   }
 };

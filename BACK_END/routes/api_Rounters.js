@@ -59,6 +59,9 @@ router.get("/findproduct/:id",Product_API.FindProduct);
 //  "/findproduct/?name="
 router.get("/findproduct",Product_API.FindByName);
 
+
+router.post("/rateshoe",Product_API.rateShoe);
+
 // //  "Find by hiden"
 // router.get("/findproductbyidbrand/:id", Product_API.FindProductsByBrandId);
 
