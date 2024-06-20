@@ -29,6 +29,9 @@ router.get("/resetpassword/:id", Users_API.ResetPassword);
 router.post("/resetpassword/:id", Users_API.ResetPassword);
 ///////////////////////////////////////////////////
 
+router.post("/sendotpmail", Users_API.Send_Otp_By_Mail);
+router.post("/sendoforgot", Users_API.ResetPassword_Forgot);
+
 
 router.get("/sendotp/:id", Users_API.ResetPassword_Mail);
 router.post("/sendotp/:id", Users_API.ResetPassword_Mail);
