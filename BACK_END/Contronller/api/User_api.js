@@ -114,6 +114,103 @@ exports.ResetPassword = async (req, res, next) => {
   }
 };
 
+
+exports.Send_Otp_By_Mail = async (req, res) => {
+  const nameAccount = req.body.nameAccount; 
+  try {
+    const oAuth2Client = new google.auth.OAuth2(
+      process.env.CLIENT_ID,
+      process.env.CLIENT_SECRET,
+      process.env.REDIRECT_URI
+    );
+    oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+      digits: true,
+    });
+
+
+    const accessTokenResponse = await oAuth2Client.getAccessToken();
+    const accessToken = accessTokenResponse.token;
+    if (!accessToken) {
+      throw new Error("Failed to obtain access token");
+    }
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: 'hzdev231@gmail.com', 
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+        accessToken: accessToken,
+      },
+    });
+
+    const mailOptions = {
+      from: 'hzdev231@gmail.com',
+      to: nameAccount,
+      subject: 'Mã OTP của bạn',
+      text: `Mã OTP của bạn là: ${otp}`,
+    };
+    const result = await transporter.sendMail(mailOptions);
+    console.log("Email sent: " + result.response);
+
+
+
+      let user = await Model.UserModel.findOne({nameAccount:nameAccount});
+      if (user) {
+        if (user.nameAccount === nameAccount) {
+          user.otp = otp;
+          await user.save();
+        }
+      }
+   
+
+
+    res.json({ success: true, message: "Mã OTP đã được gửi" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi khi gửi email" });
+  }
+};
+
+
+
+exports.ResetPassword_Forgot = async (req, res, next) => {
+  let nameAccount = req.body.nameAccount;
+  let otp = req.body.otp;
+  try {
+    let user = await Model.UserModel.findOne({nameAccount:nameAccount});
+    if (user) {
+      if (user.otp === otp) {
+        user.otp = null;
+        await user.save();
+        return res.status(200).json({
+          success: true,
+          message: "Xác Nhận thành công",
+          user: user,
+        });
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "OTP không chính xác",
+        });
+      }
+    } else {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy người dùng hoặc tên tài khoản không khớp",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Có lỗi xảy ra: " + error.message });
+  }
+};
+
 exports.ResetPassword_Mail = async (req, res, next) => {
   let userId = req.params.id;
 
