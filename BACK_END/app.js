@@ -4,11 +4,7 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var app = express();
-const mongoose = require("mongoose");
-mongoose
-  .connect("mongodb+srv://vanphuc_mongodb:1E7V8mnJNV4X9ead@cluster0.iit1hgd.mongodb.net/Shoe")
-  .then(() => console.log('>>>>>>>>>> DB Connected!!!!!!'))
-  .catch(err => console.log('>>>>>>>>> DB Error: ', err));
+
 
 //session
 var session = require('express-session')
@@ -61,10 +57,13 @@ app.use("/discount", discountRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
+// var OrderRouter = require("./routes/Order_Route");
+// app.use("/Order", OrderRouter);
 const NavigationRouter = require("./routes/Navigation_Route");
 app.use("/navigation", NavigationRouter);
 const CartRouter = require("./routes/Cart_Route");
 app.use("/cart", CartRouter);
+
 
 
 // catch 404 and forward to error handler

@@ -9,6 +9,7 @@ const addDiscount = async (req, res) => {
   try {
     let msg = "";
     const { discountAmount, endDate, maxUser, description } = req.body;
+    console.log(maxUser);
     let couponCode = Math.random().toString(36).substring(7).toUpperCase();
     while (await DiscountModel.findOne({ couponCode: couponCode })) {
       couponCode = Math.random().toString(36).substring(7).toUpperCase();
@@ -19,7 +20,7 @@ const addDiscount = async (req, res) => {
       discountAmount,
       endDate: time,
       maxUser,
-      description,
+      isActive: true
     });
 
     await discount.save();

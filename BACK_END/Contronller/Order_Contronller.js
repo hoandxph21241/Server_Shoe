@@ -1,4 +1,5 @@
-  const {OderModel} = require("../Models/DB_Shoes");
+const sendNotification = require('../utils/notificationService'); // Import hàm dùng chung
+const { OderModel, OderDetailModel} = require('../Models/DB_Shoes'); // Các model cần thiết
 
 
 exports.Order_List = async (req, res, next) => {
@@ -71,5 +72,17 @@ exports.GetOrderByIdUser = async (req, res, next) => {
     res.status(200).json({ status: "success", orders });
   } catch (error) {
     res.status(500).json({ status: "failed", error });
+  }
+};
+
+const getOrdersByUserId = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const orders = await OderModel.find().populate('userId', 'nameAccount', 'imageAccount')
+    res.status(200).json(orders);
+
+    // res.render("order/order_list.ejs", { orders });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách đơn hàng.', error: err.message });
   }
 };

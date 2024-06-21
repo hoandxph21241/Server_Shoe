@@ -6,7 +6,7 @@ const { requireAdmin } = require('../middlewares/check_login');
 
 
 router.get("", requireAdmin, dsController.getListDiscount);
-// router.post("/add", requireAdmin, dsController.addDiscount);
+router.post("/add", dsController.addDiscount);
 // router.post("/hidden", requireAdmin, dsController.hiddenDiscount);
 // router.post("/delete", requireAdmin, dsController.deleteDiscount);
 // router.post("/edit", requireAdmin, dsController.editDiscount);

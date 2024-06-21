@@ -1,7 +1,5 @@
-const mongodb = require("mongoose");
-const Schema = mongodb.Schema;
-const ObjectId = Schema.ObjectId;
-var userSchema = new Schema(
+var db = require("./db");
+var userSchema = new db.mongoose.Schema(
   {
     userID: { type: String, require: true },
     nameAccount: { type: String, require: true },
@@ -12,79 +10,39 @@ var userSchema = new Schema(
     fullName: { type: String, require: false },
     gmail: { type: String, require: false },
     grender: { type: String, require: false },
+    // Phân Quyền
     role: { type: Number, require: true, default: 1 },
-    favourites: [
-      {
-        shoeId: { type: String, require: true },
-      },
-    ],
+    // Khóa Tài Khoản
     locked: { type: Boolean, require: true, default: false },
-    otp: { type: String, require: false }
+    // OTP đổi mật khẩu
+    otp: { type: String, require: false },
   },
   {
-    collection: "users",
+    collection: "User",
   }
 );
-const UserModel = mongodb.models.users || mongodb.model("users", userSchema);
+let UserModel = db.mongoose.model("UserModel", userSchema);
 
-const address = new Schema({
-  addressId: ObjectId,
-  nameAddress: { type: String },
-  address: { type: String, require: true },
-  phoneNumber: { type: Number, require: true },
-  userId: { type: String, require: true },
-});
-const AddressModel = mongodb.models.addresses || mongodb.model("addresses", address);
-
-
-const review = new Schema({
-  userID: { type: String, require: true },
-  shoeId: { type: String, require: true },
-  rating: { type: Number, require: true },
-  comment: { type: String },
-  date: { type: Date}
-})
-const ReviewModel = mongodb.models.reviews || mongodb.model("reviews", review);
-
-const banner = new Schema({
-  bannerID: ObjectId,
-  shoeID: {type: String, require: true},
-  thumbnail: { type: String },
-  image: [{ type: String }],
-  title: { type: String, require: true },
-  description: { type: String },
-  type: { type: String, require: true },
-});
-const BannerModel = mongodb.models.banners || mongodb.model("banners", banner);
-
-const discount = new Schema({
-  couponCode: { type: String, require: true, require: true },
-  discountAmount: { type: Number, require: true },
-  endDate: { type: Date },
-  maxUser: { type: Number },
-  description: { type: String },
-  isActive: { type: Boolean, require: true },
-});
-const DiscountModel =
-  mongodb.models.discounts || mongodb.model("discounts", discount);
-
-// const shoe = new Schema({
-//   shoeID: ObjectId,
-//   brandShoe: { type: String, require: true },
-//   name: { type: String, require: true },
-//   price: { type: Number, require: true },
-//   description: { type: String },
-//   number: { type: Number, require: true },
-//   gender: { type: String, require: true },
-//   hidden: { type: Boolean, default: false },
-//   thumbnail: { type: String, require: true },
-// });
-// const ShoeModel = mongodb.models.shoes || mongodb.model("shoes", shoe);
-
-
-var TypeShoeSchema = new mongodb.mongoose.Schema(
+var BannerSchema = new db.mongoose.Schema(
   {
-    typeId: { type: String, require: true },
+    bannerId: { type: String, require: true },
+    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    thumbnail: { type: String, require: false },
+    image: { type: String, require: false },
+    title: { type: String, require: false },
+    type: { type: String, require: false },
+    description: { type: String, require: false },
+  },
+  {
+    collation: { locale: "en_US", strength: 1 },
+    collection: "Banner",
+  }
+);
+let BannerModel = db.mongoose.model("BannerModel", BannerSchema);
+
+var TypeShoeSchema = new db.mongoose.Schema(
+  {
+    TypeId: { type: String, require: true },
     nameType: { type: String, require: false },
     imageType: { type: String, require: false },
   },
@@ -93,92 +51,194 @@ var TypeShoeSchema = new mongodb.mongoose.Schema(
     collection: "TypeShoe",
   }
 );
-let TypeShoeModel = mongodb.mongoose.model("TypeShoeModel", TypeShoeSchema);
+let TypeShoeModel = db.mongoose.model("TypeShoeModel", TypeShoeSchema);
 
-var SizeShoeSchema = new mongodb.mongoose.Schema(
+var SizeShoeSchema = new db.mongoose.Schema(
   {
+    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     sizeId: { type: String, require: false },
-    nameSize: { type: String, require: true },
+    size: { type: String, require: true },
+    isEnable: { type: Boolean, require: false, default: true },
   },
   {
     collation: { locale: "en_US", strength: 1 },
     collection: "SizeShoe",
   }
 );
-let SizeShoeModel = mongodb.mongoose.model("SizeShoeModel", SizeShoeSchema);
+let SizeShoeModel = db.mongoose.model("SizeShoeModel", SizeShoeSchema);
 
-var ColorShoeSchema = new mongodb.mongoose.Schema(
+var ColorShoeSchema = new db.mongoose.Schema(
   {
-    colorId: { type: String, require: true },
-    nameColor: { type: String, require: false },
-    imageColor: { type: String, require: false },
+    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    colorId: { type: String, require: false },
+    textColor: { type: String, require: false },
+    codeColor: { type: String, require: false },
+    isEnable: { type: Boolean, require: false, default: true },
   },
   {
     collation: { locale: "en_US", strength: 1 },
     collection: "ColorShoe",
   }
 );
-let ColorShoeModel = mongodb.mongoose.model("ColorShoeModel", ColorShoeSchema);
+let ColorShoeModel = db.mongoose.model("ColorShoeModel", ColorShoeSchema);
 
-var ShoeSchema = new mongodb.mongoose.Schema(
-  { 
+var ShoeSchema = new db.mongoose.Schema(
+  {
     shoeId: { type: String, require: true },
-    nameShoe: { type: String, require: true },
-    imageShoe: { type: [String], require: false }, // Mảng Ảnh
+    name: { type: String, require: true },
     price: { type: Number, require: false },
     description: { type: String, require: false },
-    sizeShoe: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
-    colorShoe: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
-    numberShoe: { type: Number, require: false },
-    hiddenShoe: { type: Boolean, require: true, default: false },
-    typeShoe: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "TypeShoeModel" },
+    number: { type: Number, require: false },
+    gender: { type: String, require: false },
+    thumbnail: { type: String, require: false },
+    status: { type: Number, require: true, default: 0 },
+    brandShoe: {
+      type: db.mongoose.Schema.Types.ObjectId,
+      ref: "TypeShoeModel",
+    },
+    imageShoe: [{ type: String, require: true }],
+    sizeShoe: [
+        { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
+    ],
+    colorShoe: [
+      { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
+    ],
+    storageShoe: [
+      {
+        colorShoe: {
+          colorId: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "ColorShoeModel",
+          },
+          textColor: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "ColorShoeModel",
+          },
+          codeColor: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "ColorShoeModel",
+          },
+        },
+        sizeShoe: {
+          sizeId: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "SizeShoeModel",
+          },
+          size: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "SizeShoeModel",
+          },
+        },
+        importQuanlity: { type: Number, require: false },
+        soldQuanlity: { type: Number, require: false },
+        importQuaquanlity: { type: Number, require: false },
+      },
+    ],
+    importQuanlityAll: { type: Number, require: false },
+    soldQuanlityAll: { type: Number, require: false },
+    quanlityAll: { type: Number, require: false },
+    gender: { type: Number, require: true, default: 0 },
+    importPrice: { type: Number, require: false },
+    sellPrice: { type: Number, require: false },
+    discountPrice: { type: Number, require: false },
+    rateShoe: {
+      starRate: { type: Number, require: false },
+      comment: [
+        {
+          userName: {
+            type: db.mongoose.Schema.Types.ObjectId,
+            ref: "UserModel",
+          },
+          commetText: { type: String, require: false },
+          rateNumber: { type: Number, require: false },
+        },
+      ],
+    },
   },
   {
     collation: { locale: "en_US", strength: 1 },
     collection: "Shoe",
   }
 );
-let ShoeModel = mongodb.mongoose.model("ShoeModel", ShoeSchema);
+let ShoeModel = db.mongoose.model("ShoeModel", ShoeSchema);
 
-
-var OderSchema = new mongodb.mongoose.Schema(
+var OderSchema = new db.mongoose.Schema(
   {
-    oderId: { type: String, require: true },
-    userId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
-    name: { type: String, require: false },
-    phoneNumber: { type: String, require: false },
-    adress: { type: String, require: false },
-    total: { type: String, require: false },
+    orderId: { type: String, require: true },
+    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    nameOrder: { type: String, require: false },
+    phoneNumber: { type: Number, require: false },
+    adressOrder: { type: String, require: false },
+    total: { type: Number, require: false },
+    dateOrder: { type: String, require: false },
     pay: { type: String, require: false },
     status: { type: String, require: false },
+    discointId: {
+      type: db.mongoose.Schema.Types.ObjectId,
+      ref: "DiscountModel",
+    },
   },
   {
     collation: { locale: "en_US", strength: 1 },
-    collection: "Oder",
+    collection: "OderModel",
   }
 );
-const OderModel = mongodb.mongoose.model("OderModel", OderSchema);
+let OderModel = db.mongoose.model("OderModel", OderSchema);
 
-var OderDetailSchema = new mongodb.mongoose.Schema(
+var DiscountSchema = new db.mongoose.Schema(
   {
-    oderDetailId: { type: String, require: true },
-    oderId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "OderModel" },
-    shoeId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    quanlity: { type: String, require: false },
+    discountId: { type: String, require: true },
+    couponCode: { type: String, require: false },
+    discountAmount: { type: Number, require: false },
+    endDate: { type: String, require: false },
+    maxUser: { type: Number, require: false },
+    isActive: { type: Boolean, require: false },
   },
   {
     collation: { locale: "en_US", strength: 1 },
-    collection: "OderDetail",
+    collection: "Discount",
   }
 );
-let OderDetailModel = mongodb.mongoose.model("OderDetailModel", OderDetailSchema);
+let DiscountModel = db.mongoose.model("DiscountModel", DiscountSchema);
 
+var OderDetailSchema = new db.mongoose.Schema(
+  {
+    orderDetailId: { type: String, require: true },
+    orderId: { type: db.mongoose.Schema.Types.ObjectId, ref: "OderModel" },
+    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
+    colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeColorShoeModel" },
+    quantity: { type: Number, require: false },
+  },
+  {
+    collation: { locale: "en_US", strength: 1 },
+    collection: "OrderDetailld",
+  }
+);
+let OderDetailModel = db.mongoose.model("OderDetailModel", OderDetailSchema);
 
-var CartSchema = new mongodb.mongoose.Schema(
+const notificationSchema = new db.mongoose.Schema(
+  {
+    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" }, // Người dùng nhận thông báo
+    title: { type: String, required: true }, // Tiêu đề thông báo
+    body: { type: String, required: true }, // Nội dung thông báo
+    image: { type: String, required: false }, // Hình ảnh kèm theo thông báo (nếu có)
+    time: { type: Date, default: Date.now }, // Thờni gian gửi thông báo
+    typeNotification: { type: String, required: true }, // Loại thông báo (e.g., "OrderCreated", "OrderStatusUpdated")
+  },
+  {
+    collection: "Notification",
+    collation: { locale: "en_US", strength: 1 }
+  }
+);
+
+const NotificationModel = db.mongoose.model("NotificationModel", notificationSchema);
+
+var CartSchema = new db.mongoose.Schema(
   {
     cartId: { type: String, require: true },
-    userId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
-    shoeId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     numberShoe: { type: String, require: false },
   },
   {
@@ -186,19 +246,18 @@ var CartSchema = new mongodb.mongoose.Schema(
     collection: "Cart",
   }
 );
-let CartModel = mongodb.mongoose.model("CartModel", CartSchema);
+let CartModel = db.mongoose.model("CartModel", CartSchema);
 
 module.exports = {
   UserModel,
   BannerModel,
-  DiscountModel,
-  ShoeModel,
-  AddressModel,
-  ReviewModel, TypeShoeModel,
+  TypeShoeModel,
   ShoeModel,
   SizeShoeModel,
   ColorShoeModel,
   OderModel,
+  DiscountModel,
   OderDetailModel,
+  NotificationModel,
   CartModel,
 };

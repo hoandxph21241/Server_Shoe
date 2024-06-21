@@ -1,14 +1,12 @@
-// const mongoose = require("mongoose");
-// mongoose
-//   .connect("mongodb+srv://vanphuc_mongodb:1E7V8mnJNV4X9ead@cluster0.iit1hgd.mongodb.net/Shoe")
-//   .then(() => {
-//     console.log("Đã Kết Nối ");
-//   })
-//   .catch((err) => {
-//     console.log("Loi ket Noi CSDL");
-//     console.log(err);
-//   });
-// module.exports = { mongoose };
-
-
-// chuyển sang app để tạo biến toàn cục không cần gọi file db.js
+const mongoose = require("mongoose");
+mongoose
+  // .connect("mongodb://127.0.0.1/Shoes_Database")
+  .connect("mongodb+srv://hoandxph21241:hoan123@shoesdatabase.ck50y7r.mongodb.net/Shoes_Database")
+  .then(() => {
+    console.log("Đã Kết Nối ");
+  })
+  .catch((err) => {
+    console.log("Loi ket Noi CSDL");
+    console.log(err);
+  });
+module.exports = { mongoose };
