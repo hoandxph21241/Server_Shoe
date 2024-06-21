@@ -55,6 +55,8 @@ router.post("/editAddress", address.userEditAddress)
 router.delete("/deleteAddress", address.userDeleteAddress)
 // http://localhost:3000/api/userfavourite
 router.post("/userfavourite", favourites.userFavourite);
+// http://localhost:3000/api/listFavouritesByUser
+router.get("/listFavouritesByUser/:userId", favourites.listFavouritesByUser);
 // http://localhost:3000/api/addDiscount
 // router.post("/addDiscount", discount.addDiscount);
 // http://localhost:3000/api/checkDiscount

@@ -2,11 +2,13 @@ const {CartModel} = require('../../Models/DB_Shoes');
 
 const addCart = async (req, res, next) => {
     try {
-        const { userId, shoeId, numberShoe } = req.body;
+        const { userId, shoeId, numberShoe, sizeId, colorId } = req.body;
         const cart = new CartModel({
             userId,
             shoeId,
             numberShoe,
+            sizeId,
+            colorId,
         });
         await cart.save();
         res.status(201).json({ status: "success", cart });

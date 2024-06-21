@@ -179,6 +179,8 @@ var CartSchema = new mongodb.mongoose.Schema(
     cartId: { type: String, require: true },
     userId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     shoeId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    sizeId: { type: String, require: true },
+    colorId: { type: String, require: true },
     numberShoe: { type: String, require: false },
   },
   {
