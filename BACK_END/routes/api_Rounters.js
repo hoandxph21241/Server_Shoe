@@ -27,6 +27,9 @@ router.post("/updateuser/:id", Users_API.UpdateUser);
 ////////////////////////////////////////////////////
 router.get("/resetpassword/:id", Users_API.ResetPassword);
 router.post("/resetpassword/:id", Users_API.ResetPassword);
+
+
+router.post("/resetpasswordiduser", Users_API.ResetPassword_ID);
 ///////////////////////////////////////////////////
 
 router.post("/sendotpmail", Users_API.Send_Otp_By_Mail);
@@ -35,6 +38,12 @@ router.post("/sendoforgot", Users_API.ResetPassword_Forgot);
 
 router.get("/sendotp/:id", Users_API.ResetPassword_Mail);
 router.post("/sendotp/:id", Users_API.ResetPassword_Mail);
+
+//Address User
+router.get("/getalladdress", Users_API.GetAllAddress);
+router.post("/addaddress", Users_API.Address_ADD);
+router.post("/updateaddress/:addressID", Users_API.UpdateAddress);
+router.delete("/deleteaddress/:addressID", Users_API.Address_DELETE);
 
 
 

@@ -16,7 +16,7 @@ exports.GetAllBrand = async (req, res, next) => {
   }
 };
 
-exports.FindBrand= async (req, res, next) => {
+exports.FindBrand = async (req, res, next) => {
   try {
     let brandId = req.params.id;
     let brand = await Model.TypeShoeModel.findById(brandId);
@@ -174,25 +174,23 @@ exports.deleteTypeShoe = async (req, res) => {
   }
 };
 
-
-
 exports.AllProduct = async (req, res, next) => {
   try {
     let shoes = await Model.ShoeModel.find()
       .populate({
         path: "sizeShoe",
         match: { isEnable: true },
-        select: "size sizeId -_id"
+        select: "size sizeId -_id",
       })
       .populate({
         path: "imageShoe",
-        select: "imageUrl -_id"
+        select: "imageUrl -_id",
       })
       .populate({
         path: "colorShoe",
-        select: "textColor codeColor -_id"
+        select: "textColor codeColor -_id",
       })
-      .populate("brandShoe", "nameType -_id")
+      .populate("brandShoe", "nameType _id")
       .select("-__v");
 
     if (shoes.length > 0) {
@@ -239,10 +237,6 @@ exports.FindByName = async (req, res, next) => {
   }
 };
 
-
-
-
-
 exports.FindProductsByBrandId = async (req, res, next) => {
   try {
     let brandId = req.params.id;
@@ -279,49 +273,56 @@ exports.FindProductsByBrandId = async (req, res, next) => {
   }
 };
 
-
 exports.findShoes_DATA = async (req, res, next) => {
   try {
     const { idBrand, sizeId, textColor, shoeId } = req.params;
     let query = {};
 
-    if (idBrand && idBrand !== 'null') query.brandShoe = idBrand;
-    if (shoeId && shoeId !== 'null') query.shoeId = shoeId;
+    if (idBrand && idBrand !== "null") query.brandShoe = idBrand;
+    if (shoeId && shoeId !== "null") query.shoeId = shoeId;
 
     let shoes = await Model.ShoeModel.find(query)
-      .populate('brandShoe', 'nameType -_id')
+      .populate("brandShoe", "nameType _id")
       .populate({
-        path: 'sizeShoe',
-        match: sizeId && sizeId !== 'null' ? { sizeId: sizeId } : {},
-        select: 'size sizeId -_id'
+        path: "sizeShoe",
+        match: sizeId && sizeId !== "null" ? { sizeId: sizeId } : {},
+        select: "size sizeId -_id",
       })
       .populate({
-        path: 'colorShoe',
-        match: textColor && textColor !== 'null' ? { textColor: textColor } : {},
-        select: 'textColor codeColor -_id'
+        path: "colorShoe",
+        match:
+          textColor && textColor !== "null" ? { textColor: textColor } : {},
+        select: "textColor codeColor -_id",
       })
-      .select('-__v');
+      .select("-__v");
 
     // Lọc kết quả dựa trên sizeId và textColor
-    let filteredShoes = shoes.filter(shoe => {
-      const matchesSize = !sizeId || sizeId === 'null' || shoe.sizeShoe.some(size => size.sizeId === sizeId);
-      const matchesColor = !textColor || textColor === 'null' || shoe.colorShoe.some(color => color.textColor === textColor);
+    let filteredShoes = shoes.filter((shoe) => {
+      const matchesSize =
+        !sizeId ||
+        sizeId === "null" ||
+        shoe.sizeShoe.some((size) => size.sizeId === sizeId);
+      const matchesColor =
+        !textColor ||
+        textColor === "null" ||
+        shoe.colorShoe.some((color) => color.textColor === textColor);
       return matchesSize && matchesColor;
     });
 
     if (filteredShoes.length > 0) {
       return res.status(200).json(filteredShoes);
     } else {
-      return res.status(404).json({ msg: "Không tìm thấy sản phẩm nào phù hợp" });
+      return res
+        .status(404)
+        .json({ msg: "Không tìm thấy sản phẩm nào phù hợp" });
     }
   } catch (error) {
     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
   }
 };
 
-
 const formatString = (inputString) => {
-  return inputString.toLowerCase().replace(/\s+/g, '-');
+  return inputString.toLowerCase().replace(/\s+/g, "-");
 };
 
 exports.ADD_Product = async (req, res) => {
@@ -334,13 +335,13 @@ exports.ADD_Product = async (req, res) => {
       thumbnail,
       status,
       storageShoe,
-      imageShoe
+      imageShoe,
     } = req.body;
     console.log("data add " + req.body);
 
     let shoe = await Model.ShoeModel.findOne({ name });
     if (shoe) {
-      return res.status(400).json({ message: 'Shoe already exists' });
+      return res.status(400).json({ message: "Shoe already exists" });
     }
 
     const brand = await Model.TypeShoeModel.findById(brandShoeId);
@@ -349,16 +350,17 @@ exports.ADD_Product = async (req, res) => {
     const colorIds = new Set();
     const sizeIds = new Set();
 
-
     let importQuanlityAll = 0;
     let soldQuanlityAll = 0;
     const storage = [];
     for (const storageItem of storageShoe) {
-      const colorDoc = await Model.ColorShoeModel.findById(storageItem.colorShoe);
-      colorIds.add(colorDoc._id); 
+      const colorDoc = await Model.ColorShoeModel.findById(
+        storageItem.colorShoe
+      );
+      colorIds.add(colorDoc._id);
 
       for (const size of storageItem.sizeShoe) {
-        const sizeId = formatString(size.size); 
+        const sizeId = formatString(size.size);
         const sizeDoc = await Model.SizeShoeModel.findOneAndUpdate(
           { size: size.size },
           { $setOnInsert: { size: size.size, isEnable: true, sizeId: sizeId } },
@@ -377,9 +379,8 @@ exports.ADD_Product = async (req, res) => {
           sizeShoe: sizeDoc._id,
           importQuanlity: parseInt(size.quantity),
           sellQuanlity: 0,
-          soldQuanlity: parseInt(size.quantity) 
+          soldQuanlity: parseInt(size.quantity),
         });
-        
       }
     }
 
@@ -396,21 +397,20 @@ exports.ADD_Product = async (req, res) => {
       sizeShoe: [...sizeIds],
       storageShoe: storage,
       importQuanlityAll,
-      soldQuanlityAll
+      soldQuanlityAll,
     });
 
     const savedShoe = await shoe.save();
-    console.log('Shoe created successfully:', savedShoe);
+    console.log("Shoe created successfully:", savedShoe);
 
-    res.status(201).json({ message: 'Shoe created successfully', data: savedShoe });
-
+    res
+      .status(201)
+      .json({ message: "Shoe created successfully", data: savedShoe });
   } catch (error) {
-    console.error('Error during shoe creation:', error);
-    res.status(500).json({ message: 'Internal Server Error', error });
+    console.error("Error during shoe creation:", error);
+    res.status(500).json({ message: "Internal Server Error", error });
   }
 };
-
-
 
 exports.rateShoe = async (req, res) => {
   try {
@@ -418,32 +418,37 @@ exports.rateShoe = async (req, res) => {
 
     const shoe = await Model.ShoeModel.findById(shoeId);
     if (!shoe) {
-      return res.status(404).json({ message: 'Shoe not found' });
+      return res.status(404).json({ message: "Shoe not found" });
     }
 
     const user = await Model.UserModel.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const newComment = {
       userName: user._id,
       commentText: commentText,
-      rateNumber: rateNumber
+      rateNumber: rateNumber,
     };
 
     shoe.rateShoe.comment.push(newComment);
 
-let totalRating = shoe.rateShoe.comment.reduce((acc, curr) => acc + curr.rateNumber, 0);
-shoe.rateShoe.starRate = parseFloat((totalRating / shoe.rateShoe.comment.length).toFixed(1));
-
+    let totalRating = shoe.rateShoe.comment.reduce(
+      (acc, curr) => acc + curr.rateNumber,
+      0
+    );
+    shoe.rateShoe.starRate = parseFloat(
+      (totalRating / shoe.rateShoe.comment.length).toFixed(1)
+    );
 
     const updatedShoe = await shoe.save();
-    
-    res.status(200).json({ message: 'Rating added successfully', data: updatedShoe });
 
+    res
+      .status(200)
+      .json({ message: "Rating added successfully", data: updatedShoe });
   } catch (error) {
-    console.error('Error during rating:', error);
-    res.status(500).json({ message: 'Internal Server Error', error });
+    console.error("Error during rating:", error);
+    res.status(500).json({ message: "Internal Server Error", error });
   }
 };
