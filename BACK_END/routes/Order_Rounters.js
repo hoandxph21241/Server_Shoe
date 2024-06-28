@@ -18,11 +18,7 @@ function requireAdmin(req, res, next) {
 }
 
 
-router.get("/orderlist",requireAdmin, Contronlers.Order_List);
-router.post("/orderlist",requireAdmin, Contronlers.Order_List);
-
-
-router.get("/orderdetails",requireAdmin, Contronlers.Order_Details);
-router.post("/orderdetails",requireAdmin, Contronlers.Order_Details);
+router.get("/orderList", Contronlers.getAllOrders);
+router.get("/orderDetails/:orderId", Contronlers.getOrdersDetailt);
 
 module.exports = router;

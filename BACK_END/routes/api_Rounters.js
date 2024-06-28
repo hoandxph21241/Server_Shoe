@@ -9,9 +9,6 @@ const banner = require("../Contronller/api/BannerApi");
 var Users_API = require("../Contronller/api/User_api");
 var Product_API = require("../Contronller/api/Product_api");
 
-const orderController = require('../Contronller/api/OrderApi');
-
-
 
 // Auth Rounters
 router.get("/signin", Auth_API.Sign);
@@ -76,10 +73,6 @@ router.post("/addBanner", banner.addBanner);
 router.get("/getBanner", banner.getBanner);
 // http://localhost:3000/api/removeBanner
 router.delete("/removeBanner", banner.removeBanner);
-
-router.post('/orders', orderController.createOrder);
-
-
 
 
 

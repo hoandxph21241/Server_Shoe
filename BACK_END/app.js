@@ -57,12 +57,12 @@ app.use("/discount", discountRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
-// var OrderRouter = require("./routes/Order_Route");
-// app.use("/Order", OrderRouter);
 const NavigationRouter = require("./routes/Navigation_Route");
 app.use("/navigation", NavigationRouter);
 const CartRouter = require("./routes/Cart_Route");
 app.use("/cart", CartRouter);
+const Order_Route = require("./routes/Order_Route");
+app.use("/userOrder", Order_Route);
 
 
 

@@ -1,8 +1,8 @@
 const admin = require('../config/firebase'); 
 const { NotificationModel} = require('../Models/DB_Shoes');
-
 const getUserFCMToken = require('./getUserFCMToken');
-const sendNotification = async (userId, title, body, typeNotification, adminTitle, adminBody) => {
+
+const sendNotification = async (userId, title, body, typeNotification, time, adminTitle, adminBody) => {
   try {
   
     const notification = await NotificationModel.create({
@@ -10,6 +10,8 @@ const sendNotification = async (userId, title, body, typeNotification, adminTitl
       title,
       body,
       typeNotification,
+      // image,
+      time
     });
   await notification.save();
 
@@ -21,6 +23,7 @@ const sendNotification = async (userId, title, body, typeNotification, adminTitl
         notification: {
           title,
           body,
+          t
         },
       };
 

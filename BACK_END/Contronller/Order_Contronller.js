@@ -1,88 +1,215 @@
 const sendNotification = require('../utils/notificationService'); // Import hàm dùng chung
-const { OderModel, OderDetailModel} = require('../Models/DB_Shoes'); // Các model cần thiết
+const { OrderModel, OderDetailModel} = require('../Models/DB_Shoes');
 
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await OrderModel.find()
+      .populate('userId', 'nameAccount imageAccount')
+      .populate('discointId', 'discountAmount')
+      .lean();
 
-exports.Order_List = async (req, res, next) => {
-  try {
-    const orders = await OderModel.find();
-    res.render("order/order_list.ejs", { orders });
-  } catch (error) {
-    res.status(500).json({ status: "failed", error });
-  }
-  res.render("order/order_list.ejs");
-};
-exports.Order_Details = async (req, res, next) => {
-  try {
-    const { orderId } = req.params;
-    const order = await OderModel.findById(orderId);
-    res.render("order/order_details.ejs", { order });
-  } catch (error) {
-    res.status(500).json({ status: "failed", error });
-  }
-};
-exports.Order_Details = async (req, res, next) => {
-  try {
-    const { orderId } = req.params;
-    const order = await OderModel.findById(orderId);
-    res.render("order/order_details.ejs", { order });
-  } catch (error) {
-    res.status(500).json({ status: "failed", error });
-  }
-}
-exports.Order_Add = async (req, res, next) => {
-  try {
-    const { userId, name, phoneNumber, adress, total, pay } = req.body;
-    const order = new OderModel({
-      userId,
-      name,
-      phoneNumber,
-      adress,
-      total,
-      pay,
-      status: 1,
+    const formattedOrders = orders.map(order => {
+
+      const formattedOrder = {
+        userID: order.userId?._id,
+        userNameAccount: order.userId?.nameAccount || null,
+        userImageAccount: order.userId?.imageAccount || null,
+        ...order,
+        discountId: order.discointId?._id || null, 
+        discountAmount: order.discointId?.discountAmount || 0
+      };
+
+      delete formattedOrder.userId; 
+      delete formattedOrder.discointId;
+
+      return formattedOrder;
     });
-    await order.save();
-    res.status(201).json({ status: "success", order });
-  } catch (error) {
-    res.status(500).json({ status: "failed", error });
-  }
-};
-exports.Order_Update = async (req, res, next) => {
-  try {
-    const { orderId } = req.params;
-    const { userId, name, phoneNumber, adress, total, pay, status } = req.body;
-    const order = await OderModel.findByIdAndUpdate(orderId, {
-      userId,
-      name,
-      phoneNumber,
-      adress,
-      total,
-      pay,
-      status,
-    });
-    res.status(200).json({ status: "success", order });
-  } catch (error) {
-    res.status(500).json({ status: "failed", error });
-  }
-};
-exports.GetOrderByIdUser = async (req, res, next) => {
-  try {
-    const { userId } = req.params;
-    const orders = await OderModel.find({ userId });
-    res.status(200).json({ status: "success", orders });
-  } catch (error) {
-    res.status(500).json({ status: "failed", error });
-  }
-};
+        res.status(200).json(formattedOrders);
+      } catch (err) {
+        res.status(500).json({ message: 'Error list.', error: err.message });
+      }
+    };
 
-const getOrdersByUserId = async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const orders = await OderModel.find().populate('userId', 'nameAccount', 'imageAccount')
-    res.status(200).json(orders);
 
-    // res.render("order/order_list.ejs", { orders });
+
+
+// const getAllOrderByIdUser = async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     const orders = await OrderModel.findById(userId).populate('discointId', 'discountAmount')
+//     res.status(200).json({ status: "success", orders });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng.', error: err.message });
+//   }
+// };
+
+const getOrdersDetailt = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+
+    if (!orderId) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+    }
+
+    const orderDetails = await OderDetailModel.find({ orderId })
+      .populate({
+        path: 'shoeId',
+        select: 'name price thumbnail',
+      })
+      .populate({
+        path: 'sizeId',
+        model: 'SizeShoeModel',
+        select: 'size',
+      })
+      .populate({
+        path: 'colorId',
+        model: 'ColorShoeModel',
+        select: 'textColor codeColor',
+      })
+      .lean();
+
+      const orderResponse = {
+        _id: orderId,
+        details: orderDetails.map(detail => ({
+          shoeId: {
+            _id: detail.shoeId._id,
+            name: detail.shoeId.name,
+            price: detail.shoeId.price,
+            thumbnail: detail.shoeId.thumbnail,
+            size: detail.sizeId ? detail.sizeId.size : null,
+            textColor: detail.colorId ? detail.colorId.textColor : null,
+            codeColor: detail.colorId ? detail.colorId.codeColor : null,
+            quantity: detail.quantity,
+    
+          },
+        }))
+      };
+  
+    res.status(200).json(orderResponse);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi khi lấy danh sách đơn hàng.', error: err.message });
+    res.status(500).json({ message: 'Lỗi khi lấy chi tiết đơn hàng.', error: err.message });
   }
+};
+
+// Xác nhận hàng
+const prepareOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await OrderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+    }
+
+    if (order.status !== 'Chờ xác nhận') {
+      return res.status(400).json({ message: 'Chỉ có thể chuyển trạng thái đơn hàng từ "Chờ xác nhận" sang "Chuẩn bị hàng".' });
+    }
+
+    order.status = 'Chuẩn bị hàng';
+    order.orderStatusDetails.push({
+      status: 'Chuẩn bị hàng',
+      timestamp: vietnamDate,
+      note: 'Đơn hàng đang được chuẩn bị'
+    });
+
+    await order.save();
+
+    sendNotification(
+      order.userId,
+      'Đơn hàng đang được chuẩn bị',
+      `Đơn hàng #${orderId} của bạn đang được chuẩn bị.`,
+      'OrderPreparing',
+      'Đơn hàng đang được chuẩn bị',
+      `Đơn hàng #${orderId} đang được chuẩn bị.`
+    );
+
+    res.status(200).json({ message: 'Trạng thái đơn hàng đã được cập nhật thành "Chuẩn bị hàng" và thông báo đã được gửi.', order });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái đơn hàng.', error: err.message });
+  }
+};
+//Xác nhận ship hàng
+const shipOrder = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await OrderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+    }
+
+    if (order.status !== 'Chuẩn bị hàng') {
+      return res.status(400).json({ message: 'Chỉ có thể chuyển trạng thái đơn hàng từ "Chuẩn bị hàng" sang "Giao hàng".' });
+    }
+
+    order.status = 'Giao hàng';
+    order.orderStatusDetails.push({
+      status: 'Giao hàng',
+      timestamp: vietnamDate,
+      note: 'Đơn hàng đang được giao'
+    });
+
+    await order.save();
+
+    sendNotification(
+      order.userId,
+      'Đơn hàng đang được giao',
+      `Đơn hàng #${orderId} của bạn đang được giao.`,
+      'OrderShipped',
+      'Đơn hàng đang được giao',
+      `Đơn hàng #${orderId} đang được giao.`
+    );
+
+    res.status(200).json({ message: 'Trạng thái đơn hàng đã được cập nhật thành "Giao hàng" và thông báo đã được gửi.', order });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái đơn hàng.', error: err.message });
+  }
+};
+//Người dùng nhận đơn
+const confirmOrderReceived = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await OrderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+    }
+
+    if (order.status !== 'Giao hàng') {
+      return res.status(400).json({ message: 'Chỉ có thể chuyển trạng thái đơn hàng từ "Giao hàng" sang "Đã nhận hàng".' });
+    }
+
+    order.status = 'Đã nhận hàng';
+    order.orderStatusDetails.push({
+      status: 'Đã nhận hàng',
+      timestamp: vietnamDate,
+      note: 'Đơn hàng đã được nhận'
+    });
+
+    await order.save();
+
+    sendNotification(
+      order.userId,
+      'Đơn hàng đã được nhận',
+      `Đơn hàng #${orderId} của bạn đã được nhận.`,
+      'OrderDelivered',
+      'Đơn hàng đã được nhận',
+      `Đơn hàng #${orderId} đã được nhận.`
+    );
+
+    res.status(200).json({ message: 'Trạng thái đơn hàng đã được cập nhật thành "Đã nhận hàng" và thông báo đã được gửi.', order });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái đơn hàng.', error: err.message });
+  }
+};
+
+module.exports = {
+getAllOrders,
+getOrdersDetailt,
+prepareOrder,
+shipOrder,
+confirmOrderReceived
 };
