@@ -20,9 +20,11 @@ router.post("/getalluser", Users_API.GetAllUser);
 router.get("/finduser/:id", Users_API.FindUser);
 router.post("/finduser/:id", Users_API.FindUser);
 
-router.get("/updateuser/:id", Users_API.UpdateUser);
-router.post("/updateuser/:id", Users_API.UpdateUser);
+// router.get("/updateuser/:id", Users_API.UpdateUser);
+// router.post("/updateuser/:id", Users_API.UpdateUser);
 
+router.get("/updateuser", Users_API.UpdateUser);
+ router.post("/updateuser", Users_API.UpdateUser);
 
 ////////////////////////////////////////////////////
 router.get("/resetpassword/:id", Users_API.ResetPassword);
