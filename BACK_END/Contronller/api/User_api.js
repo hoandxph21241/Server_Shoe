@@ -77,43 +77,87 @@ exports.UpdateUser = async (req, res, next) => {
   }
 };
 
-exports.ResetPassword = async (req, res, next) => {
-  let userId = req.params.id;
-  let otp = req.body.otp;
-  let newPassword = req.body.newPassword;
+// exports.ResetPassword = async (req, res, next) => {
+//   let userId = req.params.id;
+//   let otp = req.body.otp;
+//   let newPassword = req.body.newPassword;
+
+//   try {
+//     let user = await Model.UserModel.findById(userId);
+//     if (user) {
+//       if (user.otp === otp) {
+//         user.namePassword = newPassword;
+//         user.otp = null;
+//         await user.save();
+
+//         return res.status(200).json({
+//           success: true,
+//           message: "Đặt lại mật khẩu thành công",
+//           user: user,
+//         });
+//       } else {
+//         return res.status(400).json({
+//           success: false,
+//           message: "OTP không chính xác",
+//         });
+//       }
+//     } else {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Không tìm thấy người dùng hoặc tên tài khoản không khớp",
+//       });
+//     }
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ success: false, message: "Có lỗi xảy ra: " + error.message });
+//   }
+// };
+
+exports.UpdateUser = async (req, res, next) => {
+  const { imageAccount, phoneNumber, nameAccount, fullName, grender, birthDay } = req.body;
 
   try {
-    let user = await Model.UserModel.findById(userId);
-    if (user) {
-      if (user.otp === otp) {
-        user.namePassword = newPassword;
-        user.otp = null;
-        await user.save();
+    const user = await Model.UserModel.findById(req.params.id);
 
-        return res.status(200).json({
-          success: true,
-          message: "Đặt lại mật khẩu thành công",
-          user: user,
-        });
-      } else {
-        return res.status(400).json({
-          success: false,
-          message: "OTP không chính xác",
-        });
-      }
-    } else {
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Không tìm thấy người dùng hoặc tên tài khoản không khớp",
+        message: "Không tìm thấy người dùng với id này",
       });
     }
+
+    const existingUser = await Model.UserModel.findOne({ nameAccount });
+    if (existingUser && existingUser.id !== req.params.id) {
+      return res.status(400).json({
+        success: false,
+        message: "Gmail đã tồn tại dưới tài khoản khác",
+      });
+    }
+
+    user.imageAccount = imageAccount || user.imageAccount;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.fullName = fullName || user.fullName;
+    user.nameAccount = nameAccount || user.nameAccount;
+    user.gmail = nameAccount || user.nameAccount; 
+    user.birthDay = birthDay || user.birthDay;
+    user.grender = grender === "0" ? "Female" : "Male";
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật thông tin người dùng thành công",
+      user: user,
+    });
+
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Có lỗi xảy ra: " + error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Có lỗi xảy ra: " + error.message,
+    });
   }
 };
-
 exports.ResetPassword_ID = async (req, res, next) => {
   let userId = req.body.userId;
   let newPassword = req.body.newPassword;
@@ -396,7 +440,7 @@ exports.UpdateAddress = async (req, res, next) => {
       Address.detailAddress = detailAddress;
       Address.latitude = latitude;
       Address.longitude = longitude;
-      Address.permission = (permission === "0") ? "Default" : "No Default";
+      Address.permission = permission === "0" ? "Default" : "No Default";
 
       if (!nameAddress || !detailAddress || !latitude || !longitude) {
         res.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
