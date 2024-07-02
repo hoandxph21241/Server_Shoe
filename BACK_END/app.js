@@ -37,10 +37,6 @@ app.use("/home", HomeRounter);
 var AuthRounter = require("./routes/Auth_Rounters");
 app.use("/auth", AuthRounter);
 
-//user
-var UserRounter = require("./routes/User_Router");
-app.use("/user", UserRounter);
-
 //order
 var OrderRounter = require("./routes/Order_Rounters");
 app.use("/order", OrderRounter);
