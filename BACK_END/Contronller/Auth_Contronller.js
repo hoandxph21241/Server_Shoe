@@ -236,7 +236,7 @@ exports.UserOrderDetail = async (req, res, next) => {
       })),
     };
   
-
+console.log(orderResponse);
     res.render("user/user_order_details.ejs", { orderResponse });
   } catch (err) {
     res
