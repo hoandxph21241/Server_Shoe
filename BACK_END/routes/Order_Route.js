@@ -10,6 +10,7 @@ router.get("/orderDetails/:orderId", check_login.yeu_cau_dang_nhap, Contronlers.
 router.post("/orderAdd", check_login.yeu_cau_dang_nhap, Contronlers.Order_Add);
 router.post("/orderUpdate/:orderId", check_login.yeu_cau_dang_nhap, Contronlers.Order_Update);
 
+
 router.get("/apiOderList", check_login.yeu_cau_dang_nhap, ContronllerApi.orderList);
 router.get("/apiOderDetails/:orderId",  check_login.yeu_cau_dang_nhap, ContronllerApi.orderDetails);
 router.post("/apiOderAdd",  check_login.yeu_cau_dang_nhap, ContronllerApi.addOrder);
