@@ -23,5 +23,6 @@ router.post('/signout', Contronlers.SignOut);
 
 router.get('/userlist',Contronlers.UserList);
 router.get('/profile/:userId', Contronlers.ProfileUser);
+router.get('/UserOrderDetail/:orderId', Contronlers.UserOrderDetail);
 
 module.exports = router;

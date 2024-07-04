@@ -116,10 +116,14 @@ exports.UserList = async (req, res, next) => {
 exports.ProfileUser = async (req, res, next) => {
   try {
     const { userId } = req.params;
-console.log(userId);
+    const user = await Model.UserModel.findById(userId);
+
     const orders = await Model.OrderModel.find({ userId })
       .populate("discointId", "discountAmount")
       .lean();
+
+      const totalAmount = orders.reduce((acc, order) => acc + order.total, 0);
+
 
     const ordersResponse = await Promise.all(
       orders.map(async (order) => {
@@ -154,6 +158,7 @@ console.log(userId);
         }));
 
         return {
+          userNameAccount: order.userId?.nameAccount || null,
           _id: order._id,
           orderId: order.orderId,
           dateOrder: order.dateOrder,
@@ -164,10 +169,79 @@ console.log(userId);
       })
     );
 
-    res.render("user/profile_user.ejs", { orders: ordersResponse });
+    res.render("user/profile_user.ejs", { user, orders: ordersResponse, totalAmount });
 
   } catch (err) {
     console.error('Error fetching profile user orders:', err.message);
     res.status(500).json({ message: "Lỗi khi lấy danh sách đơn hàng.", error: err.message });
   }
+};
+
+exports.UserOrderDetail = async (req, res, next) => {
+
+  const { orderId } = req.params;
+
+  try {
+    if (!orderId) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    const order = await Model.OrderModel.findById(orderId)
+      .populate("discointId", "discountAmount")
+      .lean();
+
+    if (!orderId) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    const orderDetails = await Model.OderDetailModel.find({ orderId })
+      .populate({
+        path: "shoeId",
+        select: "name price thumbnail",
+      })
+      .populate({
+        path: "sizeId",
+        model: "SizeShoeModel",
+        select: "size",
+      })
+      .populate({
+        path: "colorId",
+        model: "ColorShoeModel",
+        select: "textColor codeColor",
+      })
+      .lean();
+
+    // Định dạng lại chi tiết đơn hàng
+    const orderResponse = {
+      _id: orderId,
+      userId: order.userId,
+      nameOrder: order.nameOrder,
+      phoneNumber: order.phoneNumber,
+      addressOrder: order.addressOrder,
+      dateOrder: order.dateOrder,
+      status: order.status,
+      total: order.total,
+      discountAmount: order.discointId ? order.discointId.discountAmount : 0,
+      details: orderDetails.map((detail) => ({
+        shoeId: {
+          _id: detail.shoeId._id,
+          name: detail.shoeId.name,
+          price: detail.shoeId.price,
+          thumbnail: detail.shoeId.thumbnail,
+          size: detail.sizeId ? detail.sizeId.size : null,
+          textColor: detail.colorId ? detail.colorId.textColor : null,
+          codeColor: detail.colorId ? detail.colorId.codeColor : null,
+          quantity: detail.quantity,
+        },
+      })),
+    };
+  
+
+    res.render("user/user_order_details.ejs", { orderResponse });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
+  }
+
 };
