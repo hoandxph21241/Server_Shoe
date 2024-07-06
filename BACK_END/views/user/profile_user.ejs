@@ -12,7 +12,7 @@
     crossorigin="anonymous"></script>
   <style>
     .content {
-      padding: 20px;
+      /* padding: 20px; */
       flex-grow: 1;
       background-color: #fff;
       display: flex;
@@ -44,74 +44,193 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       margin-bottom: 20px;
     }
+
+    .remaining-products {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: max-height 0.3s ease-in-out;
+      overflow: hidden;
+    }
+
+    .remaining-product {
+      display: flex;
+      align-items: center;
+      margin-left: 20px;
+    }
+
+    .remaining-product img {
+      width: 50px;
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .toggle-button {
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      color: blue;
+      text-decoration: none;
+      user-select: none;
+    }
+
+    .toggle-button::after {
+      content: '▼';
+      margin-left: 5px;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-button.expanded::after {
+      transform: rotate(-180deg);
+    }
+
+    .copy-icon {
+      cursor: pointer;
+      color: blue;
+      margin-left: 5px;
+    }
+
+    .order-id-container {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .order-id-text {
+      margin-right: 5px;
+    }
   </style>
 </head>
 
 <body>
   <%- include('../inc/top.ejs') %>
-  <div class="container-fluid p-4">
-    <div class="content">
-      <div class="profile-header">
-        <img src="<%= user.imageAccount %>" class="rounded-circle me-3" alt="User Photo">
-        <h1 class="h3"><%= user.nameAccount %></h1>
-      </div>
-      <div class="col-md-4">
-        <div class="row-md-3">
-          <div class="card-statistic">
-            <div class="align-items-center">
-              <h6>Total Orders</h6>
-              <div class="col d-flex">
-                <div class="col d-flex align-items-center justify-content-between">
-                  <div class="row">
-                    <div class="col d-flex align-items-center">
-                      <img class="me-2" src="/images/shopping-card.png" alt="" width="50px" height="50">
-                      <p class="m-0">$<%= totalAmount.toFixed(2) %></p>                    </div>
+    <div class="container-fluid p-4">
+      <div class="content">
+        <div class="profile-header">
+          <img src="<%= user.imageAccount %>" class="rounded-circle me-3" alt="User Photo">
+          <h1 class="h3">
+            <%= user.nameAccount %>
+          </h1>
+        </div>
+        <div class="col-md-4">
+          <div class="row-md-3">
+            <div class="card-statistic">
+              <div class="align-items-center">
+                <h6>Total Orders</h6>
+                <div class="col d-flex">
+                  <div class="col d-flex align-items-center justify-content-between">
+                    <div class="row">
+                      <div class="col d-flex align-items-center">
+                        <img class="me-2" src="/images/shopping-card.png" alt="" width="50px" height="50">
+                        <p class="m-0">$<%= totalAmount.toFixed(2) %>
+                        </p>
+                      </div>
+                    </div>
+                    <!-- <small class="text-success m-0">↑ 34.7% <br>Compared to Jan 2022</small> -->
                   </div>
-                  <small class="text-success m-0">↑ 34.7% <br>Compared to Jan 2022</small>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <h4>Đơn hàng đã đặt</h4>
+      <% if (orders.length> 0) { %>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Product Name</th>
+              <th>Quantity</th>
+              <th>Ngày</th>
+              <th>Tổng tiền</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% orders.forEach(order=> {
+              const totalQuantity = order.details.reduce((sum, detail) => sum + detail.quantity, 0); %>
+              <% order.details.forEach((detail, index)=> { %>
+                <tr onclick="handleRowClick(event, '<%= order._id %>')">
+                  <td>
+                    <div class="order-id-container">
+                      <span class="order-id-text">
+                        <%= order._id %>
+                      </span>
+                      <span class="copy-icon" onclick="copyToClipboard(event, '<%= order._id %>')">📋</span>
+                    </div>
+                  </td>
+                  <td>
+                    <img src="<%= detail.thumbnail || 'https://via.placeholder.com/50' %>" class="img-thumbnail me-2"
+                      width="50" height="50" alt="Product Image">
+                    <%= detail.name %> x<%= detail.quantity %>
+                        <% if (index===0 && order.details.length> 1) { %>
+                          <span class="toggle-button" onclick="toggleRemainingProducts(event, this)"></span>
+                          <div class="remaining-products" style="max-height: 0;">
+                            <% order.details.slice(1).forEach(d=> { %>
+                              <div class="remaining-product">
+                                <img src="<%= d.thumbnail || 'https://via.placeholder.com/50' %>" class="img-thumbnail"
+                                  alt="Remaining Product Image">
+                                <span>
+                                  <%= d.name %> x<%= d.quantity %>
+                                </span>
+                              </div>
+                              <% }) %>
+                          </div>
+                          <% } %>
+                  </td>
+                  <td>
+                    <%= totalQuantity %>
+                  </td>
+                  <td>
+                    <%= order.dateOrder %>
+                  </td>
+                  <td>$<%= order.total %>
+                  </td>
+                  <td class="<%= order.status.toLowerCase() %>">
+                    <%= order.status %>
+                  </td>
+                </tr>
+                <% }) %>
+                  <% }) %>
+          </tbody>
+        </table>
+        <% } else { %>
+          <p>No orders found.</p>
+          <% } %>
     </div>
-    <h4>Đơn hàng đã đặt</h4>
-    <% if (orders.length > 0) { %>
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Product Name</th>
-          <th>Quantity</th>
-          <th>Ngày</th>
-          <th>Tổng tiền</th>
-          <th>Trạng thái</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% orders.forEach(order => { %>
-        <% order.details.forEach(detail => { %>
-            <tr onclick="window.location='/auth/UserOrderDetail/<%= order._id %>'">
-                <td><%= order._id %></td>
-          <td>
-            <img src="<%= detail.thumbnail || 'https://via.placeholder.com/50' %>" class="img-thumbnail me-2"
-              alt="Product Image">
-            <%= detail.name %>
-          </td>
-          <td><%= detail.quantity %></td>
-          <td><%= order.dateOrder %></td>
-          <td>$<%= detail.price %></td>
-          <td class="<%= order.status.toLowerCase() %>"><%= order.status %></td>
-        </tr>
-        <% }) %>
-        <% }) %>
-      </tbody>
-    </table>
-    <% } else { %>
-    <p>No orders found.</p>
-    <% } %>
-  </div>
-  <%- include('../inc/end.ejs') %>
+    <%- include('../inc/end.ejs') %>
+      <script>
+        function handleRowClick(event, orderId) {
+          if (!event.target.classList.contains('toggle-button') && !event.target.closest('.remaining-products') && !event.target.classList.contains('copy-icon')) {
+            window.location = '/auth/UserOrderDetail/' + orderId;
+          }
+        }
+
+        function toggleRemainingProducts(event, element) {
+          event.stopPropagation();
+          const productsContainer = element.nextElementSibling;
+          if (productsContainer.style.maxHeight && productsContainer.style.maxHeight !== '0px') {
+            productsContainer.style.maxHeight = '0px';
+            element.classList.remove('expanded');
+          } else {
+            productsContainer.style.maxHeight = productsContainer.scrollHeight + 'px';
+            element.classList.add('expanded');
+          }
+        }
+
+        // Copy clipboard
+        function copyToClipboard(event, orderId) {
+          event.stopPropagation();
+          const input = document.createElement('input');
+          input.setAttribute('value', orderId);
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          alert('Order ID copied: ' + orderId);
+        }
+      </script>
 </body>
 
 </html>
