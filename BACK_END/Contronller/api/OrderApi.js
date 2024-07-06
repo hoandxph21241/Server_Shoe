@@ -11,7 +11,7 @@ const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
 }).format(new Date());
 
 const createOrder = async (req, res) => {
-  const { userId, nameOrder, phoneNumber, addressOrder, items, discointId } = req.body;
+  const { userId, nameOrder, phoneNumber, addressOrder, pay, items, discointId } = req.body;
 
   try {
     let total = 0;
@@ -69,6 +69,7 @@ const createOrder = async (req, res) => {
       nameOrder,
       phoneNumber,
       addressOrder,
+      pay,
       total,
       dateOrder: vietnamDate,
       status: 'Chờ xác nhận',
