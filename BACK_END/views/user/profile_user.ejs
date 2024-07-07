@@ -45,8 +45,9 @@
       margin-bottom: 20px;
     }
 
+
+
     .remaining-products {
-      margin-top: 10px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -57,7 +58,7 @@
     .remaining-product {
       display: flex;
       align-items: center;
-      margin-left: 20px;
+
     }
 
     .remaining-product img {
@@ -136,41 +137,39 @@
       </div>
       <h4>Đơn hàng đã đặt</h4>
       <% if (orders.length> 0) { %>
-        <table class="table table-hover">
+        <table class="table table-hover align-middle">
           <thead>
             <tr>
               <th>Order ID</th>
-              <th>Product Name</th>
-              <th>Quantity</th>
-              <th>Ngày</th>
-              <th>Tổng tiền</th>
-              <th>Trạng thái</th>
+              <th>Product</th>
+              <th>Total Quantity</th>
+              <th>Date</th>
+              <th>Total Amount</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            <% orders.forEach(order=> {
-              const totalQuantity = order.details.reduce((sum, detail) => sum + detail.quantity, 0); %>
+            <% orders.forEach(order=> { %>
               <% order.details.forEach((detail, index)=> { %>
                 <tr onclick="handleRowClick(event, '<%= order._id %>')">
-                  <td>
-                    <div class="order-id-container">
-                      <span class="order-id-text">
-                        <%= order._id %>
-                      </span>
-                      <span class="copy-icon" onclick="copyToClipboard(event, '<%= order._id %>')">📋</span>
-                    </div>
-                  </td>
-                  <td>
-                    <img src="<%= detail.thumbnail || 'https://via.placeholder.com/50' %>" class="img-thumbnail me-2"
-                      width="50" height="50" alt="Product Image">
-                    <%= detail.name %> x<%= detail.quantity %>
-                        <% if (index===0 && order.details.length> 1) { %>
+                  <% if (index===0) { %>
+                    <td rowspan="<%= order.details.length %>">
+                      <%= order._id %>
+                    </td>
+                    <td rowspan="<%= order.details.length %>">
+                      <div>
+                        <img src="<%= detail.thumbnail || 'https://via.placeholder.com/50' %>"
+                          class="img-thumbnail me-2" width="50" height="50" alt="Product Image">
+                        <span>
+                          <%= detail.name %> x<%= detail.quantity %>
+                        </span>
+                        <% if (order.details.length> 1) { %>
                           <span class="toggle-button" onclick="toggleRemainingProducts(event, this)"></span>
                           <div class="remaining-products" style="max-height: 0;">
                             <% order.details.slice(1).forEach(d=> { %>
                               <div class="remaining-product">
-                                <img src="<%= d.thumbnail || 'https://via.placeholder.com/50' %>" class="img-thumbnail"
-                                  alt="Remaining Product Image">
+                                <img src="<%= d.thumbnail || 'https://via.placeholder.com/50' %>"
+                                  class="img-thumbnail me-2" width="40" height="40" alt="Product Image">
                                 <span>
                                   <%= d.name %> x<%= d.quantity %>
                                 </span>
@@ -178,18 +177,21 @@
                               <% }) %>
                           </div>
                           <% } %>
-                  </td>
-                  <td>
-                    <%= totalQuantity %>
-                  </td>
-                  <td>
-                    <%= order.dateOrder %>
-                  </td>
-                  <td>$<%= order.total %>
-                  </td>
-                  <td class="<%= order.status.toLowerCase() %>">
-                    <%= order.status %>
-                  </td>
+                      </div>
+                    </td>
+                    <td rowspan="<%= order.details.length %>">
+                      <%= order.details.reduce((sum, d)=> sum + d.quantity, 0) %>
+                    </td>
+                    <td rowspan="<%= order.details.length %>">
+                      <%= order.dateOrder %>
+                    </td>
+                    <td rowspan="<%= order.details.length %>">
+                      <%= order.total.toFixed(2) %> VND
+                    </td>
+                    <td rowspan="<%= order.details.length %>" class="<%= order.status.toLowerCase() %>">
+                      <%= order.status %>
+                    </td>
+                    <% } %>
                 </tr>
                 <% }) %>
                   <% }) %>
@@ -198,39 +200,37 @@
         <% } else { %>
           <p>No orders found.</p>
           <% } %>
-    </div>
-    <%- include('../inc/end.ejs') %>
-      <script>
-        function handleRowClick(event, orderId) {
-          if (!event.target.classList.contains('toggle-button') && !event.target.closest('.remaining-products') && !event.target.classList.contains('copy-icon')) {
-            window.location = '/auth/UserOrderDetail/' + orderId;
-          }
-        }
+            <script>
+              function handleRowClick(event, orderId) {
+                if (!event.target.classList.contains('toggle-button') && !event.target.closest('.remaining-products') && !event.target.classList.contains('copy-icon')) {
+                  window.location = '/auth/UserOrderDetail/' + orderId;
+                }
+              }
 
-        function toggleRemainingProducts(event, element) {
-          event.stopPropagation();
-          const productsContainer = element.nextElementSibling;
-          if (productsContainer.style.maxHeight && productsContainer.style.maxHeight !== '0px') {
-            productsContainer.style.maxHeight = '0px';
-            element.classList.remove('expanded');
-          } else {
-            productsContainer.style.maxHeight = productsContainer.scrollHeight + 'px';
-            element.classList.add('expanded');
-          }
-        }
+              function toggleRemainingProducts(event, element) {
+                event.stopPropagation();
+                const productsContainer = element.nextElementSibling;
+                if (productsContainer.style.maxHeight && productsContainer.style.maxHeight !== '0px') {
+                  productsContainer.style.maxHeight = '0px';
+                  element.classList.remove('expanded');
+                } else {
+                  productsContainer.style.maxHeight = productsContainer.scrollHeight + 'px';
+                  element.classList.add('expanded');
+                }
+              }
 
-        // Copy clipboard
-        function copyToClipboard(event, orderId) {
-          event.stopPropagation();
-          const input = document.createElement('input');
-          input.setAttribute('value', orderId);
-          document.body.appendChild(input);
-          input.select();
-          document.execCommand('copy');
-          document.body.removeChild(input);
-          alert('Order ID copied: ' + orderId);
-        }
-      </script>
+              // Copy clipboard
+              function copyToClipboard(event, orderId) {
+                event.stopPropagation();
+                const input = document.createElement('input');
+                input.setAttribute('value', orderId);
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                alert('Mã đơn hàng ' + orderId);
+              }
+            </script>
 </body>
 
 </html>

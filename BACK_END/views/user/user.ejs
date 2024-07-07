@@ -25,73 +25,147 @@
         .stats .card {
             width: 48%;
         }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .pagination .page-link {
+            color: #000;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+
+        .user-cell img {
+            margin-right: 10px;
+        }
+
+        table th,
+        table td {
+            vertical-align: middle;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .status-active {
+            background-color: #28a745;
+        }
+
+        .status-locked {
+            background-color: #dc3545;
+        }
     </style>
 </head>
 
 <body>
     <%- include('../inc/top.ejs') %>
-    <div class="content">
-        <div class="stats">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h2 class="card-title"><%= users.length %></h2>
-                    <p class="card-text">People</p>
+        <div class="content">
+            <div class="stats">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="card-title">
+                            <%= users.length %>
+                        </h2>
+                        <p class="card-text">Đang hoạt động</p>
+                    </div>
+                </div>
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h2 class="card-title">5</h2>
+                        <p class="card-text">Đã bị khóa</p>
+                    </div>
                 </div>
             </div>
-            <div class="card text-center">
-                <div class="card-body">
-                    <h2 class="card-title">5</h2>
-                    <p class="card-text">Departments</p>
-                </div>
-            </div>
-        </div>
 
-        <input type="text" class="form-control mb-3" placeholder="Search here ...">
-        <div class="dropdown mb-3">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                All
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#">Delivered</a>
-                <a class="dropdown-item" href="#">Canceled</a>
+            <input type="text" class="form-control mb-3" placeholder="Search here ..." aria-label="Search">
+            <div class="dropdown mb-3">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    All
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="#">Hoạt động</a>
+                    <a class="dropdown-item" href="#">Bị khóa</a>
+                </div>
             </div>
-        </div>
-        <table class="table table-hover">
-            <thead class="thead-light">
-                <tr>
-                    <th class="text-secondary">User</th>
-                    <th class="text-secondary">Status</th>
-                    <th class="text-secondary">Full Name</th>
-                    <th class="text-secondary">Phone Number</th>
-                    <th class="text-secondary">Email</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% users.forEach(user => { %>
-                    <tr onclick="window.location='/auth/profile/<%= user._id %>'">
-                        <td class="text-secondary"><img src="<%= user.imageAccount %> " alt="User Image" width="50" height="50"> <%= user.userName %></td>
-                        <td class="text-secondary"><%= user.locked ? 'Locked' : 'Active' %></td>
-                        <td class="text-secondary"><%= user.fullName %></td>
-                        <td class="text-secondary"><%= user.phoneNumber %></td>
-                        <td class="text-secondary"><%= user.gmail %></td>
+            <table class="table table-hover align-middle">
+                <thead class="thead-light">
+                    <tr>
+                        <th class="text-secondary">User</th>
+                        <th class="text-secondary">Status</th>
+                        <th class="text-secondary">Full Name</th>
+                        <th class="text-secondary">Phone</th>
+                        <th class="text-secondary">Email</th>
                     </tr>
-                <% }) %>
-            </tbody>
-        </table>
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <li class="page-item"><a class="page-link text-dark" href="#">1</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">4</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">...</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">10</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">NEXT</a></li>
-            </ul>
-        </nav>
-    </div>
-    <%- include('../inc/end.ejs') %>
+                </thead>
+                <tbody>
+                    <% users.forEach(user=> { %>
+                        <tr onclick="window.location='/auth/profile/<%= user._id %>'">
+                            <td class="text-secondary user-cell">
+                                <img src="<%= user.imageAccount %>" alt="User Image" width="50" height="50"
+                                    class="rounded-circle">
+                                <%= user.userName %>
+                            </td>
+                            <td class="text-secondary">
+                                <span
+                                    class="status-indicator <%= user.locked ? 'status-locked' : 'status-active' %>"></span>
+                                <%= user.locked ? 'Locked' : 'Active' %>
+                            </td>
+                            <td class="text-secondary">
+                                <%= user.fullName %>
+                            </td>
+                            <td class="text-secondary">
+                                <%= user.phoneNumber %>
+                            </td>
+                            <td class="text-secondary">
+                                <%= user.gmail %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-start">
+                    <li class="page-item">
+                        <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">2</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">4</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">10</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">NEXT</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <%- include('../inc/end.ejs') %>
 </body>
 
 </html>

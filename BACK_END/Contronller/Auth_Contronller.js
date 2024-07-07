@@ -10,7 +10,9 @@ exports.Register = async (req, res, next) => {
     }
 
     // Kiểm tra nameAccount
-    const userExists = await Model.UserModel.findOne({ nameAccount: req.body.nameAccount });
+    const userExists = await Model.UserModel.findOne({
+      nameAccount: req.body.nameAccount,
+    });
     if (userExists) {
       msg = "Email is already in use";
       return res.render("auth/register.ejs", { msg: msg });
@@ -26,14 +28,14 @@ exports.Register = async (req, res, next) => {
     const user = new Model.UserModel({
       nameAccount: req.body.nameAccount,
       namePassword: req.body.namePassword,
-      role: 1 
+      role: 1,
     });
     const savedUser = await user.save();
     console.log("Register Success!");
     console.log("|" + savedUser + "|");
     msg = "Đăng ký thành công!";
   } catch (error) {
-    console.error('Error during registration:', error.message);
+    console.error("Error during registration:", error.message);
     msg = error.message;
   }
   res.render("auth/register.ejs", { msg: msg });
@@ -68,7 +70,7 @@ exports.SignIn = async (req, res, next) => {
         msg = "Không tồn tại user " + req.body.nameAccount;
       }
     } catch (error) {
-      console.error('Error during sign-in:', error.message);
+      console.error("Error during sign-in:", error.message);
       msg = error.message;
     }
   }
@@ -85,7 +87,7 @@ exports.SignOut = async (req, res, next) => {
       // Hủy session
       req.session.destroy((err) => {
         if (err) {
-          console.log('Error destroying session:', err);
+          console.log("Error destroying session:", err);
           return res.redirect("/auth/signin");
         } else {
           console.log("Complete_Data_session");
@@ -97,7 +99,7 @@ exports.SignOut = async (req, res, next) => {
       return res.redirect("/auth/signin");
     }
   } catch (error) {
-    console.error('Error during sign-out:', error.message);
+    console.error("Error during sign-out:", error.message);
     res.redirect("/auth/signin");
   }
 };
@@ -105,10 +107,12 @@ exports.SignOut = async (req, res, next) => {
 exports.UserList = async (req, res, next) => {
   try {
     const listUser = await Model.UserModel.find();
-    console.log('List of users:', listUser);
-    return res.render("user/user.ejs", { users: listUser.length ? listUser : [] });
+    console.log("List of users:", listUser);
+    return res.render("user/user.ejs", {
+      users: listUser.length ? listUser : [],
+    });
   } catch (error) {
-    console.error('Error fetching user list:', error.message);
+    console.error("Error fetching user list:", error.message);
     res.status(500).json({ msg: "Server error: " + error.message });
   }
 };
@@ -122,12 +126,13 @@ exports.ProfileUser = async (req, res, next) => {
       .populate("discointId", "discountAmount")
       .lean();
 
-      const totalAmount = orders.reduce((acc, order) => acc + order.total, 0);
-
+    const totalAmount = orders.reduce((acc, order) => acc + order.total, 0);
 
     const ordersResponse = await Promise.all(
       orders.map(async (order) => {
-        const orderDetails = await Model.OderDetailModel.find({ orderId: order._id })
+        const orderDetails = await Model.OderDetailModel.find({
+          orderId: order._id,
+        })
           .populate({
             path: "shoeId",
             select: "name price thumbnail",
@@ -168,17 +173,21 @@ exports.ProfileUser = async (req, res, next) => {
         };
       })
     );
-
-    res.render("user/profile_user.ejs", { user, orders: ordersResponse, totalAmount });
-
+    console.log(ordersResponse);
+    res.render("user/profile_user.ejs", {
+      user,
+      orders: ordersResponse,
+      totalAmount,
+    });
   } catch (err) {
-    console.error('Error fetching profile user orders:', err.message);
-    res.status(500).json({ message: "Lỗi khi lấy danh sách đơn hàng.", error: err.message });
+    console.error("Error fetching profile user orders:", err.message);
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy danh sách đơn hàng.", error: err.message });
   }
 };
 
 exports.UserOrderDetail = async (req, res, next) => {
-
   const { orderId } = req.params;
 
   try {
@@ -219,6 +228,7 @@ exports.UserOrderDetail = async (req, res, next) => {
       phoneNumber: order.phoneNumber,
       addressOrder: order.addressOrder,
       dateOrder: order.dateOrder,
+      pay: order.pay,
       status: order.status,
       total: order.total,
       discountAmount: order.discointId ? order.discointId.discountAmount : 0,
@@ -235,13 +245,12 @@ exports.UserOrderDetail = async (req, res, next) => {
         },
       })),
     };
-  
-console.log(orderResponse);
+
+    console.log(orderResponse);
     res.render("user/user_order_details.ejs", { orderResponse });
   } catch (err) {
     res
       .status(500)
       .json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
   }
-
 };
