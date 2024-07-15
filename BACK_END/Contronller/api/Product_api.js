@@ -190,7 +190,7 @@ exports.AllProduct = async (req, res, next) => {
         path: "colorShoe",
         select: "textColor codeColor -_id",
       })
-      .populate("brandShoe", "nameType _id")
+      .populate("typerShoe", "nameType _id")
       .select("-__v");
 
     if (shoes.length > 0) {
@@ -240,7 +240,7 @@ exports.FindByName = async (req, res, next) => {
 exports.FindProductsByBrandId = async (req, res, next) => {
   try {
     let brandId = req.params.id;
-    let shoes = await Model.ShoeModel.find({ brandShoe: brandId })
+    let shoes = await Model.ShoeModel.find({ typerShoe: brandId })
       // .populate({
       //   path: 'shoeDetail',
       //   populate: [
@@ -249,7 +249,7 @@ exports.FindProductsByBrandId = async (req, res, next) => {
       //     { path: 'colorShoe' },
       //   ]
       // })
-      .populate("brandShoe");
+      .populate("typerShoe");
 
     if (shoes.length > 0) {
       shoes = shoes.map((shoe) => {
@@ -278,11 +278,11 @@ exports.findShoes_DATA = async (req, res, next) => {
     const { idBrand, sizeId, textColor, shoeId } = req.params;
     let query = {};
 
-    if (idBrand && idBrand !== "null") query.brandShoe = idBrand;
+    if (idBrand && idBrand !== "null") query.typerShoe = idBrand;
     if (shoeId && shoeId !== "null") query.shoeId = shoeId;
 
     let shoes = await Model.ShoeModel.find(query)
-      .populate("brandShoe", "nameType _id")
+      .populate("typerShoe", "nameType _id")
       .populate({
         path: "sizeShoe",
         match: sizeId && sizeId !== "null" ? { sizeId: sizeId } : {},
@@ -331,7 +331,7 @@ exports.ADD_Product = async (req, res) => {
       name,
       price,
       description,
-      brandShoeId,
+      typerShoeId,
       thumbnail,
       status,
       storageShoe,
@@ -344,7 +344,7 @@ exports.ADD_Product = async (req, res) => {
       return res.status(400).json({ message: "Shoe already exists" });
     }
 
-    const brand = await Model.TypeShoeModel.findById(brandShoeId);
+    const brand = await Model.TypeShoeModel.findById(typerShoeId);
     const shoeId = formatString(brand.nameType);
 
     const colorIds = new Set();
@@ -389,7 +389,7 @@ exports.ADD_Product = async (req, res) => {
       name,
       price,
       description,
-      brandShoe: brand._id,
+      typerShoe: brand._id,
       thumbnail,
       status,
       imageShoe,
@@ -450,5 +450,61 @@ exports.rateShoe = async (req, res) => {
   } catch (error) {
     console.error("Error during rating:", error);
     res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+exports.ADDFavourite = async (req, res, next) => {
+  try {
+    const { userId, shoeId } = req.body;
+    const existingFavourite = await Model.FavouriteShoeModel.findOne({
+      userId: userId,
+    });
+    if (existingFavourite) {
+      if (!existingFavourite.shoeId.includes(shoeId)) {
+        existingFavourite.shoeId.push(shoeId);
+        await existingFavourite.save();
+      }
+    } else {
+      await Model.FavouriteShoeModel.create({ userId, shoeId: [shoeId] });
+    }
+
+    res.status(200).json({ message: "Đã thêm vào yêu thích" });
+  } catch (error) {
+    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+  }
+};
+exports.RemoveFavourites = async (req, res) => {
+  try {
+    const { userId, shoeId } = req.params;
+
+    const existingFavourite = await Model.FavouriteShoeModel.findOne({
+      userId: userId,
+    });
+    if (existingFavourite) {
+      existingFavourite.shoeId = existingFavourite.shoeId.filter(
+        (id) => id.toString() !== shoeId
+      );
+      await existingFavourite.save();
+    }
+
+    res.status(200).json({ message: "Đã xóa khỏi yêu thích" });
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi khi xóa khỏi yêu thích" });
+  }
+};
+
+exports.FindFavouritesByUserId = async (req, res) => {
+  try {
+    const favourites = await Model.FavouriteShoeModel.findOne({ userId:req.params.id })
+    .populate("shoeId", "name _id")
+    .populate("userId", "userName fullName _id");
+    
+    if (favourites) {
+      res.status(200).json({message:'Favorite List',favourites});
+    } else {
+      res.status(404).json({ message: 'No favorites found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi khi lấy Favorite' });
   }
 };
