@@ -49,6 +49,10 @@ app.use("/dashboard", DashboardRounter);
 var ManagerRouter = require('./routes/Manager_Router');
 app.use("/manager",ManagerRouter);
 
+//Navigation
+const NavigationRouter = require("./routes/Navigation_Routers ");
+app.use("/adminNavigation", NavigationRouter);
+
 const IFUser = require("./routes/IFUser_Router");
 app.use("/ifUser", IFUser);
 
@@ -57,12 +61,16 @@ app.use("/discount", discountRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
-const NavigationRouter = require("./routes/Navigation_Route");
-app.use("/navigation", NavigationRouter);
+
 const CartRouter = require("./routes/Cart_Route");
 app.use("/cart", CartRouter);
+
 const Order_Route = require("./routes/Order_Route");
 app.use("/userOrder", Order_Route);
+
+const Navigation_Route = require("./routes/Navigation_Route");
+app.use("/userNavigation", Navigation_Route);
+
 
 
 

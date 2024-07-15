@@ -8,8 +8,12 @@ router.post("/createOrder", orderController.createOrder);
 
 router.put("/cancelOrder/:orderId", orderController.cancelOrder);
 
-router.put("/getUserOrder/:orderId", orderController.getUserOrdersWithFirstItem);
-router.put("/getOrderById/:orderId", orderController.getOrderById);
-router.put("/getOrderShoeById/:orderId", orderController.getOrderShoeById);
+router.put('/confirmReceived/:orderId', orderController.confirmOrderReceived);
+
+
+router.get("/getUserOrder/:orderId", orderController.getUserOrdersWithFirstItem);
+router.get("/getOrderById/:orderId", orderController.getOrderById);
+router.get("/getOrderShoeById/:orderId", orderController.getOrderShoeById);
+
 
 module.exports = router;

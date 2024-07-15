@@ -1,39 +1,72 @@
-const { OderModel } = require("../Models/DB_Shoes");
+const { AdminNotificationModel, ShoeModel } = require("../Models/DB_Shoes");
+const admin = require('../config/firebase');
+
+const getThumbnailForShoe = async (shoeId) => {
+  const shoe = await ShoeModel.findById(shoeId);
+  return shoe ? shoe.thumbnail : '';
+};
 
 
-const getListNavigation = async (req, res) => {
-    try {
-      const statuses = [
-        "Đã hủy",
-        "Đã tạo đơn",
-        "Đã xác nhận",
-        "Đang Giao",
-        "Giao Thành Công",
-      ];
-      const orders = await OderModel.aggregate([
-        { $match: { status: { $in: statuses } } },
-      ]);
-  
-      return res.render("Navigation", { status: "success", orders });
-    } catch (error) {
-      return res.status(500).json({ status: "error", message: error.message });
-    }
-  };
-  const clickNavigation = async (req, res) => {
-    try {
-      const { orderId } = req.body;
-      const order = await OderModel.findById(orderId);
-      if (!order) {
-        return res
-          .status(404)
-          .json({ status: "error", message: "Oder not found" });
-      }
-      return res.render("Navigation", { status: "success", order });
-    } catch (error) {
-      return res.status(500).json({ status: "error", message: error.message });
-    }
+const sendNotificationAdmin = async (title, body, typeNotification, shoeId, time) => {
+  const image = await getThumbnailForShoe(shoeId);
+
+  try {
+
+    const notification = await AdminNotificationModel.create({
+      title,
+      body,
+      typeNotification,
+      image,
+      time
+    });
+    await notification.save();
+
+
+    const adminMessage = {
+      topic: 'admin',
+      notification: {
+        title: adminTitle || title,
+        body: adminBody || body,
+      },
+    };
+
+    admin.messaging().send(adminMessage)
+      .then(response => {
+        console.log('Successfully sent message to admin:', response);
+      })
+      .catch(error => {
+        console.log('Error sending message to admin:', error);
+      });
+
+  } catch (err) {
+    console.log('Error sending notification:', err);
   }
-  module.exports = {
-    getListNavigation,
-    clickNavigation,
+};
+
+const getNotificationsByAdmin = async (req, res) => {
+
+  try {
+    const notifications = await AdminNotificationModel.find();
+    res.status(200).json(notifications);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh sách thông báo.', error: err.message });
   }
+};
+
+const deleteNotificationAdmin = async (req, res) => {
+  const { notificationId } = req.params;
+
+  try {
+    await AdminNotificationModel.findByIdAndDelete(notificationId);
+    res.status(200).json({ message: 'Thông báo đã được xóa.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi xóa thông báo.', error: err.message });
+  }
+};
+
+
+module.exports = {
+  sendNotificationAdmin,
+  getNotificationsByAdmin,
+  deleteNotificationAdmin,
+};
