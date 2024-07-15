@@ -20,13 +20,15 @@ router.post("/getalluser", Users_API.GetAllUser);
 router.get("/finduser/:id", Users_API.FindUser);
 router.post("/finduser/:id", Users_API.FindUser);
 
-router.get("/updateuser/:id", Users_API.UpdateUser);
-router.post("/updateuser/:id", Users_API.UpdateUser);
+// router.get("/updateuser/:id", Users_API.UpdateUser);
+// router.post("/updateuser/:id", Users_API.UpdateUser);
 
+router.get("/updateuser/:id",Users_API.uploadImage, Users_API.UpdateUser);
+router.post("/updateuser/:id",Users_API.uploadImage, Users_API.UpdateUser);
 
 ////////////////////////////////////////////////////
-router.get("/resetpassword/:id", Users_API.ResetPassword);
-router.post("/resetpassword/:id", Users_API.ResetPassword);
+// router.get("/resetpassword/:id", Users_API.ResetPassword);
+// router.post("/resetpassword/:id", Users_API.ResetPassword);
 
 
 router.post("/resetpasswordiduser", Users_API.ResetPassword_ID);
@@ -41,6 +43,7 @@ router.post("/sendotp/:id", Users_API.ResetPassword_Mail);
 
 //Address User
 router.get("/getalladdress", Users_API.GetAllAddress);
+router.get("/findaddress/:id", Users_API.FindAddress);
 router.post("/addaddress", Users_API.Address_ADD);
 router.post("/updateaddress/:addressID", Users_API.UpdateAddress);
 router.delete("/deleteaddress/:addressID", Users_API.Address_DELETE);
@@ -73,6 +76,11 @@ router.get("/findproduct",Product_API.FindByName);
 
 
 router.post("/rateshoe",Product_API.rateShoe);
+
+
+router.post("/addfavourite",Product_API.ADDFavourite);
+router.post("/removefavourite",Product_API.RemoveFavourites);
+router.get("/findfavourite/:id",Product_API.FindFavouritesByUserId);
 
 // //  "Find by hiden"
 // router.get("/findproductbyidbrand/:id", Product_API.FindProductsByBrandId);
