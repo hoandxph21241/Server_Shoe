@@ -30,15 +30,29 @@ exports.ConfirmOrder = async (req, res) => {
   }
 };
 
+exports.DeleteOrdeer = async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const order = await Order.OderModel.findByIdAndDelete(orderId);
+    if(!order){
+      console.log("Order not found");
+    }
+
+    res.redirect('/home');
+  } catch (error) {
+    console.log("Lỗi xóa đơn hàng");
+  }
+};
+
 exports.DetailOrder = async (req, res) => {
   try {
     const { orderId } = req.params.orderId;
     const order = await Order.OderModel.findById(orderId).populate('user').populate('shoe');
-    if(!order) {
+    if (!order) {
       return res.status(404).send("Order not found");
     }
 
-    res.render('order/order_list.ejs',{order:order});
+    res.render('order/order_list.ejs', { order: order });
   } catch (error) {
     console.log("Error retrieving order information :", error);
   }

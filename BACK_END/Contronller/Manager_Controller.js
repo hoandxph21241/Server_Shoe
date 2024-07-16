@@ -21,7 +21,7 @@ exports.VorcherList = async (req,res,next) => {
 
 exports.BannerList = async (req,res,next) => {
     try {
-        const banner = await Banner.BannerModel.find();
+        const banner = await Banner.BannerModel.find({hide:false});
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
