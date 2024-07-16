@@ -65,4 +65,6 @@ router.get("/findproduct",Product_API.FindByName);
 router.get('/filterdata/:idBrand?/:sizeId?/:textColor?/:shoeId?', Product_API.findShoes_DATA);
 
 
-module.exports = router;
+router.post('/addorder',Product_API.AddOrder);
+
+module.exports = router; 

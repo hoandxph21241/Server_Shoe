@@ -16,7 +16,7 @@ exports.GetAllBrand = async (req, res, next) => {
   }
 };
 
-exports.FindBrand= async (req, res, next) => {
+exports.FindBrand = async (req, res, next) => {
   try {
     let brandId = req.params.id;
     let brand = await Model.TypeShoeModel.findById(brandId);
@@ -388,3 +388,38 @@ exports.ADD_Product = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
+
+exports.AddOrder = async (req, res) => {
+  try {
+    const { orderId, user, shoes, addressOrder, total, dateOrder, pay, status, discointId } = req.body;
+    const existingOrder = await Model.OderModel.findOne({orderId});
+    if(existingOrder) {
+      return res.status(400).json({message:"Order already exists"});
+    }
+
+    const shoesDetails = shoes.map(shoe => ({
+      shoe: shoe.shoe,
+      quantity: shoe.quantity,
+      price: shoe.price
+    }));
+
+    const order = new Model.OderModel({
+      orderId,
+      user,
+      shoes:shoesDetails,
+      addressOrder,
+      total,
+      dateOrder,
+      pay,
+      status,
+      discointId,
+    });
+
+    await order.save();
+    res.status(200).json({message: 'Order created successfully',order});
+  } catch (error) {
+    console.error("Error create order :", error)
+  }
+};
+
+

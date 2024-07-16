@@ -86,7 +86,7 @@ let ColorShoeModel = db.mongoose.model("ColorShoeModel", ColorShoeSchema);
 var ShoeSchema = new db.mongoose.Schema(
   {
     shoeId: { type: String, require: true },
-    name: { type: String, require: true },
+    name: { type: String, require: true }, 
     price: { type: Number, require: false },
     description: { type: String, require: false },
     number: { type: Number, require: false },
@@ -163,17 +163,32 @@ var ShoeSchema = new db.mongoose.Schema(
 );
 let ShoeModel = db.mongoose.model("ShoeModel", ShoeSchema);
 
+
+const STATUS = {
+  PENDING:0,
+  PROCESSING:1,
+  SHIPPED:2,
+  DELIVERED:3,
+  CANCELLED:4,
+};
+
 var OderSchema = new db.mongoose.Schema(
   {
     orderId: { type: String, require: true },
-    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
-    nameOrder: { type: String, require: false },
-    phoneNumber: { type: String, require: false },
+    user: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    shoes:[
+      {
+        shoe:{type:db.mongoose.Schema.Types.ObjectId,ref:"ShoesModel"},
+        quantity:{type:Number, require: true},
+        price:{type:Number, require: true},
+      },
+    ],
     adressOrder: { type: String, require: false },
-    total: { type: String, require: false },
-    dateOrder: { type: String, require: false },
+    total: { type: Number, require: false },
+    dateOrder: { type: Date,default:Date.now(), require: false },
     pay: { type: String, require: false },
-    status: { type: String, require: false },
+    status: { type:Number, enum:Object.values(STATUS),default:STATUS.PENDING,required:false },
+    quantity:{type:Number, require: false},
     discointId: {
       type: db.mongoose.Schema.Types.ObjectId,
       ref: "DiscountModel",
@@ -243,4 +258,5 @@ module.exports = {
   DiscountModel,
   OderDetailModel,
   CartModel,
+  STATUS,
 };

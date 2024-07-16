@@ -1,4 +1,9 @@
 exports.Order_List = async (req, res, next) => {
+  try {
+    
+  } catch (error) {
+    console.log("Đã có lỗi :" +error);
+  }
   res.render("order/order_list.ejs");
 };
 
