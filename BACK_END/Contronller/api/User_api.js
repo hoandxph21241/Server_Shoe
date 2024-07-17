@@ -25,11 +25,9 @@ exports.FindUser = async (req, res, next) => {
   try {
     let user = await Model.UserModel.findById(req.params.id);
     if (user) {
-      console.log(user);
       return res.status(200).json({
         success: true,
         message: "Tìm thấy thông tin người dùng thành công",
-        user: user,
         user: user,
       });
     } else {
@@ -130,15 +128,24 @@ exports.UpdateUser = async (req, res, next) => {
     if (req.file) {
       const imgData = fs.readFileSync(req.file.path);
       user.imageAccount = imgData;
-
-  
       fs.unlinkSync(req.file.path);
     }
+
+    const responseUser = user.toObject();
+    if (responseUser.imageAccount) {
+      responseUser.imageAccount = {
+        "$binary": {
+          "base64": responseUser.imageAccount.toString('base64'),
+          "subType": "00"
+        }
+      };
+    }
+
     await user.save();
     return res.status(200).json({
       success: true,
       message: "Cập nhật thông tin người dùng thành công",
-      user: user,
+      user: responseUser,
     });
   } catch (error) {
     return res.status(500).json({
@@ -148,7 +155,7 @@ exports.UpdateUser = async (req, res, next) => {
   }
 };
 
-exports.uploadImage = upload.single("imageAccount"); // Tải lên ảnh
+exports.uploadImage = upload.single("imageAccount");
 
 
 
