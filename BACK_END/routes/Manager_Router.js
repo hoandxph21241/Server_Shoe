@@ -24,6 +24,7 @@ router.get('/vorcherlist',ManagerController.VorcherList);
 
 
 router.get('/bannerlist',ManagerController.BannerList);
+router.get('/banner-hide',ManagerController.Banner_Hide);
 // router.get('/bannerlist',ManagerController.BannerList);
 router.get('/add-banner',ManagerController.AddBanner);
 router.post('/add-banner', upload.fields([{ name: 'image' }, { name: 'imageThumbnail' }]), ManagerController.AddBanner);

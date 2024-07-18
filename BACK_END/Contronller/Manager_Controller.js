@@ -21,11 +21,23 @@ exports.VorcherList = async (req,res,next) => {
 
 exports.BannerList = async (req,res,next) => {
     try {
-        const banner = await Banner.BannerModel.find();
+        const banner = await Banner.BannerModel.find({hide:false});
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
         res.render('manager/banner/banner.ejs',{banner:banner});
+    } catch (error) {
+        console.log("Đã có lỗi lấy danh sách bannner : "+error);
+    }
+};
+
+exports.Banner_Hide = async (req,res) => {
+    try {
+        const banner = await Banner.BannerModel.find({hide:true});
+        if (!banner) {
+            console.log("Không tìm thấy banner");
+        }
+        res.render('manager/banner/hide_banner.ejs',{banner:banner});
     } catch (error) {
         console.log("Đã có lỗi lấy danh sách bannner : "+error);
     }
