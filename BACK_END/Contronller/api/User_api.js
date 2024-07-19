@@ -25,10 +25,22 @@ exports.FindUser = async (req, res, next) => {
   try {
     let user = await Model.UserModel.findById(req.params.id);
     if (user) {
+    
+      const responseUser = user.toObject();
+      if (responseUser.imageAccount) {
+        responseUser.imageAccount = {
+          "$binary": {
+            "base64": responseUser.imageAccount.toString('base64'),
+            "subType": "00"
+          }
+        };
+      }
+
+
       return res.status(200).json({
         success: true,
         message: "Tìm thấy thông tin người dùng thành công",
-        user: user,
+        user: responseUser,
       });
     } else {
       return res
@@ -447,7 +459,7 @@ exports.Address_ADD = async (req, res, next) => {
   let latitude = req.body.latitude;
   let longitude = req.body.longitude;
   let userId = req.body.userId;
-  let addressOld = await Model.AddressModel.findOne({userId:userId});
+  let addressOld = await Model.AddressModel.findOne({userId});
   try {
     if (!addressOld) {
     } else {
@@ -564,27 +576,17 @@ exports.UpdateAddress = async (req, res, next) => {
   try {
     let Address = await Model.AddressModel.findById(addressID);
     if (Address) {
-      Address.nameAddress = Address.nameAddress || nameAddress;
-      Address.detailAddress = Address.detailAddress || detailAddress;
-      Address.latitude = Address.latitude || latitude;
-      Address.longitude = Address.longitude || longitude;
+      Address.nameAddress =  nameAddress ||Address.nameAddress;
+      Address.detailAddress =   detailAddress ||Address.detailAddress;
+      Address.latitude = latitude || Address.latitude ;
+      Address.longitude =  longitude ||Address.longitude;
       Address.permission = permission === "0" ? "Default" : "No Default";
 
-      if (!nameAddress || !detailAddress || !latitude || !longitude) {
+      if ( !detailAddress || !latitude || !longitude) {
         res.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
         return;
       }
 
-      if (
-        addressOld.longitude === longitude &&
-        addressOld.latitude === latitude
-      ) {
-        res.json({
-          success: false,
-          message: "Không được trùng vị trí hiện tại",
-        });
-        return;
-      }
 
       if (
         addressOld.nameAddress === nameAddress &&
