@@ -388,3 +388,16 @@ exports.ADD_Product = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
+
+exports.getBanner = async (req,res) => {
+  try {
+    const banners = await Model.BannerModel.find({hide: false});
+    if(!banners) {
+      return res.status(404).json({ message: 'Banner not found'});
+    };
+
+    res.status(200).json({ message:"List of active banners", data: banners });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal Server Error', error });
+  }
+};

@@ -64,5 +64,7 @@ router.get("/findproduct",Product_API.FindByName);
 
 router.get('/filterdata/:idBrand?/:sizeId?/:textColor?/:shoeId?', Product_API.findShoes_DATA);
 
+//Banner
+router.get('/banner-active',Product_API.getBanner);
 
 module.exports = router;
