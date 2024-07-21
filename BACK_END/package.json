@@ -12,6 +12,7 @@
     "ejs": "~2.6.1",
     "express": "~4.16.1",
     "express-session": "^1.18.0",
+    "firebase-admin": "^12.2.0",
     "googleapis": "^137.1.0",
     "http-errors": "~1.6.3",
     "mongoose": "^8.3.2",

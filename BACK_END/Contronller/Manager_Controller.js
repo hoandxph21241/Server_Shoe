@@ -1,33 +1,39 @@
-var Banner = require("../Models/DB_Shoes")
-const fs = require('fs');
-const path = require('path');
+var Banner = require("../Models/DB_Shoes");
+const admin = require('firebase-admin');
+const serviceAccount = require('../Config/shoe-addbc-firebase-adminsdk-csvd6-23011188ed.json');
 
-exports.ProductList = async (req,res,next) => {
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: 'gs://shoe-addbc.appspot.com',
+});
+
+const bucket = admin.storage().bucket();
+
+exports.ProductList = async (req, res, next) => {
     res.render('manager/product/product.ejs');
 };
 
-exports.AddProduct = async (req,res,next) => {
+exports.AddProduct = async (req, res, next) => {
     res.render('manager/product/add_product.ejs');
 };
 
-exports.EditProduct = async (req,res,next) => {
+exports.EditProduct = async (req, res, next) => {
     res.render('manager/product/edit_product.ejs');
 };
 
-exports.VorcherList = async (req,res,next) => {
+exports.VorcherList = async (req, res, next) => {
     res.render('manager/vorcher/vorcher.ejs');
 };
 
-
-exports.BannerList = async (req,res,next) => {
+exports.BannerList = async (req, res, next) => {
     try {
         const banner = await Banner.BannerModel.find();
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
-        res.render('manager/banner/banner.ejs',{banner:banner});
+        res.render('manager/banner/banner.ejs', { banner: banner });
     } catch (error) {
-        console.log("Đã có lỗi lấy danh sách bannner : "+error);
+        console.log("Đã có lỗi lấy danh sách banner: " + error);
     }
 };
 
@@ -37,20 +43,39 @@ exports.AddBanner = async (req, res, next) => {
         let image = "";
         let imageThumbnail = "";
 
-        // Kiểm tra và xử lý tệp ảnh sản phẩm
+        const uploadFile = (file, folder) => {
+            return new Promise((resolve, reject) => {
+                const blob = bucket.file(`${folder}/${Date.now()}_${file.originalname}`);
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype,
+                        cacheControl: 'public, max-age=31536000',
+                    },
+                });
+
+                blobStream.on('error', (err) => {
+                    reject(err);
+                });
+
+                blobStream.on('finish', async () => {
+                    try {
+                        await blob.makePublic();
+                        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
+                        resolve(publicUrl);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+                blobStream.end(file.buffer);
+            });
+        };
+
         if (req.files['image']) {
-            const imageFile = req.files['image'][0];
-            const destinationPath = path.join(__dirname, "../public/upload", imageFile.filename);
-            fs.renameSync(imageFile.path, destinationPath);
-            image = "/upload/" + imageFile.filename;
+            image = await uploadFile(req.files['image'][0], 'images');
         }
 
-        // Kiểm tra và xử lý tệp ảnh thumbnail
         if (req.files['imageThumbnail']) {
-            const thumbnailFile = req.files['imageThumbnail'][0];
-            const destinationPath = path.join(__dirname, "../public/upload", thumbnailFile.filename);
-            fs.renameSync(thumbnailFile.path, destinationPath);
-            imageThumbnail = "/upload/" + thumbnailFile.filename;
+            imageThumbnail = await uploadFile(req.files['imageThumbnail'][0], 'thumbnails');
         }
 
         // Tạo mới banner trong cơ sở dữ liệu
@@ -72,5 +97,22 @@ exports.AddBanner = async (req, res, next) => {
         console.error("Đã có lỗi khi thêm banner:", error);
         // Xử lý lỗi và render lại trang thêm banner với thông báo lỗi
         res.render('manager/banner/add_banner.ejs', { error: 'Đã có lỗi khi thêm banner. Vui lòng thử lại.' });
+    }
+};
+
+exports.HideBanner = async (req, res, next) => {
+    try {
+        const bannerId = req.params._id;
+        const banner = await Banner.BannerModel.findById(bannerId);
+        if (!banner) {
+            console.log("Không tìm thấy banner");
+            return res.redirect('/manager/bannerlist');
+        }
+        banner.hide = !banner.hide;
+        await banner.save();
+
+        res.redirect('/manager/bannerlist');
+    } catch (error) {
+        console.log("Đã có lỗi ẩn banner: " + error);
     }
 };
