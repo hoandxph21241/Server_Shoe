@@ -9,6 +9,10 @@ const storage = multer.memoryStorage();
 
 const upload = multer({storage:storage});
 
+//brand
+router.post('/brand',upload.fields([{name:'imageType'}]),ManagerController.addBrand);
+router.get("/list-brand",ManagerController.BrandList);
+
 router.get('/productlist',ManagerController.ProductList);
 router.get('/edit-product',ManagerController.EditProduct);
 router.get('/addproduct',ManagerController.AddProduct);
@@ -22,4 +26,6 @@ router.get('/banner-hide',ManagerController.Banner_Hide);
 router.get('/add-banner',ManagerController.AddBanner);
 router.post('/add-banner', upload.fields([{ name: 'image' }, { name: 'imageThumbnail' }]), ManagerController.AddBanner);
 router.post('/hide-banner/:_id', ManagerController.HideBanner);
+
+
 module.exports = router;

@@ -1,4 +1,4 @@
-var Banner = require("../Models/DB_Shoes");
+var Model = require("../Models/DB_Shoes");
 const admin = require('firebase-admin');
 const serviceAccount = require('../Config/shoe-addbc-firebase-adminsdk-csvd6-23011188ed.json');
 
@@ -9,8 +9,84 @@ admin.initializeApp({
 
 const bucket = admin.storage().bucket();
 
+exports.addBrand = async (req, res) => {
+    let imageType = '';
+    try {
+        const { nameType } = req.body;
+
+        const uploafFile = (file, folder) => {
+            return new Promise((resolve, reject) => {
+                const blob = bucket.file(`${folder}/${Date.now()}_${file.originalname}`);
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype,
+                        cacheControl: 'public, max-age=31536000',
+                    },
+                });
+
+                blobStream.on('error', (err) => {
+                    reject(err);
+                });
+
+                blobStream.on('finish', async () => {
+                    try {
+                        await blob.makePublic();
+                        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
+                        resolve(publicUrl);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+                blobStream.end(file.buffer);
+            });
+        }
+
+        // Kiểm tra sự tồn tại của req.files và imageType
+        if (req.files && req.files['imageType']) {
+            // Tải lên tệp và lấy URL công khai
+            imageType = await uploafFile(req.files['imageType'][0], 'imageType');
+        }
+
+        const newBrand = new Model.TypeShoeModel({
+            nameType,
+            imageType,
+        });
+
+        await newBrand.save();
+        res.redirect('/manager/productlist'); // Sử dụng đường dẫn hợp lệ cho redirect
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Có lỗi xảy ra');
+    }
+};
+
+exports.BrandList = async (req, res) => {
+    try {
+        const brand = await Model.TypeShoeModel.find();
+        if (!brand) {
+            return res.status(404).send("Not Found");
+        };
+
+        res.render('manager/product/product.ejs', { brands: brand });
+        // res.json(brand)
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+
 exports.ProductList = async (req, res, next) => {
-    res.render('manager/product/product.ejs');
+    try {
+        const brand = await Model.TypeShoeModel.find();
+        if (!brand) {
+            return res.status(404).send("Not Found");
+        };
+
+        res.render('manager/product/product.ejs', { brands: brand });
+        // res.json(brand)
+    } catch (error) {
+        console.error(error);
+    }
 };
 
 exports.AddProduct = async (req, res, next) => {
@@ -27,7 +103,7 @@ exports.VorcherList = async (req, res, next) => {
 
 exports.BannerList = async (req, res, next) => {
     try {
-        const banner = await Banner.BannerModel.find({ hide: false });
+        const banner = await Model.BannerModel.find({ hide: false });
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
@@ -39,7 +115,7 @@ exports.BannerList = async (req, res, next) => {
 
 exports.Banner_Hide = async (req, res) => {
     try {
-        const banner = await Banner.BannerModel.find({ hide: true });
+        const banner = await Model.BannerModel.find({ hide: true });
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
@@ -91,7 +167,7 @@ exports.AddBanner = async (req, res, next) => {
         }
 
         // Tạo mới banner trong cơ sở dữ liệu
-        const newBanner = new Banner.BannerModel({
+        const newBanner = new Model.BannerModel({
             image: image,
             imageThumbnail: imageThumbnail,
             type: type,
@@ -116,7 +192,7 @@ exports.AddBanner = async (req, res, next) => {
 exports.HideBanner = async (req, res, next) => {
     try {
         const bannerId = req.params._id;
-        const banner = await Banner.BannerModel.findById(bannerId);
+        const banner = await Model.BannerModel.findById(bannerId);
         if (!banner) {
             console.log("Không tìm thấy banner");
             return res.redirect('/manager/bannerlist');
