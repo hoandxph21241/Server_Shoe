@@ -25,8 +25,8 @@ const sendNotificationAdmin = async (title, body, typeNotification, shoeId, time
     const adminMessage = {
       topic: 'admin',
       notification: {
-        title: adminTitle || title,
-        body: adminBody || body,
+        title: title,
+        body: body,
       },
     };
 

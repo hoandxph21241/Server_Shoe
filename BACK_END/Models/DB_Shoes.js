@@ -243,6 +243,23 @@ const notificationSchema = new db.mongoose.Schema(
 
 const NotificationModel = db.mongoose.model("NotificationModel", notificationSchema);
 
+const adminNotificationSchema = new db.mongoose.Schema(
+  {
+    title: { type: String, required: true }, 
+    body: { type: String, required: true }, 
+    image: { type: String, required: false }, 
+    time: { type: String, required: false }, 
+    typeNotification: { type: String, required: true }, // Loại thông báo (e.g., "OrderCreated", "OrderStatusUpdated")
+  },
+  {
+    collection: "AdminNotification",
+    collation: { locale: "en_US", strength: 1 }
+  }
+);
+
+const AdminNotificationModel = db.mongoose.model("AdminNotificationModel", adminNotificationSchema);
+
+
 var CartSchema = new db.mongoose.Schema(
   {
     cartId: { type: String, require: true },
@@ -268,5 +285,6 @@ module.exports = {
   DiscountModel,
   OderDetailModel,
   NotificationModel,
+  AdminNotificationModel,
   CartModel,
 };
