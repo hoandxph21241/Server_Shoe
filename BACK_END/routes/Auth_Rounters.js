@@ -21,4 +21,7 @@ router.post("/signin", Contronlers.SignIn);
 router.get('/signout', Contronlers.SignOut);
 router.post('/signout', Contronlers.SignOut);
 
+router.get('/userlist',Contronlers.UserList);
+router.get('/profile',Contronlers.ProfileUser);
+
 module.exports = router;
