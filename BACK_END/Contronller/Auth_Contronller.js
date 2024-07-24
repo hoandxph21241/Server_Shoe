@@ -112,3 +112,11 @@ exports.SignOut = async (req, res, next) => {
     res.redirect("/auth/signin");
   }
 };
+
+exports.UserList = async (req,res,next) => {
+  res.render("user/user.ejs");
+};
+
+exports.ProfileUser = async (req,res,next) => {
+  res.render("user/profile_user.ejs");
+};

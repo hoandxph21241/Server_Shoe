@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+    <%- include('../../inc/top.ejs') %>
+        <div class="content">
+            <div class="row d-flex align-items-center my-3">
+                <div class="col-auto">
+                    <h3>Banner</h3>
+                </div>
+                <div class="col-auto ms-2">
+                    <form action="/manager/add-banner">
+                        <button class="btn btn-dark">Add</button>
+                    </form>
+                </div>
+            </div>
+            <!-- Example single danger button -->
+            <!-- <div class="btn-group">
+                <form id="statusForm" method="get">
+                    <select name="status" id="status" class="form-select form-control" onchange="this.form.submit()">
+                        <option value="active_page.html">Đang hoạt động</option>
+                        <option value="hidden_page.html">Đã ẩn</option>
+                    </select>
+                </form>
+            </div> -->
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    Trạng thái
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/manager/bannerlist">Đang hoạt động</a></li>
+                    <li><a class="dropdown-item" href="/manager/banner-hide">Đã ẩn</a></li>
+                </ul>
+            </div>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-secondary">Ảnh banner</th>
+                        <th class="text-secondary">Ảnh thumbnail</th>
+                        <th class="text-secondary">Tiêu đề</th>
+                        <th class="text-secondary">Miêu tả</th>
+                        <th class="text-secondary">Loại banner</th>
+                        <th class="text-secondary">Ẩn</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% banner.forEach(function(item, index) { %>
+                        <tr>
+                            <td><img src="<%= item.imageThumbnail %>" alt="" width="80px" height="50px"></td>
+                            <td><img src="<%= item.image %>" alt="" width="80px" height="50px"></td>
+                            <td>
+                                <%= item.title %>
+                            </td>
+                            <td>
+                                <%= item.description %>
+                            </td>
+                            <td>
+                                <%= item.type %>
+                            </td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-bs-toggle="modal"
+                                        data-bs-target="#hideModal<%= item.id %>" <%=item.hide ? '' : 'checked' %>>
+                                    <span class="slider"></span>
+                                </label>
+
+                                <!-- Modal Form -->
+                                <form action="/manager/hide-banner/<%= item.id %>" method="post">
+                                    <div class="modal fade" id="hideModal<%= item.id %>" tabindex="-1"
+                                        aria-labelledby="hideModalLabel<%= item.id %>" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="hideModalLabel<%= item.id %>">
+                                                        <%= item.hide ? "Bật" : "Ẩn" %> Banner
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Bạn có chắc chắn muốn <%= item.hide ? "bật" : "tắt" %> banner này
+                                                        không?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Xác nhận</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <%- include('../../inc/end.ejs') %>
+</body>
+
+</html>

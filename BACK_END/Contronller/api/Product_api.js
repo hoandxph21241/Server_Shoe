@@ -273,6 +273,7 @@ exports.FindProductsByTyperdId = async (req, res, next) => {
   }
 };
 
+
 exports.findShoes_DATA = async (req, res, next) => {
   try {
     const { idTyper, sizeId, textColor, shoeId } = req.params;
@@ -321,9 +322,12 @@ exports.findShoes_DATA = async (req, res, next) => {
   }
 };
 
+
 const formatString = (inputString) => {
   return inputString.toLowerCase().replace(/\s+/g, "-");
+}; development
 };
+
 
 exports.ADD_Product = async (req, res) => {
   try {
@@ -344,9 +348,8 @@ exports.ADD_Product = async (req, res) => {
       return res.status(400).json({ message: "Shoe already exists" });
     }
 
-    const type = await Model.TypeShoeModel.findById(typerShoeId);
-    const shoeId = formatString(brand.nameType);
-
+    const type = await Model.TypeShoeModel.findB
+    const shoeId = formatString(type.nameType);
     const colorIds = new Set();
     const sizeIds = new Set();
 
@@ -412,6 +415,7 @@ exports.ADD_Product = async (req, res) => {
   }
 };
 
+
 exports.rateShoe = async (req, res) => {
   try {
     const { shoeId, userId, rateNumber, commentText } = req.body;
@@ -452,6 +456,7 @@ exports.rateShoe = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
 
 exports.ADDFavourite = async (req, res, next) => {
   try {
@@ -508,3 +513,16 @@ exports.FindFavouritesByUserId = async (req, res) => {
     res.status(500).json({ error: 'Lỗi khi lấy Favorite' });
   }
 };
+exports.getBanner = async (req,res) => {
+  try {
+    const banners = await Model.BannerModel.find({hide: false});
+    if(!banners) {
+      return res.status(404).json({ message: 'Banner not found'});
+    };
+
+    res.status(200).json({ message:"List of active banners", data: banners });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal Server Error', error });
+  }
+};
+
