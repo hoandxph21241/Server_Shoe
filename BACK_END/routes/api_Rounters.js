@@ -17,6 +17,8 @@ router.post("/signin", Auth_API.Sign);
 router.get("/register", Auth_API.Register_Mail);
 router.post("/register", Auth_API.Register_Mail);
 
+router.get("/signout", Auth_API.SignOut);
+router.post("/signout", Auth_API.SignOut);
 
 // User Rounters
 router.get("/getalluser", Users_API.GetAllUser);

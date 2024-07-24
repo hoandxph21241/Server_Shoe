@@ -21,6 +21,13 @@ exports.Sign = async (req, res, next) => {
           namePassword +
           " = Đăng nhập thành công"
       );
+      
+      if (req.body.fcmToken) {
+        user.fcmToken = req.body.fcmToken;
+        await user.save();
+        console.log("FCM Token saved:", req.body.fcmToken);
+      }
+
       res.status(200).json({ success: true, user: user, userID: user.userID });
     } else {
       console.log(
@@ -39,6 +46,7 @@ exports.Sign = async (req, res, next) => {
     }
   }
 };
+
 exports.Registe = async (req, res, next) => {
   let list = await Model.UserModel.find();
   let nameAccount = req.body.nameAccount;
@@ -147,5 +155,25 @@ exports.Register_Mail = async (req, res, next) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ" });
+  }
+};
+
+
+exports.SignOut = async (req, res, next) => {
+  try {
+    let nameAccount = req.body.nameAccount;
+    let user = await Model.UserModel.findOne({ nameAccount: nameAccount });
+    if (user) {
+      user.fcmToken = null;
+      await user.save();
+      console.log("FCM Token removed for user:", userID);
+
+      res.status(200).json({ success: true, message: "Đăng xuất thành công" });
+    } else {
+      res.status(200).json({ success: false, message: "Người dùng không tồn tại" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Lỗi hệ thống" });
   }
 };
