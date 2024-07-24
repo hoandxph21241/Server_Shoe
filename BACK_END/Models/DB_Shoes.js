@@ -19,6 +19,8 @@ var userSchema = new db.mongoose.Schema(
     locked: { type: Boolean, require: true, default: false },
     // OTP đổi mật khẩu
     otp: { type: String, require: false },
+   // notification 
+    fcmToken:{ type: String, require: false },
   },
   {
     collection: "User",

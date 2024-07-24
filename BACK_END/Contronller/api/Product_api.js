@@ -1,7 +1,7 @@
 var Model = require("../../Models/DB_Shoes");
 
-exports.GetAllBrand = async (req, res, next) => {
-  msg = "Danh sach Du Lieu Thuong Hieu";
+exports.GetAllTyper = async (req, res, next) => {
+  msg = "Danh sach Du Lieu";
 
   try {
     let list = await Model.TypeShoeModel.find();
@@ -16,13 +16,13 @@ exports.GetAllBrand = async (req, res, next) => {
   }
 };
 
-exports.FindBrand = async (req, res, next) => {
+exports.FindTyper = async (req, res, next) => {
   try {
-    let brandId = req.params.id;
-    let brand = await Model.TypeShoeModel.findById(brandId);
-    if (brand) {
-      console.log(brand);
-      return res.status(200).json(brand);
+    let typerId = req.params.id;
+    let type = await Model.TypeShoeModel.findById(typerId);
+    if (type) {
+      console.log(type);
+      return res.status(200).json(type);
     } else {
       return res.status(404).json({ msg: "Không tìm thấy id này" });
     }
@@ -31,7 +31,7 @@ exports.FindBrand = async (req, res, next) => {
   }
 };
 
-exports.AddBrand = async (req, res, next) => {
+exports.AddTyper = async (req, res, next) => {
   const { nameType, imageType } = req.body;
   if (!nameType || !imageType) {
     return res
@@ -43,20 +43,20 @@ exports.AddBrand = async (req, res, next) => {
     if (checkShoe) {
       return res
         .status(400)
-        .json({ success: false, message: "Đã tồn tại một Brand tương tự" });
+        .json({ success: false, message: "Đã tồn tại một Typer tương tự" });
     }
     const newShoe = new Model.TypeShoeModel({ nameType, imageType });
     await newShoe.save();
     console.log(`Thêm Brand thành công: ${nameType}`);
     return res
       .status(200)
-      .json({ success: true, message: "Thêm Brand thành công" });
+      .json({ success: true, message: "Thêm Typer thành công" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ success: false, message: "Lỗi máy chủ" });
   }
 };
-exports.UpdateBrand = async (req, res, next) => {
+exports.UpdateTyper = async (req, res, next) => {
   const { nameType, imageType } = req.body;
   let id = req.params.id;
   if (!id) {
@@ -65,26 +65,26 @@ exports.UpdateBrand = async (req, res, next) => {
       .json({ success: false, message: "Vui lòng cung cấp id" });
   }
   try {
-    const idBrand = await Model.TypeShoeModel.findById(id);
-    if (!idBrand) {
+    const idTyper = await Model.TypeShoeModel.findById(id);
+    if (!idTyper) {
       return res
         .status(400)
         .json({ success: false, message: "id không được để trống" });
     }
-    idBrand.nameType = nameType || idBrand.nameType;
-    idBrand.imageType = imageType || idBrand.imageType;
-    await idBrand.save();
-    console.log(`Đã cập nhật Brand: ${idBrand.nameType}`);
+    idTyper.nameType = nameType || idTyper.nameType;
+    idTyper.imageType = imageType || idTyper.imageType;
+    await idTyper.save();
+    console.log(`Đã cập nhật Typer: ${idTyper.nameType}`);
     return res
       .status(200)
-      .json({ success: true, message: "Đã cập nhật Brand thành công" });
+      .json({ success: true, message: "Đã cập nhật Typer thành công" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ success: false, message: "Lỗi máy chủ" });
   }
 };
 
-exports.DeleteBrand = async (req, res, next) => {
+exports.DeleteTyper = async (req, res, next) => {
   let id = req.params.id;
   if (!id) {
     return res
@@ -96,13 +96,13 @@ exports.DeleteBrand = async (req, res, next) => {
     if (!idBrand) {
       return res
         .status(400)
-        .json({ success: false, message: "Brand không tồn tại" });
+        .json({ success: false, message: "Typer không tồn tại" });
     }
     await Model.TypeShoeModel.findByIdAndDelete(id);
     console.log(`Đã xóa Thành Công`);
     return res
       .status(200)
-      .json({ success: true, message: "Đã xóa Brand thành công" });
+      .json({ success: true, message: "Đã xóa Typer thành công" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ success: false, message: "Lỗi máy chủ" });
@@ -237,7 +237,7 @@ exports.FindByName = async (req, res, next) => {
   }
 };
 
-exports.FindProductsByBrandId = async (req, res, next) => {
+exports.FindProductsByTyperdId = async (req, res, next) => {
   try {
     let brandId = req.params.id;
     let shoes = await Model.ShoeModel.find({ typerShoe: brandId })
@@ -275,10 +275,10 @@ exports.FindProductsByBrandId = async (req, res, next) => {
 
 exports.findShoes_DATA = async (req, res, next) => {
   try {
-    const { idBrand, sizeId, textColor, shoeId } = req.params;
+    const { idTyper, sizeId, textColor, shoeId } = req.params;
     let query = {};
 
-    if (idBrand && idBrand !== "null") query.typerShoe = idBrand;
+    if (idTyper && idTyper !== "null") query.typerShoe = idTyper;
     if (shoeId && shoeId !== "null") query.shoeId = shoeId;
 
     let shoes = await Model.ShoeModel.find(query)
@@ -344,7 +344,7 @@ exports.ADD_Product = async (req, res) => {
       return res.status(400).json({ message: "Shoe already exists" });
     }
 
-    const brand = await Model.TypeShoeModel.findById(typerShoeId);
+    const type = await Model.TypeShoeModel.findById(typerShoeId);
     const shoeId = formatString(brand.nameType);
 
     const colorIds = new Set();
@@ -389,7 +389,7 @@ exports.ADD_Product = async (req, res) => {
       name,
       price,
       description,
-      typerShoe: brand._id,
+      typerShoe: type._id,
       thumbnail,
       status,
       imageShoe,

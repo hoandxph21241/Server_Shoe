@@ -51,13 +51,13 @@ router.delete("/deleteaddress/:addressID", Users_API.Address_DELETE);
 
 
 //Type Rounter
-router.get("/getalltype", Product_API.GetAllBrand);
-router.get("/gettype/:id", Product_API.FindBrand);
+router.get("/getalltype", Product_API.GetAllTyper);
+router.get("/gettype/:id", Product_API.FindTyper);
 
-router.post("/addtype", Product_API.AddBrand);
-router.post("/updatetype/:id", Product_API.UpdateBrand);
+router.post("/addtype", Product_API.AddTyper);
+router.post("/updatetype/:id", Product_API.UpdateTyper);
 
-router.delete("/deletetype/:id", Product_API.DeleteBrand);
+router.delete("/deletetype/:id", Product_API.DeleteTyper);
 router.get('/typeshoe/:id', Product_API.getTypeShoeById);
 router.put('/typeshoe/:id', Product_API.updateTypeShoe);
 router.delete('/typeshoe/:id', Product_API.deleteTypeShoe);
@@ -83,9 +83,9 @@ router.post("/removefavourite",Product_API.RemoveFavourites);
 router.get("/findfavourite/:id",Product_API.FindFavouritesByUserId);
 
 // //  "Find by hiden"
-// router.get("/findproductbyidbrand/:id", Product_API.FindProductsByBrandId);
+// router.get("/FindProductsByTyperdId/:id", Product_API.FindProductsByBrandId);
 
-router.get('/filterdata/:idBrand?/:sizeId?/:textColor?/:shoeId?', Product_API.findShoes_DATA);
+router.get('/filterdata/:idTyper?/:sizeId?/:textColor?/:shoeId?', Product_API.findShoes_DATA);
 
 
 module.exports = router;
