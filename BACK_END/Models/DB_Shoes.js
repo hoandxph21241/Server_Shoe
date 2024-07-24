@@ -10,6 +10,7 @@ var userSchema = new db.mongoose.Schema(
     fullName: { type: String, require: false },
     gmail: { type: String, require: false },
     grender: { type: String, require: false },
+    birthday: { type: String, require: false },
     // Phân Quyền
     role: { type: Number, require: true, default: 1 },
     // Khóa Tài Khoản
@@ -23,16 +24,34 @@ var userSchema = new db.mongoose.Schema(
 );
 let UserModel = db.mongoose.model("UserModel", userSchema);
 
+var AddressSchema = new db.mongoose.Schema(
+  {
+    addressID: { type: String, require: true },
+    nameAddress: { type: String, require: false },
+    detailAddress: { type: String, require: false },
+    latitude: { type: String, require: false },
+    longitude: { type: String, require: false },
+    permission: { type: String, require: true, default: 1 },
+    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+  },
+  {
+    collection: "Address",
+  }
+);
+let AddressModel = db.mongoose.model("AddressModel", AddressSchema);
+
+
 var BannerSchema = new db.mongoose.Schema(
   {
     bannerId: { type: String, require: true },
+    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     imageThumbnail: { type: String, require: false },
-    thumbnail: { type: String, require: false },
     image: { type: String, require: false },
     title: { type: String, require: false },
     type: { type: String, require: false },
     description: { type: String, require: false },
     hide:{type:Boolean,default: false}
+
   },
   {
     collation: { locale: "en_US", strength: 1 },
@@ -243,4 +262,5 @@ module.exports = {
   DiscountModel,
   OderDetailModel,
   CartModel,
+  AddressModel,
 };
