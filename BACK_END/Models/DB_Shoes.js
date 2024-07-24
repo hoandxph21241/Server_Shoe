@@ -10,7 +10,6 @@ var userSchema = new db.mongoose.Schema(
     fullName: { type: String, require: false },
     gmail: { type: String, require: false },
     grender: { type: String, require: false },
-
     birthday: { type: String, require: false },
     // Phân Quyền
     role: { type: Number, require: true, default: 1 },
@@ -41,15 +40,18 @@ var AddressSchema = new db.mongoose.Schema(
 );
 let AddressModel = db.mongoose.model("AddressModel", AddressSchema);
 
+
 var BannerSchema = new db.mongoose.Schema(
   {
     bannerId: { type: String, require: true },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    thumbnail: { type: String, require: false },
+    imageThumbnail: { type: String, require: false },
     image: { type: String, require: false },
     title: { type: String, require: false },
     type: { type: String, require: false },
     description: { type: String, require: false },
+    hide:{type:Boolean,default: false}
+
   },
   {
     collation: { locale: "en_US", strength: 1 },

@@ -190,7 +190,7 @@ exports.AllProduct = async (req, res, next) => {
         path: "colorShoe",
         select: "textColor codeColor -_id",
       })
-      .populate("brandShoe", "nameType _id")
+      .populate("typerShoe", "nameType _id")
       .select("-__v");
 
     if (shoes.length > 0) {
@@ -273,16 +273,17 @@ exports.FindProductsByBrandId = async (req, res, next) => {
   }
 };
 
+
 exports.findShoes_DATA = async (req, res, next) => {
   try {
-    const { idBrand, sizeId, textColor, shoeId } = req.params;
+    const { idTyper, sizeId, textColor, shoeId } = req.params;
     let query = {};
 
-    if (idBrand && idBrand !== "null") query.brandShoe = idBrand;
+    if (idTyper && idTyper !== "null") query.typerShoe = idTyper;
     if (shoeId && shoeId !== "null") query.shoeId = shoeId;
 
     let shoes = await Model.ShoeModel.find(query)
-      .populate("brandShoe", "nameType _id")
+      .populate("typerShoe", "nameType _id")
       .populate({
         path: "sizeShoe",
         match: sizeId && sizeId !== "null" ? { sizeId: sizeId } : {},
@@ -321,9 +322,12 @@ exports.findShoes_DATA = async (req, res, next) => {
   }
 };
 
+
 const formatString = (inputString) => {
   return inputString.toLowerCase().replace(/\s+/g, "-");
+}; development
 };
+
 
 exports.ADD_Product = async (req, res) => {
   try {
@@ -331,7 +335,7 @@ exports.ADD_Product = async (req, res) => {
       name,
       price,
       description,
-      brandShoeId,
+      typerShoeId,
       thumbnail,
       status,
       storageShoe,
@@ -344,8 +348,8 @@ exports.ADD_Product = async (req, res) => {
       return res.status(400).json({ message: "Shoe already exists" });
     }
 
-    const brand = await Model.TypeShoeModel.findById(brandShoeId);
-    const shoeId = formatString(brand.nameType);
+    const type = await Model.TypeShoeModel.findById(typerShoeId);
+    const shoeId = formatString(type.nameType);
 
     const colorIds = new Set();
     const sizeIds = new Set();
@@ -389,7 +393,7 @@ exports.ADD_Product = async (req, res) => {
       name,
       price,
       description,
-      brandShoe: brand._id,
+      typerShoe: type._id,
       thumbnail,
       status,
       imageShoe,
@@ -411,6 +415,7 @@ exports.ADD_Product = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
 
 exports.rateShoe = async (req, res) => {
   try {
@@ -450,5 +455,18 @@ exports.rateShoe = async (req, res) => {
   } catch (error) {
     console.error("Error during rating:", error);
     res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
+
+exports.getBanner = async (req,res) => {
+  try {
+    const banners = await Model.BannerModel.find({hide: false});
+    if(!banners) {
+      return res.status(404).json({ message: 'Banner not found'});
+    };
+
+    res.status(200).json({ message:"List of active banners", data: banners });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };

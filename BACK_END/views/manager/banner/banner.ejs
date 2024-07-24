@@ -21,10 +21,29 @@
                     <h3>Banner</h3>
                 </div>
                 <div class="col-auto ms-2">
-                   <form action="/manager/add-banner">
-                    <button class="btn btn-dark">Add</button>
-                   </form>
+                    <form action="/manager/add-banner">
+                        <button class="btn btn-dark">Add</button>
+                    </form>
                 </div>
+            </div>
+            <!-- Example single danger button -->
+            <!-- <div class="btn-group">
+                <form id="statusForm" method="get">
+                    <select name="status" id="status" class="form-select form-control" onchange="this.form.submit()">
+                        <option value="active_page.html">Đang hoạt động</option>
+                        <option value="hidden_page.html">Đã ẩn</option>
+                    </select>
+                </form>
+            </div> -->
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    Trạng thái
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="/manager/bannerlist">Đang hoạt động</a></li>
+                    <li><a class="dropdown-item" href="/manager/banner-hide">Đã ẩn</a></li>
+                </ul>
             </div>
             <table class="table table-hover">
                 <thead>
@@ -38,20 +57,59 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><img src="/images/banner.png" alt="" width="80px" height="50px"></td>
-                        <td><img src="/images/banner.png" alt="" width="80px" height="50px"></td>
-                        <td>hkahbdhabsk</td>
-                        <td>jdnfkdb</td>
-                        <td>akjnka</td>
-                        <td> <label class="toggle-switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label></td>
-                    </tr>
+                    <% banner.forEach(function(item, index) { %>
+                        <tr>
+                            <td><img src="<%= item.imageThumbnail %>" alt="" width="80px" height="50px"></td>
+                            <td><img src="<%= item.image %>" alt="" width="80px" height="50px"></td>
+                            <td>
+                                <%= item.title %>
+                            </td>
+                            <td>
+                                <%= item.description %>
+                            </td>
+                            <td>
+                                <%= item.type %>
+                            </td>
+                            <td>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" data-bs-toggle="modal"
+                                        data-bs-target="#hideModal<%= item.id %>" <%=item.hide ? '' : 'checked' %>>
+                                    <span class="slider"></span>
+                                </label>
+
+                                <!-- Modal Form -->
+                                <form action="/manager/hide-banner/<%= item.id %>" method="post">
+                                    <div class="modal fade" id="hideModal<%= item.id %>" tabindex="-1"
+                                        aria-labelledby="hideModalLabel<%= item.id %>" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="hideModalLabel<%= item.id %>">
+                                                        <%= item.hide ? "Bật" : "Ẩn" %> Banner
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Bạn có chắc chắn muốn <%= item.hide ? "bật" : "tắt" %> banner này
+                                                        không?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Xác nhận</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
                 </tbody>
             </table>
         </div>
+
         <%- include('../../inc/end.ejs') %>
 </body>
 

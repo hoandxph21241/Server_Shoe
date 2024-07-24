@@ -1,20 +1,23 @@
-
 .content {
   margin-left: 20px;
   margin-right: 20px;
 }
+
 .toggle-switch {
   display: inline-block;
   width: 34px;
   height: 20px;
   position: relative;
 }
+
 .toggle-switch input {
   display: none;
 }
+
 .toggle-switch input:checked + .slider {
   background-color: #007bff;
 }
+
 .toggle-switch .slider {
   position: absolute;
   cursor: pointer;
@@ -26,6 +29,7 @@
   transition: .4s;
   border-radius: 34px;
 }
+
 .toggle-switch .slider:before {
   position: absolute;
   content: "";
@@ -37,6 +41,7 @@
   transition: .4s;
   border-radius: 50%;
 }
+
 .toggle-switch input:checked + .slider:before {
   transform: translateX(14px);
 }
