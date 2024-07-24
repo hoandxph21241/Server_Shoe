@@ -16,6 +16,7 @@ router.get("/list-brand",ManagerController.BrandList);
 router.get('/productlist',ManagerController.ProductList);
 router.get('/edit-product',ManagerController.EditProduct);
 router.get('/addproduct',ManagerController.AddProduct);
+router.get('/product-with-brand',ManagerController.ListProductWithBrand);
 
 router.get('/vorcherlist',ManagerController.VorcherList);
 

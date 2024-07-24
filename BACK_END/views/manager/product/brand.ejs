@@ -3,11 +3,11 @@
         <h3>Brands</h3>
     </div>
     <div class="col-auto ms-2">
-        <button class="btn btn-dark" style="border-radius: 50px;" data-toggle="modal"
-            data-target="#hideModalBrands">Add</button>
+        <button class="btn btn-dark" style="border-radius: 50px;" data-bs-toggle="modal"
+            data-bs-target="#hideModalBrands">Add</button>
     </div>
     <div class="col flex-grow-1"></div>
-    <% if(brands.length >= 10) { %>
+    <% if(brands.length>= 10) { %>
         <div class="col-auto">
             <a href="#">Xem tất cả</a>
         </div>
@@ -15,34 +15,73 @@
 </div>
 
 <div class="brand-logos mb-3 d-flex justify-content-between">
-    <% const visibleBrand = brands.slice(0,10); %>
-    <% if (visibleBrand.length> 0) { %>
-        <% visibleBrand.forEach(function(brand) { %>
-            <img src="<%= brand.imageType %>" alt="<%= brand.nameType %>">
-            <div class="edit-notify" id="editNotification<%= brand._id %>">
-                <button class="btn btn-secondary">Sửa</button>
-            </div>
-            <% }); %>
-                <% } else { %>
-                    <p>No brands available.</p>
-                    <% } %>
+    <% const visibleBrand=brands.slice(0, 10); %>
+        <% if (visibleBrand.length> 0) { %>
+            <% visibleBrand.forEach(function(brand) { %>
+                <div class="brand-container" data-id="<%= brand._id %>">
+                    <img src="<%= brand.imageType %>" alt="<%= brand.nameType %>"
+                        data-brand-url="/manager/product-with-brand" class="brand-img">
+                    <div class="edit-notify" id="editNotification<%= brand._id %>">
+                        <button class="btn btn-secondary" data-bs-toggle="modal"
+                            data-bs-target="#editModal<%= brand._id %>">Sửa</button>
+                    </div>
+                </div>
 
+                <!-- Modal sửa thương hiệu -->
+                <div class="modal fade" id="editModal<%= brand._id %>" tabindex="-1"
+                    aria-labelledby="editModalLabel<%= brand._id %>" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel<%= brand._id %>">Sửa thương hiệu</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/manager/edit-brand/<%= brand._id %>" method="post"
+                                    enctype="multipart/form-data">
+                                    <div class="form-group mb-2">
+                                        <label for="editImageUpload<%= brand._id %>" class="form-label">Image:</label>
+                                        <input type="file" class="form-control" id="editImageType<%= brand._id %>"
+                                            name="imageType" accept="image/*">
+                                    </div>
+                                    <div class="text-center">
+                                        <img src="<%= brand.imageType %>" id="editImagePreview<%= brand._id %>"
+                                            alt="Image preview" class="img-fluid" style="border-radius: 20px;">
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <label for="editBrandName<%= brand._id %>">Tên hãng</label>
+                                        <input type="text" class="form-control" id="editNameType<%= brand._id %>"
+                                            name="nameType" value="<%= brand.nameType %>" placeholder="Tên hãng">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-bs-dismiss="modal">Hủy</button>
+                                        <button type="submit" class="btn btn-primary">Lưu</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Kết thúc modal sửa thương hiệu -->
+                <% }); %>
+                    <% } else { %>
+                        <p>No brands available.</p>
+                        <% } %>
 </div>
 
 <!-- Modal thêm brands -->
-<div class="modal fade" id="hideModalBrands" tabindex="-1" role="dialog" aria-labelledby="hideModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<div class="modal fade" id="hideModalBrands" tabindex="-1" aria-labelledby="hideModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="hideModalLabel">Thêm hãng</h5>
-                <button type="button" class="close btn" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form action="/manager/brand" method="post" enctype="multipart/form-data">
-                    <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="form-group mb-2">
                         <label for="imageUpload" class="form-label">Image:</label>
                         <input type="file" class="form-control" id="imageType" name="imageType" accept="image/*">
                     </div>
@@ -50,12 +89,12 @@
                         <img id="imagePreview" alt="Image preview" class="img-fluid"
                             style="display: none; border-radius: 20px;">
                     </div>
-                    <div class="form-group" style="margin-top: 10px;">
+                    <div class="form-group mt-2">
                         <label for="brandName">Tên hãng</label>
                         <input type="text" class="form-control" id="nameType" name="nameType" placeholder="Tên hãng">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                         <button type="submit" class="btn btn-primary">Lưu</button>
                     </div>
                 </form>
@@ -64,3 +103,70 @@
     </div>
 </div>
 <!-- Kết thúc modal thêm brands -->
+
+<div id="overlay"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1040;">
+</div>
+<div id="spinner"
+    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;">
+    <div class="spinner-border" role="status"></div>
+</div>
+
+<div id="contextMenu" class="dropdown-menu" style="display: none; position: absolute;">
+    <a href="#" class="dropdown-item" id="editOption">Sửa thương hiệu</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const contextMenu = document.getElementById('contextMenu');
+        let currentBrandId = null;
+
+        document.querySelectorAll('.brand-img').forEach(img => {
+            img.addEventListener('contextmenu', function (event) {
+                event.preventDefault();
+
+                const brandId = this.parentElement.getAttribute('data-id');
+                currentBrandId = brandId;
+
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = `${event.pageX}px`;
+                contextMenu.style.top = `${event.pageY}px`;
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!contextMenu.contains(event.target)) {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        document.getElementById('editOption').addEventListener('click', () => {
+            if (currentBrandId) {
+                // Sử dụng Bootstrap modal toggle để mở modal cho thương hiệu hiện tại
+                const modal = new bootstrap.Modal(document.getElementById(`editModal${currentBrandId}`));
+                modal.show();
+            }
+            contextMenu.style.display = 'none';
+        });
+
+        document.querySelectorAll('.brand-img').forEach(img => {
+            img.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                const spinner = document.getElementById('spinner');
+                const overlay = document.getElementById('overlay');
+                overlay.style.display = 'block';
+                spinner.style.display = 'block';
+
+                const brandUrl = this.getAttribute('data-brand-url');
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    spinner.style.display = 'none';
+                    window.location.href = brandUrl;
+                }, 2000);
+            });
+        });
+    });
+
+</script>

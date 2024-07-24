@@ -313,7 +313,7 @@ exports.findShoes_DATA = async (req, res, next) => {
     if (filteredShoes.length > 0) {
       return res.status(200).json(filteredShoes);
     } else {
-      return res
+      return res 
         .status(404)
         .json({ msg: "Không tìm thấy sản phẩm nào phù hợp" });
     }
@@ -325,8 +325,8 @@ exports.findShoes_DATA = async (req, res, next) => {
 
 const formatString = (inputString) => {
   return inputString.toLowerCase().replace(/\s+/g, "-");
-}; development
 };
+
 
 
 exports.ADD_Product = async (req, res) => {
@@ -406,9 +406,10 @@ exports.ADD_Product = async (req, res) => {
     const savedShoe = await shoe.save();
     console.log("Shoe created successfully:", savedShoe);
 
-    res
-      .status(201)
-      .json({ message: "Shoe created successfully", data: savedShoe });
+    // res
+    //   .status(201)
+    //   .json({ message: "Shoe created successfully", data: savedShoe });
+    res.send("OK");
   } catch (error) {
     console.error("Error during shoe creation:", error);
     res.status(500).json({ message: "Internal Server Error", error });
