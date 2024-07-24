@@ -25,8 +25,23 @@ exports.FindUser = async (req, res, next) => {
   try {
     let user = await Model.UserModel.findById(req.params.id);
     if (user) {
-      console.log(user);
-      return res.status(200).json(user);
+    
+      const responseUser = user.toObject();
+      if (responseUser.imageAccount) {
+        responseUser.imageAccount = {
+          "$binary": {
+            "base64": responseUser.imageAccount.toString('base64'),
+            "subType": "00"
+          }
+        };
+      }
+
+
+      return res.status(200).json({
+        success: true,
+        message: "Tìm thấy thông tin người dùng thành công",
+        user: responseUser,
+      });
     } else {
       return res
         .status(404)
@@ -39,43 +54,122 @@ exports.FindUser = async (req, res, next) => {
   // res.status(200).json({msg});
 };
 
+// exports.UpdateUser = async (req, res, next) => {
+//   let imageAccount = req.body.imageAccount;
+//   let phoneNumber = req.body.phoneNumber;
+//   let userName = req.body.userName;
+//   let fullName = req.body.fullName;
+//   let grender = req.body.grender;
+//   let birthday = req.body.birthday;
+//   try {
+//     let user = await Model.UserModel.findById(req.params.id);
+//     if (user) {
+//       const existingUser = await Model.UserModel.findOne({ nameAccount });
+//       if (existingUser && existingUser.id !== req.params.id) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Gmail đã tồn tại dưới tài khoản khác",
+//         });
+//       }
+
+//       user.imageAccount = imageAccount || user.imageAccount;
+//       user.phoneNumber = phoneNumber || user.phoneNumber;
+//       user.fullName = fullName || user.fullName;
+//       user.nameAccount = nameAccount || user.nameAccount;
+//       user.gmail = nameAccount || user.nameAccount;
+//       user.birthday = birthday || user.birthday;
+//       user.grender = grender === "0" ? "Female" : "Male";
+
+//       await user.save();
+
+//       return res.status(200).json({
+//         success: true,
+//         message: "Cập nhật thông tin người dùng thành công",
+//         user: user,
+//       });
+//     } else {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Không tìm thấy người dùng với id này",
+//       });
+//     }
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ success: false, message: "Có lỗi xảy ra: " + error.message });
+//   }
+// };
+
+const multer = require("multer");
+const upload = multer({ dest: "uploads/images/" }); 
+const fs = require('fs');
 exports.UpdateUser = async (req, res, next) => {
-  let imageAccount = req.body.imageAccount;
-  let phoneNumber = req.body.phoneNumber;
-  let userName = req.body.userName;
-  let fullName = req.body.fullName;
-  let grender = req.body.grender;
-  let birthday = req.body.birthday;
+  const imageAccount = req.body.imageAccount;
+  const phoneNumber = req.body.phoneNumber;
+  const userName = req.body.userName;
+  const fullName = req.body.fullName;
+  const nameAccount = req.body.nameAccount;
+  const birthday = req.body.birthday;
+  const grender = req.body.grender;
+
   try {
-    let user = await Model.UserModel.findById(req.params.id);
-    if (user) {
-      user.imageAccount = imageAccount;
-      user.phoneNumber = phoneNumber;
-      user.userName = userName;
-      user.fullName = fullName;
-      user.gmail = user.nameAccount;
-      user.birthday = birthday;
-      user.grender = grender === "0" ? "Female" : "Male";
-
-      await user.save();
-
-      return res.status(200).json({
-        success: true,
-        message: "Cập nhật thông tin người dùng thành công",
-        user: user,
-      });
-    } else {
+    const user = await Model.UserModel.findById(req.params.id);
+    if (!user) {
       return res.status(404).json({
         success: false,
         message: "Không tìm thấy người dùng với id này",
       });
     }
+
+    const existingUser = await Model.UserModel.findOne({ nameAccount });
+    if (existingUser && existingUser.id !== req.params.id) {
+      return res.status(400).json({
+        success: false,
+        message: "Gmail đã tồn tại dưới tài khoản khác",
+      });
+    }
+    user.imageAccount = imageAccount || user.imageAccount;
+    user.phoneNumber = phoneNumber || user.phoneNumber;
+    user.fullName = fullName || user.fullName;
+    user.userName = userName || user.userName;
+    user.nameAccount = nameAccount || user.nameAccount;
+    user.gmail = nameAccount || user.nameAccount;
+    user.birthday = birthday || user.birthday;
+    user.grender = grender === "0" ? "Female" : "Male";
+
+    if (req.file) {
+      const imgData = fs.readFileSync(req.file.path);
+      user.imageAccount = imgData;
+      fs.unlinkSync(req.file.path);
+    }
+
+    const responseUser = user.toObject();
+    if (responseUser.imageAccount) {
+      responseUser.imageAccount = {
+        "$binary": {
+          "base64": responseUser.imageAccount.toString('base64'),
+          "subType": "00"
+        }
+      };
+    }
+
+    await user.save();
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật thông tin người dùng thành công",
+      user: responseUser,
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Có lỗi xảy ra: " + error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Có lỗi xảy ra: " + error.message,
+    });
   }
 };
+
+exports.uploadImage = upload.single("imageAccount");
+
+
 
 // exports.ResetPassword = async (req, res, next) => {
 //   let userId = req.params.id;
@@ -114,50 +208,56 @@ exports.UpdateUser = async (req, res, next) => {
 //   }
 // };
 
-exports.UpdateUser = async (req, res, next) => {
-  const { imageAccount, phoneNumber, nameAccount, fullName, grender, birthDay } = req.body;
+// exports.UpdateUser = async (req, res, next) => {
+//   const {
+//     imageAccount,
+//     phoneNumber,
+//     nameAccount,
+//     fullName,
+//     grender,
+//     birthDay,
+//   } = req.body;
 
-  try {
-    const user = await Model.UserModel.findById(req.params.id);
+//   try {
+//     const user = await Model.UserModel.findById(req.params.id);
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "Không tìm thấy người dùng với id này",
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "Không tìm thấy người dùng với id này",
+//       });
+//     }
 
-    const existingUser = await Model.UserModel.findOne({ nameAccount });
-    if (existingUser && existingUser.id !== req.params.id) {
-      return res.status(400).json({
-        success: false,
-        message: "Gmail đã tồn tại dưới tài khoản khác",
-      });
-    }
+//     const existingUser = await Model.UserModel.findOne({ nameAccount });
+//     if (existingUser && existingUser.id !== req.params.id) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Gmail đã tồn tại dưới tài khoản khác",
+//       });
+//     }
 
-    user.imageAccount = imageAccount || user.imageAccount;
-    user.phoneNumber = phoneNumber || user.phoneNumber;
-    user.fullName = fullName || user.fullName;
-    user.nameAccount = nameAccount || user.nameAccount;
-    user.gmail = nameAccount || user.nameAccount; 
-    user.birthDay = birthDay || user.birthDay;
-    user.grender = grender === "0" ? "Female" : "Male";
+//     user.imageAccount = imageAccount || user.imageAccount;
+//     user.phoneNumber = phoneNumber || user.phoneNumber;
+//     user.fullName = fullName || user.fullName;
+//     user.nameAccount = nameAccount || user.nameAccount;
+//     user.gmail = nameAccount || user.nameAccount;
+//     user.birthday = birthDay || user.birthday;
+//     user.grender = grender === "0" ? "Female" : "Male";
 
-    await user.save();
+//     await user.save();
 
-    return res.status(200).json({
-      success: true,
-      message: "Cập nhật thông tin người dùng thành công",
-      user: user,
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Có lỗi xảy ra: " + error.message,
-    });
-  }
-};
+//     return res.status(200).json({
+//       success: true,
+//       message: "Cập nhật thông tin người dùng thành công",
+//       user: user,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({
+//       success: false,
+//       message: "Có lỗi xảy ra: " + error.message,
+//     });
+//   }
+// };
 exports.ResetPassword_ID = async (req, res, next) => {
   let userId = req.body.userId;
   let newPassword = req.body.newPassword;
@@ -358,8 +458,8 @@ exports.Address_ADD = async (req, res, next) => {
   let detailAddress = req.body.detailAddress;
   let latitude = req.body.latitude;
   let longitude = req.body.longitude;
-  let userID = req.body.userID;
-  let addressOld = await Model.AddressModel.findOne();
+  let userId = req.body.userId;
+  let addressOld = await Model.AddressModel.findOne({userId});
   try {
     if (!addressOld) {
     } else {
@@ -379,7 +479,7 @@ exports.Address_ADD = async (req, res, next) => {
         return;
       }
     }
-    if (!nameAddress || !detailAddress || !latitude || !longitude) {
+    if (!nameAddress || !detailAddress || !latitude || !longitude || !userId) {
       res.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
       return;
     }
@@ -389,7 +489,7 @@ exports.Address_ADD = async (req, res, next) => {
       detailAddress: req.body.detailAddress,
       latitude: req.body.latitude,
       longitude: req.body.longitude,
-      userID: req.body.userID,
+      userId: req.body.userId,
     });
     let new_Ur = await objSP.save();
     res.json({ success: true, message: "Đăng ký thành công" });
@@ -411,19 +511,59 @@ exports.GetAllAddress = async (req, res, next) => {
   }
 };
 
+
 exports.FindAddress = async (req, res, next) => {
+  const userId = req.params.id;
   try {
-    let address = await Model.AddressModel.findById(req.body.id);
-    if (address) {
-      console.log(address);
-      return res.status(200).json(address);
+    const allAddresses = await Model.AddressModel.find().populate('userId').lean();
+    const matchingAddresses = allAddresses.filter(address => {
+      if (address.userId && address.userId._id.toString() === userId) {
+        delete address.userId;
+        return true;
+      }
+      return false;
+    });
+
+    if (matchingAddresses.length > 0) {
+      return res.status(200).json({
+        success: true,
+        message: "Tìm thấy các địa chỉ của User",
+        addresses: matchingAddresses
+      });
     } else {
-      return res.status(404).json({ msg: "Không tìm thấy địa chỉ với id này" });
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy địa chỉ"
+      });
     }
   } catch (error) {
-    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Có lỗi xảy ra: " + error.message
+    });
   }
 };
+
+
+// exports.FindAddress = async (req, res, next) => {
+//   try {
+//     let address = await Model.AddressModel.findById(req.params.id);
+//     if (address) {
+//       const userId = address.userId;
+//       return res.status(200).json({
+//         success: true,
+//         message: "Tìm thấy thông tin địa chỉ người dùng thành công",
+//         address: address,
+//         userId: userId,
+//       });
+//     } else {
+//       return res.status(404).json({ msg: "Không tìm thấy địa chỉ với id này" });
+//     }
+//   } catch (error) {
+//     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+//   }
+// };
+
 
 exports.UpdateAddress = async (req, res, next) => {
   let nameAddress = req.body.nameAddress;
@@ -436,27 +576,17 @@ exports.UpdateAddress = async (req, res, next) => {
   try {
     let Address = await Model.AddressModel.findById(addressID);
     if (Address) {
-      Address.nameAddress = nameAddress;
-      Address.detailAddress = detailAddress;
-      Address.latitude = latitude;
-      Address.longitude = longitude;
+      Address.nameAddress =  nameAddress ||Address.nameAddress;
+      Address.detailAddress =   detailAddress ||Address.detailAddress;
+      Address.latitude = latitude || Address.latitude ;
+      Address.longitude =  longitude ||Address.longitude;
       Address.permission = permission === "0" ? "Default" : "No Default";
 
-      if (!nameAddress || !detailAddress || !latitude || !longitude) {
+      if ( !detailAddress || !latitude || !longitude) {
         res.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
         return;
       }
 
-      if (
-        addressOld.longitude === longitude &&
-        addressOld.latitude === latitude
-      ) {
-        res.json({
-          success: false,
-          message: "Không được trùng vị trí hiện tại",
-        });
-        return;
-      }
 
       if (
         addressOld.nameAddress === nameAddress &&

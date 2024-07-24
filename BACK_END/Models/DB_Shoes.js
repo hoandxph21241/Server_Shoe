@@ -4,7 +4,8 @@ var userSchema = new db.mongoose.Schema(
     userID: { type: String, require: true },
     nameAccount: { type: String, require: true },
     namePassword: { type: String, require: true },
-    imageAccount: { type: String, require: false },
+    // imageAccount: { type: String, require: false },
+    imageAccount: { type: Buffer},
     phoneNumber: { type: String, require: false },
     userName: { type: String, require: false },
     fullName: { type: String, require: false },
@@ -17,6 +18,8 @@ var userSchema = new db.mongoose.Schema(
     locked: { type: Boolean, require: true, default: false },
     // OTP đổi mật khẩu
     otp: { type: String, require: false },
+   // notification 
+    fcmToken:{ type: String, require: false },
   },
   {
     collection: "User",
@@ -102,6 +105,22 @@ var ColorShoeSchema = new db.mongoose.Schema(
 );
 let ColorShoeModel = db.mongoose.model("ColorShoeModel", ColorShoeSchema);
 
+var FavouriteShoeSchema = new db.mongoose.Schema(
+  {
+    favouriteId: { type: String, require: false },
+    shoeId: [{ type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" }],
+    userId: {type: db.mongoose.Schema.Types.ObjectId,ref: "UserModel"},
+  },
+  {
+    collation: { locale: "en_US", strength: 1 },
+    collection: "Favourite",
+  }
+);
+let FavouriteShoeModel = db.mongoose.model(
+  "FavouriteShoeModel",
+  FavouriteShoeSchema
+);
+
 var ShoeSchema = new db.mongoose.Schema(
   {
     shoeId: { type: String, require: true },
@@ -112,7 +131,7 @@ var ShoeSchema = new db.mongoose.Schema(
     gender: { type: String, require: false },
     thumbnail: { type: String, require: false },
     status: { type: Number, require: true, default: 0 },
-    brandShoe: {
+    typerShoe: {
       type: db.mongoose.Schema.Types.ObjectId,
       ref: "TypeShoeModel",
     },
@@ -263,4 +282,5 @@ module.exports = {
   OderDetailModel,
   CartModel,
   AddressModel,
+  FavouriteShoeModel,
 };

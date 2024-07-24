@@ -54,6 +54,14 @@ exports.SignIn = async (req, res, next) => {
           console.log(user.fullName);
           console.log("==== End login ====");
           msg = "SignIn Success!";
+
+
+          if (req.body.fcmToken) {
+            objU.fcmToken = req.body.fcmToken;
+            await objU.save();
+            console.log("FCM Token saved:", req.body.fcmToken);
+          }
+
           if (objU["role"] !== 2) {
             return res.redirect("/home");
           } else {
@@ -78,6 +86,14 @@ exports.SignOut = async (req, res, next) => {
     if (req.session && Object.keys(req.session).length !== 0) {
       console.log("Account_session_SignOut");
       console.log(req.session.user);
+
+            // Xóa FCM Token
+            let user = req.session.user;
+            if (user) {
+              user.fcmToken = null;
+              await user.save();
+              console.log("FCM Token removed");
+            }
 
       // Hủy session
       req.session.destroy((err) => {
