@@ -263,8 +263,10 @@ const AdminNotificationModel = db.mongoose.model("AdminNotificationModel", admin
 var CartSchema = new db.mongoose.Schema(
   {
     cartId: { type: String, require: true },
-    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
-    shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    userId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    shoeId: { type: mongodb.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    sizeId: { type: String, require: true },
+    colorId: { type: String, require: true },
     numberShoe: { type: String, require: false },
   },
   {
