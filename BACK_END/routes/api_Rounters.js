@@ -8,7 +8,7 @@ const review = require("../Contronller/api/ReviewApi");
 const banner = require("../Contronller/api/BannerApi");
 var Users_API = require("../Contronller/api/User_api");
 var Product_API = require("../Contronller/api/Product_api");
-
+const statistics = require("../Contronller/Statistical_Controller");
 
 // Auth Rounters
 router.get("/signin", Auth_API.Sign);
@@ -75,6 +75,7 @@ router.post("/addBanner", banner.addBanner);
 router.get("/getBanner", banner.getBanner);
 // http://localhost:3000/api/removeBanner
 router.delete("/removeBanner", banner.removeBanner);
+
 
 
 

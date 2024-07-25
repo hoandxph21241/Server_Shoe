@@ -11,8 +11,6 @@ const timeVietNam = () => {
   const date = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
   return date;
 };
-// Phần này của admin thêm vào api admin
-
 const checkDiscount = async (req, res) => {
   try {
     const couponCode = req.query.code;
