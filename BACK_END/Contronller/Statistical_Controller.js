@@ -108,10 +108,13 @@ const getTop5WorstSelling = async (req, res) => {
     const top5WorstSelling = salesData.slice(0, 5);
 
     res.json(top5WorstSelling);
+    
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+
 };
+
 
 module.exports = {
   getTop5WorstSelling,
