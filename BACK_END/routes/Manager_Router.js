@@ -17,6 +17,7 @@ router.get('/productlist',ManagerController.ProductList);
 router.get('/edit-product',ManagerController.EditProduct);
 router.get('/addproduct',ManagerController.AddProduct);
 router.get('/product-with-brand',ManagerController.ListProductWithBrand);
+router.post('/hide-shoe/:_id',ManagerController.HideShoe);
 
 router.get('/vorcherlist',ManagerController.VorcherList);
 
