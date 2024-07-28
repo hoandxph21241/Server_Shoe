@@ -2,6 +2,7 @@ const { OderModel, OderDetailModel, ShoeModel } = require("../Models/DB_Shoes");
 
 const getTop5BestSelling = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
     const salesData = await OderDetailModel.aggregate([
       {
         $lookup: {
@@ -16,7 +17,11 @@ const getTop5BestSelling = async (req, res) => {
       },
       {
         $match: {
-          'orderDetails.status': 'Giao Thành Công'
+          'orderDetails.status': 'Giao Thành Công',
+          'orderDetails.date': {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate)
+          }
         }
       },
       {
@@ -59,6 +64,7 @@ const getTop5BestSelling = async (req, res) => {
 
 const getTop5WorstSelling = async (req, res) => {
   try {
+    const { startDate, endDate } = req.query;
     const salesData = await OderDetailModel.aggregate([
       {
         $lookup: {
@@ -73,7 +79,11 @@ const getTop5WorstSelling = async (req, res) => {
       },
       {
         $match: {
-          'orderDetails.status': 'Giao Thành Công'
+          'orderDetails.status': 'Giao Thành Công',
+          'orderDetails.date': {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate)
+          }
         }
       },
       {
@@ -105,18 +115,13 @@ const getTop5WorstSelling = async (req, res) => {
         }
       }
     ]);
+
     const top5WorstSelling = salesData.slice(0, 5);
 
     res.json(top5WorstSelling);
-    
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-
 };
 
-
-module.exports = {
-  getTop5WorstSelling,
-  getTop5BestSelling
-}
+module.exports = { getTop5BestSelling, getTop5WorstSelling };
