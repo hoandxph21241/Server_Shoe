@@ -325,8 +325,8 @@ exports.findShoes_DATA = async (req, res, next) => {
 
 const formatString = (inputString) => {
   return inputString.toLowerCase().replace(/\s+/g, "-");
-}; development
-};
+}; 
+
 
 
 exports.ADD_Product = async (req, res) => {
