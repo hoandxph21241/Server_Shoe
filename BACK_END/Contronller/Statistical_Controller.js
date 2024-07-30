@@ -123,5 +123,34 @@ const getTop5WorstSelling = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+const LowStockShoes = async (req, res) => {
+  try {
+    const shoes = await ShoeModel.find({ numberShoe: { $lt: 10 } });
+    res.json(shoes);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
-module.exports = { getTop5BestSelling, getTop5WorstSelling };
+const BestSellingShoes = async (req, res) => {
+  try {
+    const bestSellingProducts = await OderDetailModel.aggregate([
+      { $group: { _id: "$shoeId", totalQuantity: { $sum: "$quanlity" } } },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 10 },
+      { $lookup: {
+        from: 'Shoe',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'shoeDetails'
+      } },
+      { $unwind: "$shoeDetails" }
+    ]);
+    res.status(200).json(bestSellingProducts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+module.exports = { getTop5BestSelling, getTop5WorstSelling, LowStockShoes, BestSellingShoes };

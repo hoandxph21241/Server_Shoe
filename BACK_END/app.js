@@ -56,9 +56,9 @@ app.use("/manager",ManagerRouter);
 const IFUser = require("./routes/IFUser_Router");
 app.use("/ifUser", IFUser);
 //user
-var UserRouter = require('./routes/User_Rounters');
+const UserRouter = require('./routes/User_Rounters');
 app.use("/user", UserRouter);
-var StatisticalRouter = require('./routes/Statistical_Rounters');
+const StatisticalRouter = require('./routes/Statistical_Rounters');
 app.use("/statistical", StatisticalRouter);
 
 const discountRouter = require('./routes/Discount_rounters');
