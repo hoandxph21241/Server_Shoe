@@ -3,8 +3,8 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
-
 var app = express();
+
 
 //session
 var session = require('express-session')
@@ -48,9 +48,31 @@ app.use("/dashboard", DashboardRounter);
 //manager
 var ManagerRouter = require('./routes/Manager_Router');
 app.use("/manager",ManagerRouter);
+
+//Navigation
+const NavigationRouter = require("./routes/Navigation_Routers ");
+app.use("/adminNavigation", NavigationRouter);
+
+const IFUser = require("./routes/IFUser_Router");
+app.use("/ifUser", IFUser);
+
+const discountRouter = require('./routes/Discount_rounters');
+app.use("/discount", discountRouter);
 //api
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
+
+const CartRouter = require("./routes/Cart_Route");
+app.use("/cart", CartRouter);
+
+const Order_Route = require("./routes/Order_Route");
+app.use("/userOrder", Order_Route);
+
+const Navigation_Route = require("./routes/Navigation_Route");
+app.use("/userNavigation", Navigation_Route);
+
+
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
