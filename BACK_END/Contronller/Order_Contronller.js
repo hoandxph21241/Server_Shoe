@@ -34,9 +34,9 @@ const getAllOrders = async (req, res) => {
 
       return formattedOrder;
     });
-    res.json({ formattedOrders })
+    // res.json({ formattedOrders })
 
-    // res.render("order/order_list.ejs", { formattedOrders });
+    res.render("order/order_list.ejs", { formattedOrders });
   } catch (err) {
     res.status(500).json({ message: "Error list.", error: err.message });
   }
@@ -102,9 +102,9 @@ const getOrdersDetailt = async (req, res) => {
         },
       })),
     };
-    res.json({ orderResponse });
+    // res.json({ orderResponse });
 
-    // res.render("order/order_details.ejs", { orderResponse });
+    res.render("order/order_details.ejs", { orderResponse });
   } catch (err) {
     res.status(500).json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
   }

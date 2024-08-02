@@ -1,11 +1,7 @@
 var Model = require("../Models/DB_Shoes");
-const admin = require('firebase-admin');
-const serviceAccount = require('../Config/shoe-addbc-firebase-adminsdk-csvd6-23011188ed.json');
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: 'gs://shoe-addbc.appspot.com',
-});
+const admin = require('../config/firebase');
+
 
 const bucket = admin.storage().bucket();
 
