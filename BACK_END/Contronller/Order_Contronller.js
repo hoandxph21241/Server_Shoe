@@ -1,6 +1,6 @@
 const { sendNotificationUser } = require('../Contronller/api/Navigation_api');
 const { sendNotificationAdmin } = require('../Contronller/Navigation_Controller');
-const { OrderModel, OderDetailModel } = require("../Models/DB_Shoes");
+const { OrderModel, OderDetailModel, ShoeModel, DiscountModel } = require("../Models/DB_Shoes");
 
 const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
@@ -25,8 +25,8 @@ const getAllOrders = async (req, res) => {
         userNameAccount: order.userId?.nameAccount || null,
         userImageAccount: order.userId?.imageAccount || null,
         ...order,
-        discountId: order.discointId?._id || null,
-        discountAmount: order.discointId?.discountAmount || 0,
+        // discountId: order.discointId?._id || null,
+        // discountAmount: order.discointId?.discountAmount || 0,
       };
 
       delete formattedOrder.userId;
@@ -34,9 +34,9 @@ const getAllOrders = async (req, res) => {
 
       return formattedOrder;
     });
-    res.json({ formattedOrders })
+    // res.json({ formattedOrders })
 
-    // res.render("order/order_list.ejs", { formattedOrders });
+    res.render("order/order_list.ejs", { formattedOrders });
   } catch (err) {
     res.status(500).json({ message: "Error list.", error: err.message });
   }
@@ -87,6 +87,7 @@ const getOrdersDetailt = async (req, res) => {
       addressOrder: order.addressOrder,
       dateOrder: order.dateOrder,
       status: order.status,
+      orderStatusDetails: order.orderStatusDetails,
       total: order.total,
       discountAmount: order.discointId ? order.discointId.discountAmount : 0,
       details: orderDetails.map((detail) => ({
@@ -102,9 +103,9 @@ const getOrdersDetailt = async (req, res) => {
         },
       })),
     };
-    res.json({ orderResponse });
+    // res.json({ orderResponse });
 
-    // res.render("order/order_details.ejs", { orderResponse });
+      res.render("order/order_details.ejs", { orderResponse });
   } catch (err) {
     res.status(500).json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
   }
@@ -305,93 +306,155 @@ const confirmOrderReceived = async (req, res) => {
   }
 };
 
-// const cancelOrder = async (req, res) => {
-//   const { orderId } = req.params;
-//   const { cancelReason } = req.body; // Lý do hủy
+// Hủy đơn hàng trạng thái Chờ xác nhận
+const cancelOrder = async (req, res) => {
+  const { orderId } = req.params;
+  const { cancelReason } = req.body; // Lý do hủy
 
-//   try {
-//     const order = await OrderModel.findById(orderId);
+  try {
+    const order = await OrderModel.findById(orderId);
 
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+    }
 
+    if (order.status !== 'Chờ xác nhận') {
+      return res.status(400).json({ message: 'Chỉ có thể hủy đơn hàng khi trạng thái là "Chờ xác nhận".' });
+    }
 
-//     if (!order) {
-//       return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
-//     }
+    order.status = 'Đã hủy';
+    order.orderStatusDetails.push({
+      status: 'Đã hủy',
+      timestamp: vietnamDate,
+      note: `Đơn hàng đã bị hủy. Lý do: ${cancelReason}`
+    });
+    await order.save();
 
-//     if (order.status !== 'Chờ xác nhận') {
-//       return res.status(400).json({ message: 'Chỉ có thể hủy đơn hàng khi trạng thái là "Chờ xác nhận".' });
-//     }
+    const orderDetails = await OderDetailModel.find({ orderId: order._id });
+    for (let item of orderDetails) {
+      const shoe = await ShoeModel.findById(item.shoeId);
 
-//     sendNotificationUser(
-//       order.userId,
-//       'Đơn hàng đã bị hủy',
-//       `Đơn hàng #${orderId}  bạn đã bị hủy. Lý do: ${cancelReason}`,
-//       'OrderCanceled',
+      if (!shoe) {
+        return res.status(400).json({ message: `Không tìm thấy giày với id ${item.shoeId}` });
+      }
 
+      const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
+      const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
 
-//     );
+      if (sizeIndex === -1 || colorIndex === -1) {
+        return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
+      }
 
-//     sendNotificationAdmin(
-//       'Đơn hàng đã bị hủy',
-//       `Đơn hàng #${orderId} đã bị hủy. Lý do người dùng: ${cancelReason}`,
-//       'OrderCanceled',
+      const storageIndex = sizeIndex * shoe.colorShoe.length + colorIndex;
+      if (storageIndex < 0 || storageIndex >= shoe.storageShoe.length) {
+        return res.status(400).json({ message: `Không tìm thấy mục tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
+      }
 
-//     );
-//     await order.save();
+      shoe.storageShoe[storageIndex].importQuanlity += item.quantity;
+      shoe.soldQuanlityAll -= item.quantity;
+      await shoe.save();
+    }
 
-//     const orderDetails = await OderDetailModel.find({ orderId: order._id });
-//     for (let item of orderDetails) {
-//       const shoe = await ShoeModel.findById(item.shoeId);
+    if (order.discointId) {
+      const discount = await DiscountModel.findById(order.discointId);
 
-//       if (!shoe) {
-//         return res.status(400).json({ message: `Không tìm thấy giày với id ${item.shoeId}` });
-//       }
+      if (discount && discount.isActive) {
+        discount.maxUser += 1;
+        await discount.save();
+      }
+    }
 
-//       const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
-//       const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
+    sendNotificationUser(
+      order.userId,
+      'Đơn hàng đã bị hủy',
+      `Đơn hàng #${orderId}  Người bán đã hủy. Lý do: ${cancelReason}`,
+      'OrderCanceled',
+      orderDetails[0].shoeId,
+      vietnamDate
+    );
 
-//       if (sizeIndex === -1 || colorIndex === -1) {
-//         return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
-//       }
+    sendNotificationAdmin(
+      'Bạn đã hủy đơn hàng',
+      `Đơn hàng #${orderId} đã bị hủy. Lý do : ${cancelReason}`,
+      'OrderCanceled',
+      orderDetails[0].shoeId,
+      vietnamDate
+    );
 
-//       const storageIndex = sizeIndex * shoe.colorShoe.length + colorIndex;
-//       if (storageIndex < 0 || storageIndex >= shoe.storageShoe.length) {
-//         return res.status(400).json({ message: `Không tìm thấy mục tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
-//       }
+    res.status(200).json({ message: 'Đơn hàng đã bị hủy và thông báo đã được gửi.', order });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi hủy đơn hàng.', error: err.message });
+  }
+};
 
-//       shoe.storageShoe[storageIndex].importQuanlity += item.quantity;
-//       shoe.soldQuanlityAll -= item.quantity;
-//       await shoe.save();
-//     }
+const failDeliveryOrder = async (req, res) => {
+  const { orderId } = req.params;
+  const { failReason } = req.body; // Lý do giao hàng thất bại
 
-//     if (order.discointId) {
-//       const discount = await DiscountModel.findById(order.discointId);
+  try {
+    const order = await OrderModel.findById(orderId);
 
-//       if (discount && discount.isActive) {
-//         discount.maxUser += 1;
-//         await discount.save();
-//       }
-//     }
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
 
-//     sendNotification(
-//       order.userId,
-//       'Đơn hàng đã bị hủy',
-//       `Đơn hàng #${orderId} của bạn đã bị hủy. Lý do: ${cancelReason}`,
-//       'OrderCanceled',
-//       'Đơn hàng đã bị hủy',
-//       `Đơn hàng #${orderId} đã bị hủy. Lý do: ${cancelReason}`
-//     );
+    if (order.status !== "Giao hàng") {
+      return res.status(400).json({
+        message: 'Chỉ có thể chuyển trạng thái đơn hàng từ "Giao hàng" sang "Giao hàng thất bại".',
+      });
+    }
 
-//     res.status(200).json({ message: 'Đơn hàng đã bị hủy và thông báo đã được gửi.', order });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Lỗi khi hủy đơn hàng.', error: err.message });
-//   }
-// };
+    const orderDetails = await OderDetailModel.find({ orderId });
+
+    if (orderDetails.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
+    }
+
+    order.status = "Giao hàng thất bại";
+    order.orderStatusDetails.push({
+      status: "Giao hàng thất bại",
+      timestamp: vietnamDate,
+      note: `Giao hàng thất bại. Lý do: ${failReason}`,
+    });
+
+    await order.save();
+
+    sendNotificationUser(
+      order.userId,
+      'Giao hàng thất bại',
+      `Đơn hàng #${orderId} của bạn đã gặp vấn đề khi giao hàng. Lý do: ${failReason}`,
+      'OrderDeliveryFailed',
+      orderDetails[0].shoeId,
+      vietnamDate
+    );
+
+    sendNotificationAdmin(
+      'Giao hàng thất bại',
+      `Đơn hàng #${orderId} gặp vấn đề khi giao hàng. Lý do: ${failReason}`,
+      'OrderDeliveryFailed',
+      orderDetails[0].shoeId,
+      vietnamDate
+    );
+
+    res.status(200).json({
+      message: 'Trạng thái đơn hàng đã được cập nhật thành "Giao hàng thất bại" và thông báo đã được gửi.',
+      order,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Lỗi khi cập nhật trạng thái đơn hàng.",
+      error: err.message,
+    });
+  }
+};
+
 
 module.exports = {
+  cancelOrder,
   getAllOrders,
   getOrdersDetailt,
   prepareOrder,
   shipOrder,
   confirmOrderReceived,
+  failDeliveryOrder
 };

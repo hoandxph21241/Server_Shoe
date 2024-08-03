@@ -22,7 +22,6 @@ const addDiscount = async (req, res) => {
       maxUser,
       isActive: true
     });
-
     await discount.save();
     //   return res.render('addDiscount.ejs', { msg: "Discount added successfully!" });
   } catch (err) {

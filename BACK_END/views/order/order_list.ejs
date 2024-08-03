@@ -4,145 +4,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order List</title>
+    <title>Danh sách các đơn hàng</title>
     <!-- Add Bootstrap  -->
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <style>
         .content {
             margin-left: 20px;
             margin-right: 20px;
         }
+
         .date {
             margin-top: 10px;
+        }
+
+        .table-hover tbody tr {
+            cursor: pointer;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-buttons button {
+            margin-right: 10px;
         }
     </style>
 </head>
 
 <body>
-
-    <%- include('../inc/top.ejs')%>
-        <div class="content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3>Order List</h3>
-                <div class="ms-auto date">
-                    <input type="date" id="datePicker" name="datePicker">
-                    <span>Feb 16, 2022 - Feb 20, 2022</span>
-                    <div class="date">
-                        <button class="btn btn-secondary">Xác nhận</button>
-                        <button class="btn btn-secondary">Hủy</button>
-                    </div>
+    <%- include('../inc/top.ejs') %>
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Danh sách các đơn hàng</h3>
+            <div class="ms-auto date">
+                <input type="date" id="datePicker" name="datePicker">
+                <span>Feb 16, 2022 - Feb 20, 2022</span>
+                <div class="date">
+                    <button class="btn btn-secondary">Xác nhận</button>
+                    <button class="btn btn-secondary">Hủy</button>
                 </div>
             </div>
-
-            <div class="dropdown mb-3">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    All
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="#">Delivered</a>
-                    <a class="dropdown-item" href="#">Canceled</a>
-                </div>
-            </div>
-            <h5>Recent Purchases</h5>
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th class="col"><input type="checkbox"></th>
-                        <th class="col">Custom Name</th>
-                        <th class="col">Order ID</th>
-                        <th class="col">Date</th>
-                        <th class="col">Amount</th>
-                        <th class="col">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-delivered">● Delivered</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-canceled">● Canceled</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-delivered">● Delivered</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-canceled">● Canceled</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-delivered">● Delivered</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><a href="/order/orderdetails"><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</a></td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-canceled">● Canceled</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-delivered">● Delivered</td>
-                    </tr>
-                    <tr>
-                        <td><input type="checkbox"></td>
-                        <td><img src="https://via.placeholder.com/30" class="rounded-circle mr-2" alt="Customer Image"> Bessie Cooper</td>
-                        <td>#25421</td>
-                        <td>Jan 8th, 2022</td>
-                        <td>$200.00</td>
-                        <td class="status-delivered">● Delivered</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <nav aria-label="Page navigation example">
-                <ul class="pagination justify-content-start">
-                    <li class="page-item"><a class="page-link text-dark " href="#">1</a></li>
-                    <li class="page-item"><a class="page-link  text-dark" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link  text-dark" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link  text-dark" href="#">4</a></li>
-                    <li class="page-item"><a class="page-link  text-dark" href="#">...</a></li>
-                    <li class="page-item"><a class="page-link  text-dark" href="#">10</a></li>
-                    <li class="page-item"><a class="page-link  text-dark" href="#">NEXT</a></li>
-                </ul>
-            </nav>
         </div>
-        <%- include('../inc/end.ejs')%>
 
+        <!-- Add status buttons here -->
+        <div class="status-buttons mb-3">
+            <button class="btn btn-warning" data-status="Chờ xác nhận">Chưa xác nhận</button>
+            <button class="btn btn-primary" data-status="Chuẩn bị hàng">Chuẩn bị hàng</button>
+            <button class="btn btn-success" data-status="Giao hàng">Đang giao hàng</button>
+            <button class="btn btn-danger" data-status="Đã nhận hàng">Giao thành công</button>
+            <button class="btn btn-dark" data-status="Đã hủy">Đã hủy đơn</button>
+        </div>
+
+        <div class="mb-3">
+            <label>
+                <input type="radio" name="orderFilter" value="all"> Tất cả đơn hàng
+            </label>
+            <label>
+                <input type="radio" name="orderFilter" value="today"> Đơn hàng ngày hôm nay
+            </label>
+        </div>
+
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><input type="checkbox"></th>
+                    <th>Customer Name</th>
+                    <th>Order ID</th>
+                    <th>Date</th>
+                    <th>Total</th>
+                    
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="orderList">
+                <% formattedOrders.forEach(order => { %>
+                <tr onclick="window.location.href='/order/orderDetails/<%= order._id %>'" class="order-row" data-status="<%= order.status %>" data-date="<%= order.dateOrder %>">
+                    <td><input type="checkbox"></td>
+                    <td><img src="<%= order.userImageAccount %>" class="rounded-circle mr-2" alt="Customer Image" width="50dp"> <%= order.userNameAccount %></td>
+                    <td><%= order._id %></td>
+                    <td><%= order.dateOrder %></td>
+                    <td>$<%= order.total %></td>
+                    <td class="status-<%= order.status.toLowerCase().replace(/ /g, '-') %>">● <%= order.status %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <li class="page-item"><a class="page-link text-dark" href="#">1</a></li>
+                <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
+                <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
+                <li class="page-item"><a class="page-link text-dark" href="#">4</a></li>
+                <li class="page-item"><a class="page-link text-dark" href="#">...</a></li>
+                <li class="page-item"><a class="page-link text-dark" href="#">10</a></li>
+                <li class="page-item"><a class="page-link text-dark" href="#">NEXT</a></li>
+            </ul>
+        </nav>
+    </div>
+    <%- include('../inc/end.ejs') %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Xử lý click cho các nút trạng thái
+            const statusButtons = document.querySelectorAll('.status-buttons button');
+            statusButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const status = this.getAttribute('data-status');
+                    console.log(`Status button clicked: ${status}`);
+                    filterOrdersByStatus(status);
+                });
+            });
+
+            // Xử lý click cho các radio button
+            const orderFilters = document.querySelectorAll('input[name="orderFilter"]');
+            orderFilters.forEach(radio => {
+                radio.addEventListener('change', function () {
+                    const filterValue = this.value;
+                    console.log(`Order filter selected: ${filterValue}`);
+                    filterOrdersByType(filterValue);
+                });
+            });
+        });
+
+        function filterOrdersByStatus(status) {
+            const rows = document.querySelectorAll('.order-row');
+            rows.forEach(row => {
+                if (status === "Tất cả đơn hàng" || row.getAttribute('data-status') === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function filterOrdersByType(type) {
+            const rows = document.querySelectorAll('.order-row');
+            const today = new Date();
+            const formattedToday = ('0' + today.getDate()).slice(-2) + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + today.getFullYear();
+            console.log(formattedToday);
+            rows.forEach(row => {
+                const orderDate = row.getAttribute('data-date').split(" ")[1];
+
+                if (type === "all" || (type === "today" && orderDate === formattedToday)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

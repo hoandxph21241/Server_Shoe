@@ -48,6 +48,7 @@ const getNotificationsByAdmin = async (req, res) => {
   try {
     const notifications = await AdminNotificationModel.find();
     res.status(200).json(notifications);
+
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách thông báo.', error: err.message });
   }
