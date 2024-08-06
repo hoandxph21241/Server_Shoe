@@ -60,7 +60,7 @@ router.delete('/typeshoe/:id', Product_API.deleteTypeShoe);
 
 
 
-router.get("/getallproduct",Product_API.AllProduct);  
+
 
 
 // Shoes Routers

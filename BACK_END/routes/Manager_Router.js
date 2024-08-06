@@ -13,7 +13,7 @@ const upload = multer({storage:storage});
 router.post('/brand',upload.fields([{name:'imageType'}]),ManagerController.addBrand);
 router.get("/list-brand",ManagerController.BrandList);
 
-router.get('/productlist',ManagerController.ProductList);
+router.get('/productlist',ManagerController.AllProduct);
 router.get('/edit-product',ManagerController.EditProduct);
 router.get('/addproduct',ManagerController.AddProduct);
 

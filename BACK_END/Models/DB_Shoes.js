@@ -323,6 +323,21 @@ var CartSchema = new db.mongoose.Schema(
 );
 let CartModel = db.mongoose.model("CartModel", CartSchema);
 
+const StorageShoeSchema = new db.mongoose.Schema({
+  shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ShoeModel' },
+  colorShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ColorShoeModel' },
+  sizeShoe: [
+    {
+      sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'SizeShoeModel' },
+      quantity: { type: Number, required: true }
+    }
+  ],
+  importQuanlity: { type: Number, required: true },
+  soldQuanlity: { type: Number, required: true }
+});
+
+const StorageShoeModel = db.mongoose.model('StorageShoe', StorageShoeSchema);
+
 module.exports = {
   UserModel,
   BannerModel,
@@ -330,6 +345,7 @@ module.exports = {
   ShoeModel,
   SizeShoeModel,
   ColorShoeModel,
+  StorageShoeModel,
   OrderModel,
   DiscountModel,
   OderDetailModel,

@@ -1,13 +1,13 @@
 <div class="row d-flex align-items-center my-3">
     <div class="col-auto">
-        <h3>Brands</h3>
+        <h3>TyperShoe</h3>
     </div>
     <div class="col-auto ms-2">
         <button class="btn btn-dark" style="border-radius: 50px;" data-toggle="modal"
             data-target="#hideModalBrands">Add</button>
     </div>
     <div class="col flex-grow-1"></div>
-    <% if(brands.length >= 10) { %>
+    <% if(typerShoe.length>= 10) { %>
         <div class="col-auto">
             <a href="#">Xem tất cả</a>
         </div>
@@ -15,17 +15,17 @@
 </div>
 
 <div class="brand-logos mb-3 d-flex justify-content-between">
-    <% const visibleBrand = brands.slice(0,10); %>
-    <% if (visibleBrand.length> 0) { %>
-        <% visibleBrand.forEach(function(brand) { %>
-            <img src="<%= brand.imageType %>" alt="<%= brand.nameType %>">
-            <div class="edit-notify" id="editNotification<%= brand._id %>">
-                <button class="btn btn-secondary">Sửa</button>
-            </div>
-            <% }); %>
-                <% } else { %>
-                    <p>No brands available.</p>
-                    <% } %>
+    <% const visibleBrand=typerShoe.slice(0,10); %>
+        <% if (visibleBrand.length> 0) { %>
+            <% visibleBrand.forEach(function(typerShoe) { %>
+                <img src="<%= typerShoe.imageType %>" alt="<%= typerShoe.nameType %>">
+                <div class="edit-notify" id="editNotification<%= typerShoe._id %>">
+                    <button class="btn btn-secondary">Sửa</button>
+                </div>
+                <% }); %>
+                    <% } else { %>
+                        <p>No brands available.</p>
+                        <% } %>
 
 </div>
 
