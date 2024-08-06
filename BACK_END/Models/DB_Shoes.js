@@ -312,6 +312,8 @@ var CartSchema = new db.mongoose.Schema(
     cartId: { type: String, require: true },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
+    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" }, 
+    colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
     numberShoe: { type: String, require: false },
   },
   {
