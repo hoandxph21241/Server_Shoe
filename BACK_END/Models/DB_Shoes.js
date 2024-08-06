@@ -346,6 +346,7 @@ module.exports = {
   SizeShoeModel,
   ColorShoeModel,
   StorageShoeModel,
+  FavouriteShoeModel,
   OrderModel,
   DiscountModel,
   OderDetailModel,

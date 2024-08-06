@@ -208,7 +208,7 @@ exports.AllProduct = async (req, res) => {
   try {
     let shoes = await Model.ShoeModel.find()
       .populate('typerShoe', 'nameType') 
-      .populate('colorShoe', 'textColor')
+      .populate('colorShoe', 'textColor codeColor' )
       .populate('sizeShoe', 'size')
       .lean();
     
@@ -236,10 +236,9 @@ exports.AllProduct = async (req, res) => {
       shoesWithStorage.push(shoe);
     }
 
-    res.status(200).json({ message: "Fetched all shoes successfully", data: shoesWithStorage });
+    res.status(200).json({ data: shoesWithStorage });
   } catch (error) {
-    console.error("Error fetching shoes:", error);
-    res.status(500).json({ message: "Internal Server Error", error });
+    return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
   }
 };
 
