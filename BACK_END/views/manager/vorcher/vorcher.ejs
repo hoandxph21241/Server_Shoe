@@ -104,39 +104,44 @@
         </div>
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             <!-- Repeat this card for each product -->
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title m-0">Adidas Ultra boost</h5>
-                            <div class="action">
-                                <button class="btn btn-light">...</button>
-                            </div>
-                        </div>
-                        <p class="card-text fw-bold">$800.40</p>
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="mb-2 d-flex justify-content-between align-items-center">
-                                    <small class="text-muted">Thời gian kết thúc</small>
-                                    <p class="m-0">0h00 12/3/2003</p>
+            <% discounts.forEach(function(discount) { %>
+            <div class="row mt-5">
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title m-0"><%= discount.couponCode %></h5>
+                                <div class="action">
+                                    <button class="btn btn-light">...</button>
                                 </div>
-                                <hr class="my-2">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <small class="text-muted">Số lượng</small>
-                                    <div class="d-flex align-items-center">
-                                        <div class="ms-2 me-2" style="width: 50px;">
-                                            <div class="progress">
-                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 50%" aria-valuenow="1269" aria-valuemin="0" aria-valuemax="5000"></div>
+                            </div>
+                            <p class="card-text fw-bold">$<%= discount.discountAmount %></p>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-2 d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Thời gian kết thúc</small>
+                                        <p class="m-0"><%= new Date(discount.endDate).toLocaleString() %></p>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-muted">Số lượng</small>
+                                        <div class="d-flex align-items-center">
+                                            <div class="ms-2 me-2" style="width: 50px;">
+                                                <div class="progress">
+                                                    <div class="progress-bar bg-warning" role="progressbar" ></div>
+                                                </div>
                                             </div>
+                                            <p class="m-0"><%= discount.quantity %></p>
                                         </div>
-                                        <p class="m-0">1269</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+             
             </div>
+            <% }); %>
             <!-- End of card repeat -->
         </div>
     </div>
@@ -151,33 +156,27 @@
                 </div>
                 <div class="modal-body">
                     <!-- Modal content goes here -->
-                    <form>
-                        <div class="mb-3">
-                            <label for="discountCode" class="form-label">Mã giảm giá:</label>
-                            <input type="text" class="form-control" id="discountCode" placeholder="Text">
-                        </div>
+                    <form action="/discount/add" method="post">
+                     
                         <div class="mb-3">
                             <label for="discountAmount" class="form-label">Giảm giá:</label>
-                            <input type="number" class="form-control" id="discountAmount" placeholder="Number">
+                            <input type="number" class="form-control" id="discountAmount" name="discountAmount" placeholder="Number">
                         </div>
                         <div class="mb-3">
-                            <label for="endTime" class="form-label">Thời gian bắt đầu:</label>
-                            <input type="date" class="form-control" id="endTime" placeholder="Text">
+                            <label for="endDate" class="form-label">Thời gian kết thúc:</label>
+                            <input type="text" class="form-control" id="endDate" name="endDate" placeholder="Text">
                         </div>
                         <div class="mb-3">
-                            <label for="endTime" class="form-label">Thời gian kết thúc:</label>
-                            <input type="date" class="form-control" id="endTime" placeholder="Text">
+                            <label for="maxUser" class="form-label">Số lượng:</label>
+                            <input type="number" class="form-control" id="maxUser" name="maxUser" placeholder="Text">
                         </div>
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Số lượng:</label>
-                            <input type="text" class="form-control" id="quantity" placeholder="Text">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-save">Save</button>
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-save">Save</button>
-                </div>
+                
             </div>
         </div>
     </div>

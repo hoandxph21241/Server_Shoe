@@ -199,6 +199,7 @@ var DiscountSchema = new db.mongoose.Schema(
     couponCode: { type: String, require: false },
     discountAmount: { type: Number, require: false },
     endDate: { type: String, require: false },
+    createAt:{type:Date, default:Date.now()},
     maxUser: { type: Number, require: false },
     isActive: { type: Boolean, require: false },
   },

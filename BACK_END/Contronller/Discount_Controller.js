@@ -10,6 +10,8 @@ const addDiscount = async (req, res) => {
     let msg = "";
     const { discountAmount, endDate, maxUser, description } = req.body;
     console.log(maxUser);
+    console.log(endDate);
+    
     let couponCode = Math.random().toString(36).substring(7).toUpperCase();
     while (await DiscountModel.findOne({ couponCode: couponCode })) {
       couponCode = Math.random().toString(36).substring(7).toUpperCase();
@@ -18,16 +20,19 @@ const addDiscount = async (req, res) => {
     const discount = new DiscountModel({
       couponCode,
       discountAmount,
-      endDate: time,
+      endDate: time, 
       maxUser,
       isActive: true
     });
 
     await discount.save();
-    //   return res.render('addDiscount.ejs', { msg: "Discount added successfully!" });
+      // return res.render('manager/vorcher/vorcher.ejs');
+      res.redirect('/discount')
   } catch (err) {
     console.log(err);
-    //   return res.render('addDiscount.ejs', { msg: "Error adding discount!" });
+      // return res.render('addDiscount.ejs', { msg: "Error adding discount!" });
+      console.log("Lỗi : ",err);
+      
   }
 };
 const hiddenDiscount = async (req, res) => {
@@ -86,7 +91,8 @@ const editDiscount = async (req, res) => {
 const getListDiscount = async (req, res) => {
     try {
         const discount = await DiscountModel.find().sort({ endDate: 1 });
-        // return res.render('listDiscount.ejs', { discount });
+        return res.render('manager/vorcher/vorcher.ejs',{discounts:discount});
+
     } catch (err) {
         console.log(err);
         // return res.render('listDiscount.ejs', { discount: [] });
