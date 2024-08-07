@@ -72,7 +72,7 @@ const Navigation_Route = require("./routes/Navigation_Route");
 app.use("/userNavigation", Navigation_Route);
 
 
-
+require('./Contronller/cron');
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
