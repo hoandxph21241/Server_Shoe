@@ -6,8 +6,13 @@ cron.schedule('* * * * *',async () => {
     try {
         const now = new Date();
         await DiscountModel.updateMany(
-            {endDate: {$lte:now},isActive: true},
-            {$set: {isActive: false}}
+            {
+                $or :[
+                    { endDate:{$lte:now},isActive:true},
+                    {maxUser:{$lte:0},isActive:true},
+                ]
+            },
+            {$set:{isActive:false}}
         );
         console.log("Discount update");
     } catch (error) {
