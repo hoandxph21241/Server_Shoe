@@ -120,7 +120,154 @@ exports.AllProduct = async (req, res, next) => {
     }
   };
 
+  const formatString = (inputString) => {
+    return inputString.toLowerCase().replace(/\s+/g, "-");
+  };
+  
+
 exports.AddProduct = async (req, res, next) => {
+    try {
+        // File upload function for Firebase
+        const uploadFile = (file, folder) => {
+          return new Promise((resolve, reject) => {
+            const blob = bucket.file(`${folder}/${Date.now()}_${file.originalname}`);
+            const blobStream = blob.createWriteStream({
+              metadata: {
+                contentType: file.mimetype,
+                cacheControl: 'public, max-age=31536000',
+              },
+            });
+    
+            blobStream.on('error', (err) => {
+              reject(err);
+            });
+    
+            blobStream.on('finish', async () => {
+              try {
+                await blob.makePublic();
+                const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(blob.name)}?alt=media`;
+                resolve(publicUrl);
+              } catch (error) {
+                reject(error);
+              }
+            });
+            blobStream.end(file.buffer);
+          });
+        };
+    
+        // Extract data and files from request
+        const { name, price, description, typerShoeId, status, storageShoe } = req.body;
+        const thumbnail = req.files.thumbnail ? req.files.thumbnail[0] : null;
+        const imageShoe = req.files.imageShoe ? req.files.imageShoe : [];
+    
+        // Check if shoe already exists
+        let shoe = await Model.ShoeModel.findOne({ name });
+        if (shoe) {
+          return res.status(400).json({ message: "Shoe already exists" });
+        }
+    
+        // Get shoe type
+        const type = await Model.TypeShoeModel.findById(typerShoeId);
+        if (!type) {
+          return res.status(404).json({ message: "TypeShoe not found" });
+        }
+        const shoeId = formatString(type.nameType);
+    
+        // Prepare file URLs
+        let thumbnailUrl = '';
+        if (thumbnail) {
+          thumbnailUrl = await uploadFile(thumbnail, 'thumbnails');
+        }
+    
+        const imageShoeUrls = [];
+        for (const image of imageShoe) {
+          const imageUrl = await uploadFile(image, 'images');
+          imageShoeUrls.push(imageUrl);
+        }
+        
+    
+        // Create a new Shoe document
+        shoe = new Model.ShoeModel({
+          shoeId,
+          name,
+          price,
+          description,
+          typerShoe: type._id,
+          thumbnail: thumbnailUrl,
+          status,
+          imageShoe: imageShoeUrls,
+          colorShoe: [], // To be updated later
+          sizeShoe: [], // To be updated later
+          importQuanlityAll: 0,
+          soldQuanlityAll: 0,
+          storageShoe: [] // To be updated later
+        });
+    
+        const savedShoe = await shoe.save();
+    
+        // Process storageShoe information
+        const storage = [];
+        for (const storageItem of storageShoe) {
+          const colorDoc = await Model.ColorShoeModel.findById(storageItem.colorShoe);
+          if (!colorDoc) {
+            continue;
+          }
+          const colorId = colorDoc._id;
+    
+          for (const size of storageItem.sizeShoe) {
+            const sizeId = formatString(size.size);
+            const sizeDoc = await Model.SizeShoeModel.findOneAndUpdate(
+              { size: size.size },
+              { $setOnInsert: { size: size.size, isEnable: true, sizeId: sizeId } },
+              { new: true, upsert: true }
+            );
+            const sizeDocId = sizeDoc._id;
+    
+            const importQuantity = parseInt(size.quantity, 10);
+            const soldQuantity = parseInt(size.quantity, 10);
+    
+            // Update quantities
+            shoe.importQuanlityAll += importQuantity;
+            shoe.soldQuanlityAll += soldQuantity;
+    
+            // Create and save StorageShoe document
+            const newStorage = new Model.StorageShoeModel({
+              shoeId: savedShoe._id,
+              colorShoe: colorId,
+              sizeShoe: [
+                {
+                  sizeId: sizeDocId,
+                  quantity: importQuantity
+                }
+              ],
+              importQuanlity: importQuantity,
+              soldQuanlity: soldQuantity
+            });
+    
+            const savedStorage = await newStorage.save();
+            storage.push({
+              importQuanlity: savedStorage.importQuanlity,
+              soldQuanlity: savedStorage.soldQuanlity,
+              _id: savedStorage._id
+            });
+          }
+        }
+    
+        // Update the Shoe document with final information
+        savedShoe.colorShoe = Array.from(colorIds);
+        savedShoe.sizeShoe = Array.from(sizeIds);
+        savedShoe.storageShoe = storage;
+        savedShoe.importQuanlityAll = shoe.importQuanlityAll;
+        savedShoe.soldQuanlityAll = shoe.soldQuanlityAll;
+        await savedShoe.save();
+    
+        console.log("Shoe created successfully:", savedShoe);
+    
+        res.status(201).json({ message: "Shoe created successfully", data: savedShoe });
+      } catch (error) {
+        console.error("Error during shoe creation:", error);
+        res.status(500).json({ message: "Internal Server Error", error });
+      }
     res.render('manager/product/add_product.ejs');
 };
 
@@ -131,6 +278,7 @@ exports.EditProduct = async (req, res, next) => {
 exports.VorcherList = async (req, res, next) => {
     res.render('manager/vorcher/vorcher.ejs');
 };
+
 
 exports.BannerList = async (req, res, next) => {
     try {
