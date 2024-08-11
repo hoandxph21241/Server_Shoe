@@ -377,7 +377,7 @@ exports.FindProduct = async (req, res, next) => {
           colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
           sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
           importQuanlity: item.importQuanlity,
-          soldQuanlity: item.soldQuanlity
+          sellQuanlity: item.sellQuanlity
         };
       }
       return null;
