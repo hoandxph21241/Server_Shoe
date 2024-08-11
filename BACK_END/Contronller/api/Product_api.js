@@ -236,7 +236,7 @@ exports.AllProduct = async (req, res) => {
       shoesWithStorage.push(shoe);
     }
 
-    res.status(200).json({ message: "Fetched all shoes successfully", data: shoesWithStorage });
+    res.status(200).json(shoesWithStorage);
   } catch (error) {
     console.error("Error fetching shoes:", error);
     res.status(500).json({ message: "Internal Server Error", error });
