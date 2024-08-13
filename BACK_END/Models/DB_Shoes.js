@@ -167,17 +167,19 @@ var ShoeSchema = new db.mongoose.Schema(
           },
         },
         importQuanlity: { type: Number, require: false },
-        soldQuanlity: { type: Number, require: false },
+        sellQuanlity: { type: Number, require: false },
         importQuaquanlity: { type: Number, require: false },
       },
     ],
     importQuanlityAll: { type: Number, require: false },
-    soldQuanlityAll: { type: Number, require: false },
+    sellQuanlityAll: { type: Number, require: false },
     quanlityAll: { type: Number, require: false },
     gender: { type: Number, require: true, default: 0 },
     importPrice: { type: Number, require: false },
     sellPrice: { type: Number, require: false },
     discountPrice: { type: Number, require: false },
+    createDate:{type:String,require:false},
+    updateDate:{type:String,require:false},
     rateShoe: {
       starRate: { type: Number, require: false },
       comment: [
@@ -333,7 +335,7 @@ const StorageShoeSchema = new db.mongoose.Schema({
     }
   ],
   importQuanlity: { type: Number, required: true },
-  soldQuanlity: { type: Number, required: true }
+  sellQuanlity: { type: Number, required: true }
 });
 
 const StorageShoeModel = db.mongoose.model('StorageShoe', StorageShoeSchema);
@@ -346,6 +348,7 @@ module.exports = {
   SizeShoeModel,
   ColorShoeModel,
   StorageShoeModel,
+  FavouriteShoeModel,
   OrderModel,
   DiscountModel,
   OderDetailModel,
