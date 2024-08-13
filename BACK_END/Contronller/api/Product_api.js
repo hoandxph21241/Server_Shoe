@@ -345,7 +345,6 @@ exports.AllProduct = async (req, res) => {
       shoe.storageShoe = formattedStorageItems;
       shoesWithStorage.push(shoe);
     }
-
     res.status(200).json( shoesWithStorage );
   } catch (error) {
     return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
