@@ -206,21 +206,26 @@ var OrderSchema = new db.mongoose.Schema(
     orderId: { type: String, require: true },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     nameOrder: { type: String, require: false },
-    phoneNumber: { type: Number, require: false },
+    phoneNumber: { type: String, require: false },
     addressOrder: { type: String, require: false },
-    total: { type: Number, require: false },
+    total: { type: Number, require: false },  // giá phải trả
+    totalPre: { type: Number, require: false }, // giá tổng 
     dateOrder: { type: String, require: false },
-    pay: { type: String, require: false },
-    status: { type: String, require: false },
+    status:{ type: Number, require: false , default:1},
+    dateOrder:{ type: String, require: false}, // ngày đặt hàng
+    dateReceived:{ type: String, require: false}, // ngày nhận hàng
+    pay:{ type: String, require: false}, // phương thức thanh toán
     orderStatusDetails: {
       type: [
         {
-          status: { type: String, required: true },
-          timestamp: { type: String, require: false },
+          amount: { type: Number, require: false }, // số tiền dc giảm giá
+          shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel", required:false}, 
+          sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'SizeShoeModel', required:false },
+          colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ColorShoeModel',required:false },
+          timestamp: { type: String, require: false }, // thời gian hiện tại qua các trạng thái
           note: { type: String, required: true },
         },
       ],
-      default: [],
     },
     discointId: {
       type: db.mongoose.Schema.Types.ObjectId,
@@ -256,10 +261,10 @@ var OderDetailSchema = new db.mongoose.Schema(
     orderDetailId: { type: String, require: true },
     orderId: { type: db.mongoose.Schema.Types.ObjectId, ref: "OrderModel" },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
+    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
     colorId: {
       type: db.mongoose.Schema.Types.ObjectId,
-      ref: "ShoeColorShoeModel",
+      ref: "ColorShoeModel",
     },
     quantity: { type: Number, require: false },
   },
