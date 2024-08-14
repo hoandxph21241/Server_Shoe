@@ -18,9 +18,9 @@ const addDiscount = async (req, res) => {
     }
     const time = parseDateString(endDate);
     const now = new Date();
-    if(time >= now) {
-      return res.send("Discount hết hạn");
-    }
+    // if(time >= now) {
+    //   return res.send("Discount hết hạn");
+    // }
     const discount = new DiscountModel({
       couponCode,
       discountAmount,
@@ -28,7 +28,8 @@ const addDiscount = async (req, res) => {
       maxUser,
       isActive: true
     });
-
+    console.log(discount);
+    
     await discount.save();
     res.redirect('/discount')
   } catch (err) {
