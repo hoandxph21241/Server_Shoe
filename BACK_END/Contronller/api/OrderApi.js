@@ -30,6 +30,7 @@ const createOrder = async (req, res) => {
           if (shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity >= item.quantity) {
             shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity -= item.quantity;
             shoe.soldQuanlityAll += item.quantity;
+            shoe.sellQuanlityAll += item.quantity;
             await shoe.save();
           } else {
             return res.status(400).json({ message: `Không đủ số lượng tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
@@ -73,6 +74,7 @@ const createOrder = async (req, res) => {
       pay,
       total,
       dateOrder: vietnamDate,
+      dateOrder: Date.now(), 
       status: 'Chờ xác nhận',
       discointId,
       orderStatusDetails: [
@@ -163,6 +165,7 @@ const cancelOrder = async (req, res) => {
 
       shoe.storageShoe[storageIndex].importQuanlity += item.quantity;
       shoe.soldQuanlityAll -= item.quantity;
+      shoe.sellQuanlityAll -= item.quantity;
       await shoe.save();
     }
 
@@ -233,6 +236,7 @@ const returnOrder = async (req, res) => {
 
               storageItem.importQuanlity += detail.quantity;
               shoe.soldQuanlityAll -= detail.quantity;
+              shoe.sellQuanlityAll -= detail.quantity;
               await shoe.save();
             } else {
               return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${detail.shoeId}, size ${detail.sizeId}, màu ${detail.colorId}.` });

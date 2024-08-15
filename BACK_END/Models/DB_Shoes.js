@@ -124,6 +124,7 @@ var ShoeSchema = new db.mongoose.Schema(
     shoeId: { type: String, require: true },
     name: { type: String, require: true },
     price: { type: Number, require: false },
+    importPrice: { type: Number, require: false },
     description: { type: String, require: false },
     number: { type: Number, require: false },
     gender: { type: String, require: false },
@@ -208,6 +209,7 @@ var OrderSchema = new db.mongoose.Schema(
     addressOrder: { type: String, require: false },
     total: { type: Number, require: false },
     dateOrder: { type: String, require: false },
+    dateOrder: { type: Date, required: false },
     pay: { type: String, require: false },
     status: { type: String, require: false },
     orderStatusDetails: {
