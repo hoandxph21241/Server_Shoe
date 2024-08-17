@@ -51,11 +51,15 @@
 
         <!-- Add status buttons here -->
         <div class="status-buttons mb-3">
-            <button class="btn btn-warning" data-status="Chờ xác nhận">Chưa xác nhận</button>
-            <button class="btn btn-primary" data-status="Chuẩn bị hàng">Chuẩn bị hàng</button>
+            <% if (userRole !== 3) { %>
+                <button class="btn btn-warning" data-status="Chờ xác nhận">Chưa xác nhận</button>
+            <% } %>
+            <button class="btn btn-primary" data-status="Chuẩn bị hàng">Chuẩn bị hàng/Chờ bàn giao đơn vị vận chuyển</button>
             <button class="btn btn-success" data-status="Giao hàng">Đang giao hàng</button>
             <button class="btn btn-danger" data-status="Đã nhận hàng">Giao thành công</button>
             <button class="btn btn-dark" data-status="Đã hủy">Đã hủy đơn</button>
+            <button class="btn btn-dark" data-status="Đơn hoàn">Đơn hoàn</button>
+
         </div>
 
         <div class="mb-3">
@@ -87,7 +91,7 @@
                     <td><%= order._id %></td>
                     <td><%= order.dateOrder %></td>
                     <td>$<%= order.total %></td>
-                    <td class="status-<%= order.status.toLowerCase().replace(/ /g, '-') %>">● <%= order.status %></td>
+                    <td><%= order.status %></td>
                 </tr>
                 <% }); %>
             </tbody>
@@ -131,15 +135,16 @@
         });
 
         function filterOrdersByStatus(status) {
-            const rows = document.querySelectorAll('.order-row');
-            rows.forEach(row => {
-                if (status === "Tất cả đơn hàng" || row.getAttribute('data-status') === status) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
+        const rows = document.querySelectorAll('.order-row');
+        rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status');
+            if (status === "Tất cả đơn hàng" || rowStatus === status || (status === "Chuẩn bị hàng" && rowStatus === "Chờ bàn giao đơn vị vận chuyển")) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
 
         function filterOrdersByType(type) {
             const rows = document.querySelectorAll('.order-row');

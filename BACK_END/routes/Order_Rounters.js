@@ -23,6 +23,8 @@ router.get("/orderDetails/:orderId", Contronlers.getOrdersDetailt);
 
 router.put("/cancelOrder/:orderId", Contronlers.cancelOrder);
 router.put("/prepareOrder/:orderId", Contronlers.prepareOrder);
+router.put("/orderPreparedSuccessfully/:orderId", Contronlers.orderPreparedSuccessfully);
+
 router.put("/shipOrder/:orderId", Contronlers.shipOrder);
 router.put("/confirmOrder/:orderId", Contronlers.confirmOrderReceived);
 

@@ -13,6 +13,9 @@ const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
 }).format(new Date());
 
 const getAllOrders = async (req, res) => {
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
+console.log(userRole);
+
   try {
     const orders = await OrderModel.find()
       .populate("userId", "nameAccount imageAccount")
@@ -36,7 +39,7 @@ const getAllOrders = async (req, res) => {
     });
     // res.json({ formattedOrders })
 
-    res.render("order/order_list.ejs", { formattedOrders });
+    res.render("order/order_list.ejs", { formattedOrders,  userRole: userRole  });
   } catch (err) {
     res.status(500).json({ message: "Error list.", error: err.message });
   }
@@ -46,6 +49,7 @@ const getAllOrders = async (req, res) => {
 
 const getOrdersDetailt = async (req, res) => {
   const { orderId } = req.params;
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
 
   try {
     if (!orderId) {
@@ -105,7 +109,7 @@ const getOrdersDetailt = async (req, res) => {
     };
     // res.json({ orderResponse });
 
-      res.render("order/order_details.ejs", { orderResponse });
+      res.render("order/order_details.ejs", { orderResponse ,  userRole: userRole });
   } catch (err) {
     res.status(500).json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
   }
@@ -177,6 +181,69 @@ const prepareOrder = async (req, res) => {
   }
 };
 
+
+const orderPreparedSuccessfully = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await OrderModel.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    if (order.status !== "Chuẩn bị hàng") {
+      return res.status(400).json({
+        message:
+          'Chỉ có thể chuyển trạng thái đơn hàng từ "Chuẩn bị hàng" sang "Chờ bàn giao đơn vị vận chuyển".',
+      });
+    }
+
+    const orderDetails = await OderDetailModel.find({ orderId });
+
+    if (orderDetails.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
+    }
+
+    order.status = "Chờ bàn giao đơn vị vận chuyển";
+    order.orderStatusDetails.push({
+      status: "Chờ bàn giao đơn vị vận chuyển",
+      timestamp: vietnamDate,
+      note: "Đơn hàng đã được chuẩn bị thành công",
+    });
+
+    await order.save();
+
+    sendNotificationUser(
+      order.userId,
+      "Đơn hàng đã được chuẩn bị thành công",
+      `Đơn hàng #${orderId} của bạn đã được chuẩn bị thành công.`,
+      "OrderPreparedSuccessfully",
+      orderDetails[0].shoeId,
+      vietnamDate
+    );
+
+    sendNotificationAdmin(
+      "Đơn hàng đã được chuẩn bị thành công",
+      `Đơn hàng #${orderId} đã được chuẩn bị thành công.`,
+      "OrderPreparedSuccessfully",
+      orderDetails[0].shoeId,
+      vietnamDate
+    );
+
+    res.status(200).json({
+      message:
+        'Trạng thái đơn hàng đã được cập nhật thành "Chờ bàn giao đơn vị vận chuyển" và thông báo đã được gửi.',
+      order,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Lỗi khi cập nhật trạng thái đơn hàng.",
+      error: err.message,
+    });
+  }
+};
+
 //Xác nhận ship hàng
 const shipOrder = async (req, res) => {
   const { orderId } = req.params;
@@ -188,12 +255,12 @@ const shipOrder = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
     }
 
-    if (order.status !== "Chuẩn bị hàng") {
+    if (order.status !== "Chờ bàn giao đơn vị vận chuyển") {
       return res
         .status(400)
         .json({
           message:
-            'Chỉ có thể chuyển trạng thái đơn hàng từ "Chuẩn bị hàng" sang "Giao hàng".',
+            'Chỉ có thể chuyển trạng thái đơn hàng từ "Chờ bàn giao đơn vị vận chuyển" sang "Giao hàng".',
         });
     }
 
@@ -454,6 +521,7 @@ module.exports = {
   getAllOrders,
   getOrdersDetailt,
   prepareOrder,
+  orderPreparedSuccessfully,
   shipOrder,
   confirmOrderReceived,
   failDeliveryOrder

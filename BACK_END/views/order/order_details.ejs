@@ -277,8 +277,10 @@
     let apiUrl = '';
 
     if (currentStatus === 'Chờ xác nhận') {
-        apiUrl = `/order/shipOrder/<%= orderResponse._id %>`;
+        apiUrl = `/order/prepareOrder/<%= orderResponse._id %>`;
     } else if (currentStatus === 'Chuẩn bị hàng') {
+        apiUrl = `/order/orderPreparedSuccessfully/<%= orderResponse._id %>`;
+    } else if (currentStatus === 'Chờ bàn giao đơn vị vận chuyển') {
         apiUrl = `/order/shipOrder/<%= orderResponse._id %>`;
     } else if (currentStatus === 'Giao hàng') {
         apiUrl = `/order/confirmOrder/<%= orderResponse._id %>`;
@@ -354,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelButton = document.getElementById('cancel-order-btn');
 
     // Kiểm tra trạng thái đơn hàng và ẩn các nút nếu trạng thái là 'Đã nhận hàng'
-    if (orderStatus === 'Đã nhận hàng' || orderStatus === 'Đã hủy') {
+    if (orderStatus === 'Đã nhận hàng' || orderStatus === 'Đã hủy' || orderStatus === 'Chờ bàn giao đơn vị vận chuyển' || orderStatus === 'Giao hàng' || orderStatus === 'Đã nhận hàng'  ) {
         if (confirmButton) confirmButton.classList.add('hidden');
         if (cancelButton) cancelButton.classList.add('hidden');
     }
