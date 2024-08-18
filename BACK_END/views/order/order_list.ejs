@@ -49,18 +49,18 @@
             </div>
         </div>
 
-        <!-- Add status buttons here -->
         <div class="status-buttons mb-3">
             <% if (userRole !== 3) { %>
-                <button class="btn btn-warning" data-status="Chờ xác nhận">Chưa xác nhận</button>
+                <button class="btn btn-warning" data-status="1">Chờ xác nhận</button>
             <% } %>
-            <button class="btn btn-primary" data-status="Chuẩn bị hàng">Chuẩn bị hàng/Chờ bàn giao đơn vị vận chuyển</button>
-            <button class="btn btn-success" data-status="Giao hàng">Đang giao hàng</button>
-            <button class="btn btn-danger" data-status="Đã nhận hàng">Giao thành công</button>
-            <button class="btn btn-dark" data-status="Đã hủy">Đã hủy đơn</button>
-            <button class="btn btn-dark" data-status="Đơn hoàn">Đơn hoàn</button>
-
+            <button class="btn btn-primary" data-status="2">Chuẩn bị hàng</button>
+            <button class="btn btn-primary" data-status="3">Chờ bàn giao đơn vị vận chuyển</button>
+            <button class="btn btn-success" data-status="4">Đang giao hàng</button>
+            <button class="btn btn-danger" data-status="0">Đã nhận hàng</button>
+            <button class="btn btn-dark" data-status="5">Hủy đơn</button>
+            <button class="btn btn-dark" data-status="6">Hoàn đơn</button>
         </div>
+        
 
         <div class="mb-3">
             <label>
@@ -91,10 +91,27 @@
                     <td><%= order._id %></td>
                     <td><%= order.dateOrder %></td>
                     <td>$<%= order.total %></td>
-                    <td><%= order.status %></td>
+                    <td>
+                        <% if (order.status === 0) { %>
+                            Đã nhận hàng
+                        <% } else if (order.status === 1) { %>
+                            Chờ xác nhận
+                        <% } else if (order.status === 2) { %>
+                            Chuẩn bị hàng
+                        <% } else if (order.status === 3) { %>
+                            Chờ bàn giao đơn vị vận chuyển
+                        <% } else if (order.status === 4) { %>
+                            Đang giao hàng
+                        <% } else if (order.status === 5) { %>
+                            Hủy đơn
+                        <% } else if (order.status === 6) { %>
+                            Hoàn đơn
+                        <% } %>
+                    </td>
                 </tr>
                 <% }); %>
             </tbody>
+            
         </table>
 
         <nav aria-label="Page navigation example">

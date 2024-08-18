@@ -142,7 +142,7 @@ const prepareOrder = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
     }
 
-    order.status = "Chuẩn bị hàng";
+    order.status = 2;
     order.orderStatusDetails.push({
       status: "Chuẩn bị hàng",
       timestamp: vietnamDate,
