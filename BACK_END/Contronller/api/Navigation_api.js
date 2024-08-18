@@ -24,16 +24,16 @@ const sendNotificationUser = async (userId, title, body, typeNotification, shoeI
     });
   await notification.save();
 
-    const userToken = await getUserFCMToken(userId);
+    // const userToken = await getUserFCMToken(userId);
 
-    if (userToken) {
+    // if (userToken) {
       const userMessage = {
-        token: userToken,
+        // token: userToken,
         notification: {
           title,
           body,
-          t
         },
+        topic: 'newOrder',
       };
 
       admin.messaging().send(userMessage)
@@ -43,7 +43,7 @@ const sendNotificationUser = async (userId, title, body, typeNotification, shoeI
         .catch(error => {
           console.log('Error sending message to user:', error);
         });
-    }
+    // }
   } catch (err) {
     console.log('Error sending notification:', err);
   }

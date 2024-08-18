@@ -29,7 +29,7 @@ const createOrder = async (req, res) => {
         if (sizeIndex !== -1 && colorIndex !== -1) {
           if (shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity >= item.quantity) {
             shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity -= item.quantity;
-            shoe.soldQuanlityAll += item.quantity;
+            shoe.sellQuanlityAll += item.quantity;
             shoe.sellQuanlityAll += item.quantity;
             await shoe.save();
           } else {
@@ -164,7 +164,7 @@ const cancelOrder = async (req, res) => {
       }
 
       shoe.storageShoe[storageIndex].importQuanlity += item.quantity;
-      shoe.soldQuanlityAll -= item.quantity;
+      shoe.sellQuanlityAll -= item.quantity;
       shoe.sellQuanlityAll -= item.quantity;
       await shoe.save();
     }
@@ -235,7 +235,7 @@ const returnOrder = async (req, res) => {
               const storageItem = shoe.storageShoe[storageIndex];
 
               storageItem.importQuanlity += detail.quantity;
-              shoe.soldQuanlityAll -= detail.quantity;
+              shoe.sellQuanlityAll -= detail.quantity;
               shoe.sellQuanlityAll -= detail.quantity;
               await shoe.save();
             } else {

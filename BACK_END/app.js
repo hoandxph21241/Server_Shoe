@@ -58,17 +58,6 @@ app.use("/adminNavigation", NavigationRouter);
 var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
 
-const CartRouter = require("./routes/Cart_Route");
-app.use("/cart", CartRouter);
-
-const Order_Route = require("./routes/Order_Route");
-app.use("/userOrder", Order_Route);
-
-const Navigation_Route = require("./routes/Navigation_Route");
-app.use("/userNavigation", Navigation_Route);
-
-
-
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
