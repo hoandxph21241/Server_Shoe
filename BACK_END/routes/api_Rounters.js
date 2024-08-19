@@ -3,6 +3,7 @@ var router = express.Router();
 var Auth_API = require("../Contronller/api/Auth_api");
 var Users_API = require("../Contronller/api/User_api");
 var Product_API = require("../Contronller/api/Product_api");
+var orderController = require("../Contronller/api/OrderApi");
 
 // Auth Routers
 router.get("/signin", Auth_API.Sign);
@@ -89,5 +90,31 @@ router.get('/filterdata/:idTyper?/:sizeId?/:textColor?/:shoeId?', Product_API.fi
 
 // Banner
 router.get("/banner-active", Product_API.getBanner);
+
+
+router.post("/createOrder",  orderController.createOrder);
+
+router.put("/cancelOrder/:orderId",orderController.cancelOrder);
+
+router.put('/confirmReceived/:orderId',orderController.confirmOrderReceived);
+
+
+// hiển thị list đơn hàng user, lấy đơn hàng đầu tiên đại diện 1 đơn hàng
+router.get("/getUserOrder/:userId", orderController.getUserOrdersWithDetails);
+
+// Hiển thị thông tin đơn hàng by orderId
+router.get("/getOrderById/:orderId",orderController.getOrderById);
+
+
+router.get('/getUserCompletedOrders/:userId', orderController.getUserCompletedOrders);
+router.get('/getUserActiveOrders/:userId', orderController.getUserActiveOrders);
+
+//Hiển thị list giày  by orderId
+router.put("/getOrderShoeById/:orderId",orderController.getOrderShoeById);
+
+router.post("/oderstatus/:orderId",orderController.updateOrderStatus);
+
+router.get("/get/:userId", orderController.getHistory);
+
 
 module.exports = router;
