@@ -143,7 +143,7 @@ exports.Register_Mail = async (req, res, next) => {
     });
 
     const newUser = await objSP.save();
-    res.json({ success: true, message: "Đăng ký thành công" });
+    res.json({ success: true, message: "Đăng ký thành công" ,user:newUser});
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ" });

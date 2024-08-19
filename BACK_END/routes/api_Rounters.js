@@ -112,6 +112,13 @@ router.get("/getOrderById/:orderId", Order_API.getOrderById);
 //Hiển thị list giày  by orderId
 router.get("/getOrderShoeById/:orderId", Order_API.getOrderShoeById);
 
+//
+
+router.get('/getUserCompletedOrders/:userId', Order_API.getUserCompletedOrders);
+router.get('/getUserActiveOrders/:userId', Order_API.getUserActiveOrders);
+router.post('/updateOrderAndRateShoe', Order_API.updateOrderAndRateShoe);
+router.post("/oderstatus/:orderId",Order_API.updateOrderStatus);
+
 //Navigation
 router.get("/getListNavigationUser/:userId",  Navigation_API.getNotificationsByUser);
 router.post("/deleteNavigation/:notificationId", Navigation_API.deleteNotificationUser);

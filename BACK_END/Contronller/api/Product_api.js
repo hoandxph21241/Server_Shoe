@@ -207,9 +207,9 @@ exports.deleteTypeShoe = async (req, res) => {
 exports.AllProduct = async (req, res) => {
   try {
     let shoes = await Model.ShoeModel.find()
-      .populate('typerShoe', 'nameType') 
-      .populate('colorShoe', 'textColor')
-      .populate('sizeShoe', 'size')
+      .populate('typerShoe', 'nameType id') 
+      .populate('colorShoe', 'textColor codeColor' )
+      .populate('sizeShoe', 'size sizeId')
       .lean();
     
     const shoesWithStorage = [];
@@ -226,7 +226,7 @@ exports.AllProduct = async (req, res) => {
             colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
             sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
             importQuanlity: item.importQuanlity,
-            soldQuanlity: item.soldQuanlity
+            sellQuanlity: item.sellQuanlity
           };
         }
         return null;
@@ -235,45 +235,52 @@ exports.AllProduct = async (req, res) => {
       shoe.storageShoe = formattedStorageItems;
       shoesWithStorage.push(shoe);
     }
-
-    res.status(200).json({ message: "Fetched all shoes successfully", data: shoesWithStorage });
+    res.status(200).json( shoesWithStorage );
   } catch (error) {
-    console.error("Error fetching shoes:", error);
-    res.status(500).json({ message: "Internal Server Error", error });
+    return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
   }
 };
-
 
 exports.FindProduct = async (req, res, next) => {
   try {
-    let shoeId = req.params.id;
+    let shoeId = req.params.id;  // Lấy shoeId từ request params
     let shoe = await Model.ShoeModel.findById(shoeId)
-    .populate({
-      path: "sizeShoe",
-      match: { isEnable: true },
-      select: "size sizeId -_id",
-    })
-    .populate({
-      path: "imageShoe",
-      select: "imageUrl -_id",
-    })
-    .populate({
-      path: "colorShoe",
-      select: "textColor codeColor -_id",
-    })
-    .populate("typerShoe", "nameType _id")
-    .select("-__v");
-    if (shoe) {
-      console.log(shoe);
-      return res.status(200).json(shoe);
-    } else {
-      return res.status(404).json({ msg: "Không tìm sản phẩm với id này" });
+      .populate('typerShoe', 'nameType id') 
+      .populate('colorShoe', 'textColor codeColor')
+      .populate('sizeShoe', 'size sizeId')
+      .lean();
+
+    if (!shoe) {
+      return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
     }
+
+    const storageItems = await Model.StorageShoeModel.find({ shoeId: shoe._id })
+      .populate('colorShoe', 'textColor')
+      .populate('sizeShoe.sizeId', 'size')
+      .lean();
+
+    const formattedStorageItems = storageItems.map(item => {
+      if (item.sizeShoe.length > 0) {
+        const sizeItem = item.sizeShoe[0];
+        return {
+          colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
+          sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
+          importQuanlity: item.importQuanlity,
+          sellQuanlity: item.sellQuanlity
+        };
+      }
+      return null;
+    }).filter(item => item !== null);
+
+    shoe.storageShoe = formattedStorageItems;
+
+    res.status(200).json(shoe);  // Trả về một sản phẩm cụ thể
   } catch (error) {
     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
   }
-  // res.status(200).json({msg});
 };
+
+
 exports.FindByName = async (req, res, next) => {
   try {
     let conditions = {};

@@ -470,6 +470,332 @@ const getOrderShoeById = async (req, res) => {
   }
 };
 
+const updateOrderAndRateShoe = async (req, res) => {
+  const { shoeId, userId, rateNumber, commentText, oderId } = req.body; 
+  const shoeIds = Array.isArray(shoeId) ? shoeId : [shoeId];  
+  const orderIds = Array.isArray(oderId) ? oderId : [oderId]; 
+
+  try {
+    const shoeIdArray = Array.isArray(shoeIds) ? shoeIds : [shoeIds];
+    const orderIdArray = Array.isArray(orderIds) ? orderIds : [orderIds];
+
+    if (shoeIdArray.length === 0) {
+      return res.status(400).json({ message: "Danh sách shoeId không hợp lệ." });
+    }
+    if (orderIdArray.length === 0) {
+      return res.status(400).json({ message: "Danh sách orderId không hợp lệ." });
+    }
+
+    const updatedShoes = [];
+    for (const shoeId of shoeIdArray) {
+      console.log('shoeId:', shoeId);
+      const shoe = await ShoeModel.findById(shoeId);
+      if (!shoe) {
+        return res.status(404).json({ message: `Không tìm thấy giày với ID: ${shoeId}` });
+      }
+
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: `Không tìm thấy người dùng với ID: ${userId}` });
+      }
+
+      const newComment = {
+        userName: user._id,
+        commetText: commentText,
+        rateNumber: rateNumber,
+      };
+
+      console.log(newComment);
+      
+      shoe.rateShoe.comment.push(newComment);
+
+      let totalRating = shoe.rateShoe.comment.reduce(
+        (acc, curr) => acc + curr.rateNumber,
+        0
+      );
+      shoe.rateShoe.starRate = parseFloat(
+        (totalRating / shoe.rateShoe.comment.length).toFixed(1)
+      );
+
+      const updatedShoe = await shoe.save();
+      updatedShoes.push(updatedShoe);
+    }
+
+    const updatedOrders = [];
+    for (const orderId of orderIdArray) { 
+      console.log('orderId:', orderId);
+      const order = await OrderModel.findById(orderId).lean();
+
+      if (!order) {
+        return res.status(404).json({ message: `Không tìm thấy đơn hàng với ID: ${orderId}` });
+      }
+
+      let newStatus;
+      if (order.status === 0) {
+        newStatus = -1;
+      } else if (order.status === -1) {
+        newStatus = 1;
+      }else {
+        newStatus = order.status; 
+      }
+
+      await OrderModel.findByIdAndUpdate(orderId, { status: newStatus });
+
+      const orderDetails = await OderDetailModel.find({ orderId: order._id })
+        .populate({
+          path: 'shoeId',
+          select: 'name',
+        })
+        .populate({
+          path: 'sizeId',
+          select: 'size',
+        })
+        .populate({
+          path: 'colorId',
+          select: 'textColor codeColor',
+        })
+        .lean();
+
+      const orderDetailsResponse = orderDetails.map(detail => ({
+        shoeName: detail.shoeId ? detail.shoeId.name : "Không có tên giày",
+        size: detail.sizeId ? detail.sizeId.size : "Không có kích thước",
+        color: detail.colorId ? detail.colorId.textColor : "Không có màu sắc",
+        timestamp: detail.timestamp ? detail.timestamp : "Không ",
+      }));
+
+      updatedOrders.push({
+        orderId,
+        newStatus,
+        orderDetails: orderDetailsResponse,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Đánh giá giày và cập nhật trạng thái đơn hàng thành công.",
+      updatedShoes,
+      updatedOrders,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi máy chủ nội bộ", error: error.message });
+  }
+};
+const updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  try {
+    const order = await OrderModel.findById(orderId)
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    let newStatus;
+    const currentDate = new Intl.DateTimeFormat('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZone: 'Asia/Ho_Chi_Minh'
+    }).format(new Date());
+
+    const orderStatusDetails = order.orderStatusDetails || [];
+
+    if (order.status === 1) {
+      orderStatusDetails.push({timestamp: currentDate});
+      newStatus = 2;
+    } else if (order.status === 2) {
+      orderStatusDetails.push({timestamp: currentDate});
+      newStatus = 3;
+    } else if (order.status === 3) {
+      orderStatusDetails.push({timestamp: currentDate});
+      newStatus = 4;
+    } else if (order.status === 4) {
+      orderStatusDetails.push({timestamp: currentDate});
+      newStatus = 0;
+    } else if (order.status === 0) {
+
+      return res.status(400).json({ message: "Đơn hàng đã hoàn thành và không thể thay đổi."});
+    }
+
+    // Cập nhật trạng thái đơn hàng
+    await OrderModel.findByIdAndUpdate(orderId, { status: newStatus,orderStatusDetails}, { new: true });
+
+    // Lấy chi tiết đơn hàng
+    const orderDetails = await OderDetailModel.find({ orderId: order._id })
+      .populate({
+        path: 'shoeId',
+        select: 'name',
+      })
+      .populate({
+        path: 'sizeId',
+        model: 'SizeShoeModel',
+        select: 'size',
+      })
+      .populate({
+        path: 'colorId',
+        model: 'ColorShoeModel',
+        select: 'textColor codeColor',
+      })
+      .lean();
+
+    const orderDetailsResponse = orderDetails.map(detail => ({
+      shoeName: detail.shoeId ? detail.shoeId.name : "Không có tên giày",
+      size: detail.sizeId ? detail.sizeId.size : "Không có kích thước",
+      color: detail.colorId ? detail.colorId.textColor : "Không có màu sắc",
+      timestamp:detail.timestamp ? detail.timestamp : "Không có ngày"
+    }));
+
+    return res.status(200).json({
+      message: `New status  ${newStatus}`,
+      orderDetails: orderDetailsResponse,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ", error: error.message });
+  }
+};
+const getUserCompletedOrders = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const orders = await OrderModel.find({ userId, status: 0 })
+      .populate('userId', '_id')
+      .populate('discointId')
+      .lean();
+
+    if (orders.length === 0) {
+      return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đã hoàn thành.' });
+    }
+
+    const orderResponses_status0 = [];
+
+    for (const order of orders) {
+      const orderDetails = await OderDetailModel.find({ orderId: order._id })
+        .populate({
+          path: 'shoeId',
+          select: 'name price thumbnail',
+        })
+        .populate({
+          path: 'sizeId',
+          model: 'SizeShoeModel',
+          select: 'size',
+        })
+        .populate({
+          path: 'colorId',
+          model: 'ColorShoeModel',
+          select: 'textColor codeColor',
+        })
+        .lean();
+
+      const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
+      const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
+      const totalPre = promo + order.total;
+
+      const orderData = {
+        _id: order._id,
+        name: orderDetails.length > 0 ? orderDetails[0].shoeId.name : null,
+        thumbnail: orderDetails.length > 0 ? orderDetails[0].shoeId.thumbnail : null,
+        totalPre: totalPre,
+        total: order.total,
+        promo: promo,
+        status: "completed",
+        dateOrder: order.dateOrder,
+        dateReceived: order.dateReceived,
+        pay: order.pay,
+        orderDetails: orderDetails.map(detail => ({
+          amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
+          _id: detail._id,
+          name: detail.shoeId.name,
+          price: detail.shoeId.price,
+          thumbnail: detail.shoeId.thumbnail,
+          size: detail.sizeId ? detail.sizeId.size : null,
+          textColor: detail.colorId ? detail.colorId.textColor : null,
+          codeColor: detail.colorId ? detail.colorId.codeColor : null,
+          quantity: detail.quantity
+        })),
+      };
+
+      orderResponses_status0.push(orderData);
+    }
+
+    res.status(200).json(orderResponses_status0);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng đã hoàn thành.', error: err.message });
+  }
+};
+const getUserActiveOrders = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const orders = await OrderModel.find({ userId, status: { $gt: 0 } })
+      .populate('userId', '_id')
+      .populate('discointId')
+      .lean();
+
+    if (orders.length === 0) {
+      return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đang hoạt động.' });
+    }
+
+    const orderResponses_active = [];
+
+    for (const order of orders) {
+      const orderDetails = await OderDetailModel.find({ orderId: order._id })
+        .populate({
+          path: 'shoeId',
+          select: 'name price thumbnail',
+        })
+        .populate({
+          path: 'sizeId',
+          model: 'SizeShoeModel',
+          select: 'size',
+        })
+        .populate({
+          path: 'colorId',
+          model: 'ColorShoeModel',
+          select: 'textColor codeColor',
+        })
+        .lean();
+
+      const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
+      const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
+      const totalPre = promo + order.total;
+
+      const orderData = {
+        _id: order._id,
+        name: orderDetails.length > 0 ? orderDetails[0].shoeId.name : null,
+        thumbnail: orderDetails.length > 0 ? orderDetails[0].shoeId.thumbnail : null,
+        totalPre: totalPre,
+        total: order.total,
+        promo: promo,
+        status: "active",
+        dateOrder: order.dateOrder,
+        dateReceived: order.dateReceived,
+        pay: order.pay,
+        orderDetails: orderDetails.map(detail => ({
+          amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
+          _id: detail._id,
+          name: detail.shoeId.name,
+          price: detail.shoeId.price,
+          thumbnail: detail.shoeId.thumbnail,
+          size: detail.sizeId ? detail.sizeId.size : null,
+          textColor: detail.colorId ? detail.colorId.textColor : null,
+          codeColor: detail.colorId ? detail.colorId.codeColor : null,
+          quantity: detail.quantity
+        })),
+      };
+
+      orderResponses_active.push(orderData);
+    }
+
+    res.status(200).json(orderResponses_active);
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng đang hoạt động.', error: err.message });
+  }
+};
+
+
+
+
+
 module.exports = {
   createOrder,
   cancelOrder,
@@ -477,5 +803,10 @@ module.exports = {
   confirmOrderReceived,
   getUserOrdersWithFirstItem,
   getOrderById,
-  getOrderShoeById
+  getOrderShoeById,
+
+  updateOrderAndRateShoe,
+  updateOrderStatus,
+  getUserCompletedOrders,
+  getUserActiveOrders
 };
