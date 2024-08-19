@@ -336,7 +336,7 @@ exports.AllProduct = async (req, res) => {
             colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
             sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
             importQuanlity: item.importQuanlity,
-            soldQuanlity: item.soldQuanlity
+            sellQuanlity: item.sellQuanlity
           };
         }
         return null;
@@ -345,13 +345,11 @@ exports.AllProduct = async (req, res) => {
       shoe.storageShoe = formattedStorageItems;
       shoesWithStorage.push(shoe);
     }
-
     res.status(200).json( shoesWithStorage );
   } catch (error) {
     return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
   }
 };
-
 
 exports.FindProduct = async (req, res, next) => {
   try {
@@ -378,7 +376,7 @@ exports.FindProduct = async (req, res, next) => {
           colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
           sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
           importQuanlity: item.importQuanlity,
-          soldQuanlity: item.soldQuanlity
+          sellQuanlity: item.sellQuanlity
         };
       }
       return null;
