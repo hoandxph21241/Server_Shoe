@@ -109,6 +109,8 @@ router.get("/getOrderById/:orderId",orderController.getOrderById);
 router.get('/getUserCompletedOrders/:userId', orderController.getUserCompletedOrders);
 router.get('/getUserActiveOrders/:userId', orderController.getUserActiveOrders);
 
+router.post('/updateOrderAndRateShoe', orderController.updateOrderAndRateShoe);
+
 //Hiển thị list giày  by orderId
 router.put("/getOrderShoeById/:orderId",orderController.getOrderShoeById);
 

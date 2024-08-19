@@ -201,33 +201,63 @@ var ShoeSchema = new db.mongoose.Schema(
 );
 let ShoeModel = db.mongoose.model("ShoeModel", ShoeSchema);
 
+// var OrderSchema = new db.mongoose.Schema(
+//   {
+//     orderId: { type: String, require: true },
+//     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+//     nameOrder: { type: String, require: false },
+//     phoneNumber: { type: String, require: false },
+//     addressOrder: { type: String, require: false },
+//     total: { type: Number, require: false },  // giá phải trả
+//     totalPre: { type: Number, require: false }, // giá tổng 
+//     dateOrder: { type: String, require: false },
+//     status:{ type: Number, require: false , default:1},
+//     dateOrder:{ type: String, require: false}, // ngày đặt hàng
+//     dateReceived:{ type: String, require: false}, // ngày nhận hàng
+//     pay:{ type: String, require: false}, // phương thức thanh toán
+//     orderStatusDetails: {
+//       type: [
+//         {
+//           amount: { type: Number, require: false }, // số tiền dc giảm giá
+//           shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel", required:false}, 
+//           sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'SizeShoeModel', required:false },
+//           colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ColorShoeModel',required:false },
+//           timestamp: { type: String, require: false }, // thời gian hiện tại qua các trạng thái
+//           note: { type: String, required: true },
+//         },
+//       ],
+//     },
+//     discointId: {
+//       type: db.mongoose.Schema.Types.ObjectId,
+//       ref: "DiscountModel",
+//     },
+//   },
+//   {
+//     collation: { locale: "en_US", strength: 1 },
+//     collection: "Order",
+//   }
+// );
+// let OrderModel = db.mongoose.model("OrderModel", OrderSchema);
+
 var OrderSchema = new db.mongoose.Schema(
   {
     orderId: { type: String, require: true },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     nameOrder: { type: String, require: false },
-    phoneNumber: { type: String, require: false },
+    phoneNumber: { type: Number, require: false },
     addressOrder: { type: String, require: false },
-    total: { type: Number, require: false },  // giá phải trả
-    totalPre: { type: Number, require: false }, // giá tổng 
-    dateOrder: { type: String, require: false },
-    status:{ type: Number, require: false , default:1},
-    dateOrder:{ type: String, require: false}, // ngày đặt hàng
-    dateReceived:{ type: String, require: false}, // ngày nhận hàng
-    pay:{ type: String, require: false}, // phương thức thanh toán
+    total: { type: Number, require: false },
+    dateOrder: { type: Date, required: false },
+    pay: { type: String, require: false },
+    status: { type: Number, require: false },
     orderStatusDetails: {
-      type: [
-        {
-          amount: { type: Number, require: false }, // số tiền dc giảm giá
-          shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel", required:false}, 
-          sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'SizeShoeModel', required:false },
-          colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ColorShoeModel',required:false },
-          timestamp: { type: String, require: false }, // thời gian hiện tại qua các trạng thái
-          note: { type: String, required: true },
-        },
-      ],
-    },
-    discointId: {
+      type: [{
+        status: { type: String, required: true },
+        timestamp: {  type: String, require: false },
+        note: { type: String, required: true },
+      }],
+      default: [],
+    },     discointId: {
       type: db.mongoose.Schema.Types.ObjectId,
       ref: "DiscountModel",
     },
@@ -238,6 +268,7 @@ var OrderSchema = new db.mongoose.Schema(
   }
 );
 let OrderModel = db.mongoose.model("OrderModel", OrderSchema);
+
 
 var DiscountSchema = new db.mongoose.Schema(
   {

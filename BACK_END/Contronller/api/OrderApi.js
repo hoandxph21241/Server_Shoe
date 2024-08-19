@@ -1578,6 +1578,118 @@ const getUserActiveOrders = async (req, res) => {
   }
 };
 
+const updateOrderAndRateShoe = async (req, res) => {
+  const { shoeId, userId, rateNumber, commentText, oderId } = req.body; 
+  const shoeIds = Array.isArray(shoeId) ? shoeId : [shoeId];  
+  const orderIds = Array.isArray(oderId) ? oderId : [oderId]; 
+
+  try {
+    const shoeIdArray = Array.isArray(shoeIds) ? shoeIds : [shoeIds];
+    const orderIdArray = Array.isArray(orderIds) ? orderIds : [orderIds];
+
+    if (shoeIdArray.length === 0) {
+      return res.status(400).json({ message: "Danh sách shoeId không hợp lệ." });
+    }
+    if (orderIdArray.length === 0) {
+      return res.status(400).json({ message: "Danh sách orderId không hợp lệ." });
+    }
+
+    const updatedShoes = [];
+    for (const shoeId of shoeIdArray) {
+      console.log('shoeId:', shoeId);
+      const shoe = await ShoeModel.findById(shoeId);
+      if (!shoe) {
+        return res.status(404).json({ message: `Không tìm thấy giày với ID: ${shoeId}` });
+      }
+
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: `Không tìm thấy người dùng với ID: ${userId}` });
+      }
+
+      const newComment = {
+        userName: user._id,
+        commetText: commentText,
+        rateNumber: rateNumber,
+      };
+
+      console.log(newComment);
+      
+      shoe.rateShoe.comment.push(newComment);
+
+      let totalRating = shoe.rateShoe.comment.reduce(
+        (acc, curr) => acc + curr.rateNumber,
+        0
+      );
+      shoe.rateShoe.starRate = parseFloat(
+        (totalRating / shoe.rateShoe.comment.length).toFixed(1)
+      );
+
+      const updatedShoe = await shoe.save();
+      updatedShoes.push(updatedShoe);
+    }
+
+    const updatedOrders = [];
+    for (const orderId of orderIdArray) { 
+      console.log('orderId:', orderId);
+      const order = await OrderModel.findById(orderId).lean();
+
+      if (!order) {
+        return res.status(404).json({ message: `Không tìm thấy đơn hàng với ID: ${orderId}` });
+      }
+
+      let newStatus;
+      if (order.status === 0) {
+        newStatus = -1;
+      } else if (order.status === -1) {
+        newStatus = 1;
+      }else {
+        newStatus = order.status; 
+      }
+
+      await OrderModel.findByIdAndUpdate(orderId, { status: newStatus });
+
+      const orderDetails = await OderDetailModel.find({ orderId: order._id })
+        .populate({
+          path: 'shoeId',
+          select: 'name',
+        })
+        .populate({
+          path: 'sizeId',
+          select: 'size',
+        })
+        .populate({
+          path: 'colorId',
+          select: 'textColor codeColor',
+        })
+        .lean();
+
+      const orderDetailsResponse = orderDetails.map(detail => ({
+        shoeName: detail.shoeId ? detail.shoeId.name : "Không có tên giày",
+        size: detail.sizeId ? detail.sizeId.size : "Không có kích thước",
+        color: detail.colorId ? detail.colorId.textColor : "Không có màu sắc",
+        timestamp: detail.timestamp ? detail.timestamp : "Không ",
+      }));
+
+      updatedOrders.push({
+        orderId,
+        newStatus,
+        orderDetails: orderDetailsResponse,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Đánh giá giày và cập nhật trạng thái đơn hàng thành công.",
+      updatedShoes,
+      updatedOrders,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Lỗi máy chủ nội bộ", error: error.message });
+  }
+};
+
+
+
 
 
 module.exports = {
@@ -1593,5 +1705,6 @@ module.exports = {
   getHistory,
   getConfirmedOrders,
   getUserOrdersWithDetails,
-  updateOrderStatus
+  updateOrderStatus,
+  updateOrderAndRateShoe
 };

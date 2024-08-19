@@ -336,7 +336,7 @@ exports.AllProduct = async (req, res) => {
             colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
             sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
             importQuanlity: item.importQuanlity,
-            sellQuanlity: item.sellQuanlity
+            soldQuanlity: item.soldQuanlity
           };
         }
         return null;
@@ -345,11 +345,13 @@ exports.AllProduct = async (req, res) => {
       shoe.storageShoe = formattedStorageItems;
       shoesWithStorage.push(shoe);
     }
+
     res.status(200).json( shoesWithStorage );
   } catch (error) {
     return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
   }
 };
+
 
 exports.FindProduct = async (req, res, next) => {
   try {
@@ -376,7 +378,7 @@ exports.FindProduct = async (req, res, next) => {
           colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
           sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
           importQuanlity: item.importQuanlity,
-          sellQuanlity: item.sellQuanlity
+          soldQuanlity: item.soldQuanlity
         };
       }
       return null;
@@ -621,13 +623,53 @@ exports.ADD_Product = async (req, res) => {
 };
 
 
+// exports.rateShoe = async (req, res) => {
+//   try {
+//     const { shoeId, userId, rateNumber, commentText } = req.body;
+
+//     const shoe = await Model.ShoeModel.findById(shoeId);
+//     if (!shoe) {
+//       return res.status(404).json({ message: "Shoe not found" });
+//     }
+
+//     const user = await Model.UserModel.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+
+//     const newComment = {
+//       userName: user._id,
+//       commentText: commentText,
+//       rateNumber: rateNumber,
+//     };
+
+//     shoe.rateShoe.comment.push(newComment);
+
+//     let totalRating = shoe.rateShoe.comment.reduce(
+//       (acc, curr) => acc + curr.rateNumber,
+//       0
+//     );
+//     shoe.rateShoe.starRate = parseFloat(
+//       (totalRating / shoe.rateShoe.comment.length).toFixed(1)
+//     );
+
+//     const updatedShoe = await shoe.save();
+
+//     res
+//       .status(200)
+//       .json({ message: "Rating added successfully", data: updatedShoe });
+//   } catch (error) {
+//     console.error("Error during rating:", error);
+//     res.status(500).json({ message: "Internal Server Error", error });
+//   }
+// };
+
 exports.rateShoe = async (req, res) => {
   try {
-    const { shoeId, userId, rateNumber, commentText } = req.body;
+    const { shoeId: shoeIds, userId, rateNumber, commentText } = req.body;
 
-    const shoe = await Model.ShoeModel.findById(shoeId);
-    if (!shoe) {
-      return res.status(404).json({ message: "Shoe not found" });
+    if (!Array.isArray(shoeIds) || shoeIds.length === 0) {
+      return res.status(400).json({ message: "shoeId must be a non-empty array." });
     }
 
     const user = await Model.UserModel.findById(userId);
@@ -635,32 +677,44 @@ exports.rateShoe = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const newComment = {
-      userName: user._id,
-      commentText: commentText,
-      rateNumber: rateNumber,
-    };
+    const results = [];
 
-    shoe.rateShoe.comment.push(newComment);
+    for (let shoeId of shoeIds) {
+      const shoe = await Model.ShoeModel.findById(shoeId);
+      if (!shoe) {
+        return res.status(404).json({ message: `Shoe not found for ID: ${shoeId}` });
+      }
 
-    let totalRating = shoe.rateShoe.comment.reduce(
-      (acc, curr) => acc + curr.rateNumber,
-      0
-    );
-    shoe.rateShoe.starRate = parseFloat(
-      (totalRating / shoe.rateShoe.comment.length).toFixed(1)
-    );
+      const newComment = {
+        userName: user._id,
+        commentText: commentText,
+        rateNumber: rateNumber,
+      };
 
-    const updatedShoe = await shoe.save();
+      shoe.rateShoe.comment.push(newComment);
 
-    res
-      .status(200)
-      .json({ message: "Rating added successfully", data: updatedShoe });
+      let totalRating = shoe.rateShoe.comment.reduce(
+        (acc, curr) => acc + curr.rateNumber,
+        0
+      );
+      shoe.rateShoe.starRate = parseFloat(
+        (totalRating / shoe.rateShoe.comment.length).toFixed(1)
+      );
+
+      const updatedShoe = await shoe.save();
+      results.push(updatedShoe);
+    }
+
+    res.status(200).json({
+      message: "Ratings added successfully",
+      data: results,
+    });
   } catch (error) {
     console.error("Error during rating:", error);
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
 
 
 exports.ADDFavourite = async (req, res, next) => {
@@ -730,4 +784,6 @@ exports.getBanner = async (req,res) => {
     return res.status(500).json({ message: 'Internal Server Error', error });
   }
 };
+
+
 
