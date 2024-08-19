@@ -118,42 +118,6 @@ async function createDefaultData() {
     }
   }
 
-  
-  function generateSizeId(sizeName) {
-    const sizeId = sizeName.replace(/\s+/g, "-");
-    return sizeId;
-  }
-  
-  const sizes = [
-    { size: "35.5", isEnable: true },
-    { size: "36", isEnable: true },
-    { size: "36.5", isEnable: true },
-    { size: "37", isEnable: true },
-    { size: "37.5", isEnable: true },
-    { size: "38", isEnable: true },
-    { size: "38.5", isEnable: true },
-    { size: "39", isEnable: true },
-    { size: "39.5", isEnable: true },
-    { size: "40", isEnable: true },
-  ];
-  
-  for (const size of sizes) {
-    const sizeExists = await Model.SizeShoeModel.findOne({
-      size: size.size,
-    });
-    if (!sizeExists) {
-      const newSize = new Model.SizeShoeModel({
-        size: size.size,
-        isEnable: size.isEnable,
-        sizeId: generateSizeId(size.size),
-      });
-      await newSize.save();
-      console.log(`Size ${size.size} created`);
-    } else {
-      console.log(`Size ${size.size} already exists`);
-    }
-  }
-  
 
 
   console.log("Finished_Create");
