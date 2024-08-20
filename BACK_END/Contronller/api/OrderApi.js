@@ -655,19 +655,90 @@ const updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ nội bộ", error: error.message });
   }
 };
+// const getUserCompletedOrders = async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     const orders = await OrderModel.find({ userId, status: 0 })
+//       .populate('userId', '_id')
+//       .populate('discointId')
+//       .lean();
+
+//     if (orders.length === 0) {
+//       return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đã hoàn thành.' });
+//     }
+
+//     const orderResponses_status0 = [];
+
+//     for (const order of orders) {
+//       const orderDetails = await OderDetailModel.find({ orderId: order._id })
+//         .populate({
+//           path: 'shoeId',
+//           select: 'name price thumbnail',
+//         })
+//         .populate({
+//           path: 'sizeId',
+//           model: 'SizeShoeModel',
+//           select: 'size',
+//         })
+//         .populate({
+//           path: 'colorId',
+//           model: 'ColorShoeModel',
+//           select: 'textColor codeColor',
+//         })
+//         .lean();
+
+//       const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
+//       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
+//       const totalPre = promo + order.total;
+
+//       const orderData = {
+//         _id: order._id,
+//         name: orderDetails.length > 0 ? orderDetails[0].shoeId.name : null,
+//         thumbnail: orderDetails.length > 0 ? orderDetails[0].shoeId.thumbnail : null,
+//         totalPre: totalPre,
+//         total: order.total,
+//         promo: promo,
+//         status: "completed",
+//         dateOrder: order.dateOrder,
+//         dateReceived: order.dateReceived,
+//         pay: order.pay,
+//         orderDetails: orderDetails.map(detail => ({
+//           amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
+//           _id: detail._id,
+//           name: detail.shoeId.name,
+//           price: detail.shoeId.price,
+//           thumbnail: detail.shoeId.thumbnail,
+//           size: detail.sizeId ? detail.sizeId.size : null,
+//           textColor: detail.colorId ? detail.colorId.textColor : null,
+//           codeColor: detail.colorId ? detail.colorId.codeColor : null,
+//           quantity: detail.quantity
+//         })),
+//       };
+
+//       orderResponses_status0.push(orderData);
+//     }
+
+//     res.status(200).json(orderResponses_status0);
+//   } catch (err) {
+//     res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng đã hoàn thành.', error: err.message });
+//   }
+// };
+
 const getUserCompletedOrders = async (req, res) => {
   const { userId } = req.params;
   try {
-    const orders = await OrderModel.find({ userId, status: 0 })
+    const orders = await OrderModel.find({ 
+      userId, 
+      $expr: { $in: [{ $toInt: "$status" }, [-1, 0]] }
+    })
       .populate('userId', '_id')
       .populate('discointId')
       .lean();
-
     if (orders.length === 0) {
-      return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đã hoàn thành.' });
+      return res.status(404).json({ message: 'Người dùng chưa có đơn hàng hoàn thành hoặc bị hủy.' });
     }
 
-    const orderResponses_status0 = [];
+    const orderResponses = [];
 
     for (const order of orders) {
       const orderDetails = await OderDetailModel.find({ orderId: order._id })
@@ -687,21 +758,25 @@ const getUserCompletedOrders = async (req, res) => {
         })
         .lean();
 
+      // Tính khuyến mãi (nếu có)
       const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
       const totalPre = promo + order.total;
 
       const orderData = {
         _id: order._id,
-        name: orderDetails.length > 0 ? orderDetails[0].shoeId.name : null,
+        nameOrder: order.nameOrder,
+        phoneNumber: order.phoneNumber,
+        addressOrder: order.addressOrder,
         thumbnail: orderDetails.length > 0 ? orderDetails[0].shoeId.thumbnail : null,
         totalPre: totalPre,
         total: order.total,
         promo: promo,
-        status: "completed",
+        status: order.status === "0", 
         dateOrder: order.dateOrder,
         dateReceived: order.dateReceived,
         pay: order.pay,
+        orderStatusDetails: order.orderStatusDetails,
         orderDetails: orderDetails.map(detail => ({
           amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
           _id: detail._id,
@@ -715,22 +790,97 @@ const getUserCompletedOrders = async (req, res) => {
         })),
       };
 
-      orderResponses_status0.push(orderData);
+      orderResponses.push(orderData);
     }
 
-    res.status(200).json(orderResponses_status0);
+    // Trả về danh sách đơn hàng đã hoàn thành hoặc bị hủy
+    res.status(200).json(orderResponses);
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng đã hoàn thành.', error: err.message });
+    res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng.', error: err.message });
   }
 };
+
+
+
+
+// const getUserActiveOrders = async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     const orders = await OrderModel.find({ userId, status: { $gt: 0 } })
+//       .populate('userId', '_id')
+//       .populate('discointId')
+//       .lean();
+
+//     if (orders.length === 0) {
+//       return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đang hoạt động.' });
+//     }
+
+//     const orderResponses_active = [];
+
+//     for (const order of orders) {
+//       const orderDetails = await OderDetailModel.find({ orderId: order._id })
+//         .populate({
+//           path: 'shoeId',
+//           select: 'name price thumbnail',
+//         })
+//         .populate({
+//           path: 'sizeId',
+//           model: 'SizeShoeModel',
+//           select: 'size',
+//         })
+//         .populate({
+//           path: 'colorId',
+//           model: 'ColorShoeModel',
+//           select: 'textColor codeColor',
+//         })
+//         .lean();
+
+//       const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
+//       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
+//       const totalPre = promo + order.total;
+
+//       const orderData = {
+//         _id: order._id,
+//         name: orderDetails.length > 0 ? orderDetails[0].shoeId.name : null,
+//         thumbnail: orderDetails.length > 0 ? orderDetails[0].shoeId.thumbnail : null,
+//         totalPre: totalPre,
+//         total: order.total,
+//         promo: promo,
+//         status: "active",
+//         dateOrder: order.dateOrder,
+//         dateReceived: order.dateReceived,
+//         pay: order.pay,
+//         orderDetails: orderDetails.map(detail => ({
+//           amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
+//           _id: detail._id,
+//           name: detail.shoeId.name,
+//           price: detail.shoeId.price,
+//           thumbnail: detail.shoeId.thumbnail,
+//           size: detail.sizeId ? detail.sizeId.size : null,
+//           textColor: detail.colorId ? detail.colorId.textColor : null,
+//           codeColor: detail.colorId ? detail.colorId.codeColor : null,
+//           quantity: detail.quantity
+//         })),
+//       };
+
+//       orderResponses_active.push(orderData);
+//     }
+
+//     res.status(200).json(orderResponses_active);
+//   } catch (err) {
+//     res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng đang hoạt động.', error: err.message });
+//   }
+// };
 const getUserActiveOrders = async (req, res) => {
   const { userId } = req.params;
   try {
-    const orders = await OrderModel.find({ userId, status: { $gt: 0 } })
+    // Tìm các đơn hàng có userId và trạng thái lớn hơn 0 (tức là đơn hàng đang hoạt động)
+    const orders = await OrderModel.find({ userId, status: { $ne: 0 } })
       .populate('userId', '_id')
       .populate('discointId')
       .lean();
 
+    // Kiểm tra nếu không có đơn hàng nào đang hoạt động
     if (orders.length === 0) {
       return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đang hoạt động.' });
     }
@@ -738,6 +888,7 @@ const getUserActiveOrders = async (req, res) => {
     const orderResponses_active = [];
 
     for (const order of orders) {
+      // Lấy chi tiết đơn hàng
       const orderDetails = await OderDetailModel.find({ orderId: order._id })
         .populate({
           path: 'shoeId',
@@ -755,21 +906,25 @@ const getUserActiveOrders = async (req, res) => {
         })
         .lean();
 
+      // Tính giá trị khuyến mãi (nếu có)
       const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
       const totalPre = promo + order.total;
 
+      // Tạo dữ liệu phản hồi cho đơn hàng
       const orderData = {
         _id: order._id,
-        name: orderDetails.length > 0 ? orderDetails[0].shoeId.name : null,
+        nameOrder: order.nameOrder,
+        phoneNumber: order.phoneNumber,
+        addressOrder: order.addressOrder,
         thumbnail: orderDetails.length > 0 ? orderDetails[0].shoeId.thumbnail : null,
         totalPre: totalPre,
         total: order.total,
         promo: promo,
         status: "active",
         dateOrder: order.dateOrder,
-        dateReceived: order.dateReceived,
         pay: order.pay,
+        orderStatusDetails: order.orderStatusDetails, // Hiển thị chi tiết trạng thái đơn hàng
         orderDetails: orderDetails.map(detail => ({
           amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
           _id: detail._id,
@@ -786,6 +941,7 @@ const getUserActiveOrders = async (req, res) => {
       orderResponses_active.push(orderData);
     }
 
+    // Trả về danh sách đơn hàng đang hoạt động
     res.status(200).json(orderResponses_active);
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi lấy thông tin đơn hàng đang hoạt động.', error: err.message });
