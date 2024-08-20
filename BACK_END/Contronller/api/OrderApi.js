@@ -29,7 +29,7 @@ const createOrder = async (req, res) => {
         if (sizeIndex !== -1 && colorIndex !== -1) {
           if (shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity >= item.quantity) {
             shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity -= item.quantity;
-            shoe.soldQuanlityAll += item.quantity;
+            shoe.sellQuanlityAll += item.quantity;
             await shoe.save();
           } else {
             return res.status(400).json({ message: `Không đủ số lượng tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
@@ -72,8 +72,8 @@ const createOrder = async (req, res) => {
       addressOrder,
       pay,
       total,
-      dateOrder: vietnamDate,
-      status: 'Chờ xác nhận',
+      dateOrder: Date.now(), 
+      status: 1,
       discointId,
       orderStatusDetails: [
         {
@@ -162,7 +162,7 @@ const cancelOrder = async (req, res) => {
       }
 
       shoe.storageShoe[storageIndex].importQuanlity += item.quantity;
-      shoe.soldQuanlityAll -= item.quantity;
+      shoe.sellQuanlityAll -= item.quantity;
       await shoe.save();
     }
 
@@ -232,7 +232,7 @@ const returnOrder = async (req, res) => {
               const storageItem = shoe.storageShoe[storageIndex];
 
               storageItem.importQuanlity += detail.quantity;
-              shoe.soldQuanlityAll -= detail.quantity;
+              shoe.sellQuanlityAll -= detail.quantity;
               await shoe.save();
             } else {
               return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${detail.shoeId}, size ${detail.sizeId}, màu ${detail.colorId}.` });
@@ -291,11 +291,11 @@ const confirmOrderReceived = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
     }
 
-    if (order.status !== 'Giao hàng') {
+    if (order.status != 5) {
       return res.status(400).json({ message: 'Chỉ có thể chuyển trạng thái đơn hàng từ "Giao hàng" sang "Đã nhận hàng".' });
     }
 
-    order.status = 'Đã nhận hàng';
+    order.status = 0;
     order.orderStatusDetails.push({
       status: 'Đã nhận hàng',
       timestamp: vietnamDate,
@@ -307,7 +307,7 @@ const confirmOrderReceived = async (req, res) => {
     sendNotificationUser(
       order.userId,
       'Xác nhận đã nhận hàng',
-      `Đơn hàng #${orderId} của bạn đã được xác nhận là đã giao hàng.`,
+      `Đơn hàng #${orderId} của bạn đã được xác nhận là đã nhận hàng.`,
       'OrderDelivered',
       orderDetails[0].shoeId,
       vietnamDate

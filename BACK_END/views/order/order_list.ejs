@@ -37,7 +37,7 @@
 <body>
     <%- include('../inc/top.ejs') %>
     <div class="content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- <div class="d-flex justify-content-between align-items-center mb-4">
             <h3>Danh sách các đơn hàng</h3>
             <div class="ms-auto date">
                 <input type="date" id="datePicker" name="datePicker">
@@ -47,20 +47,21 @@
                     <button class="btn btn-secondary">Hủy</button>
                 </div>
             </div>
-        </div>
+        </div> -->
 
+        <!-- Add status buttons here -->
         <div class="status-buttons mb-3">
             <% if (userRole !== 3) { %>
-                <button class="btn btn-warning" data-status="1">Chờ xác nhận</button>
+                <button class="btn btn-warning" data-status="Chờ xác nhận">Chưa xác nhận</button>
             <% } %>
-            <button class="btn btn-primary" data-status="2">Chuẩn bị hàng</button>
-            <button class="btn btn-primary" data-status="3">Chờ bàn giao đơn vị vận chuyển</button>
-            <button class="btn btn-success" data-status="4">Đang giao hàng</button>
-            <button class="btn btn-danger" data-status="0">Đã nhận hàng</button>
-            <button class="btn btn-dark" data-status="5">Hủy đơn</button>
-            <button class="btn btn-dark" data-status="6">Hoàn đơn</button>
+            <button class="btn btn-primary" data-status="Chuẩn bị hàng">Chuẩn bị hàng/Chờ bàn giao đơn vị vận chuyển</button>
+            <button class="btn btn-success" data-status="Đang giao hàng">Đang giao hàng</button>
+            <button class="btn btn-danger" data-status="Đã nhận hàng">Giao thành công</button>
+            <button class="btn btn-dark" data-status="Đã hủy">Đã hủy đơn</button>
+            <button class="btn btn-dark" data-status="Hoàn đơn">Đơn hoàn</button>
+            <button class="btn btn-dark" data-status="Đánh giá">Đã đánh giá</button>
+
         </div>
-        
 
         <div class="mb-3">
             <label>
@@ -86,98 +87,136 @@
             <tbody id="orderList">
                 <% formattedOrders.forEach(order => { %>
                 <tr onclick="window.location.href='/order/orderDetails/<%= order._id %>'" class="order-row" data-status="<%= order.status %>" data-date="<%= order.dateOrder %>">
-                    <td><input type="checkbox"></td>
-                    <td><img src="<%= order.userImageAccount %>" class="rounded-circle mr-2" alt="Customer Image" width="50dp"> <%= order.userNameAccount %></td>
+                    <td></td>
+                    <td><img src="<%= order.userImageAccount %>" class="rounded-circle mr-2" alt="Customer Image" height="50dp" width="50dp"> <%= order.userNameAccount %></td>
                     <td><%= order._id %></td>
                     <td><%= order.dateOrder %></td>
                     <td>$<%= order.total %></td>
                     <td>
-                        <% if (order.status === 0) { %>
-                            Đã nhận hàng
-                        <% } else if (order.status === 1) { %>
-                            Chờ xác nhận
-                        <% } else if (order.status === 2) { %>
-                            Chuẩn bị hàng
-                        <% } else if (order.status === 3) { %>
-                            Chờ bàn giao đơn vị vận chuyển
-                        <% } else if (order.status === 4) { %>
-                            Đang giao hàng
-                        <% } else if (order.status === 5) { %>
-                            Hủy đơn
-                        <% } else if (order.status === 6) { %>
-                            Hoàn đơn
-                        <% } %>
+                        <% 
+                            let statusText;
+                            switch(order.status) {
+                                case -1:
+                                    statusText = "Đã đánh giá";
+                                    break;
+                               case 0:
+                                    statusText = "Đã nhận hàng";
+                                    break;
+                                case 1:
+                                    statusText = "Chờ xác nhận";
+                                    break;
+                                case 2:
+                                    statusText = "Chuẩn bị hàng";
+                                    break;
+                                case 3:
+                                    statusText = "Chờ bàn giao đơn vị vận chuyển";
+                                    break;
+                                case 4:
+                                    statusText = "Đang giao hàng";
+                                    break;
+                                case 5:
+                                    statusText = "Giao thành công";
+                                    break;
+                                case 6:
+                                    statusText = "Đã hủy";
+                                    break;
+                                case 7:
+                                    statusText = "Hoàn đơn";
+                                    break;
+                                default:
+                                    statusText = "Không xác định";
+                            }
+                        %>
+                        <%= statusText %>
                     </td>
                 </tr>
                 <% }); %>
             </tbody>
             
+            
         </table>
 
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <li class="page-item"><a class="page-link text-dark" href="#">1</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">4</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">...</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">10</a></li>
-                <li class="page-item"><a class="page-link text-dark" href="#">NEXT</a></li>
-            </ul>
-        </nav>
-    </div>
+
     <%- include('../inc/end.ejs') %>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Xử lý click cho các nút trạng thái
-            const statusButtons = document.querySelectorAll('.status-buttons button');
-            statusButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const status = this.getAttribute('data-status');
-                    console.log(`Status button clicked: ${status}`);
-                    filterOrdersByStatus(status);
-                });
-            });
-
-            // Xử lý click cho các radio button
-            const orderFilters = document.querySelectorAll('input[name="orderFilter"]');
-            orderFilters.forEach(radio => {
-                radio.addEventListener('change', function () {
-                    const filterValue = this.value;
-                    console.log(`Order filter selected: ${filterValue}`);
-                    filterOrdersByType(filterValue);
-                });
-            });
+ document.addEventListener("DOMContentLoaded", function () {
+    // Xử lý click cho các nút trạng thái
+    const statusButtons = document.querySelectorAll('.status-buttons button');
+    statusButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const status = this.getAttribute('data-status');
+            console.log(`Status button clicked: ${status}`);
+            filterOrdersByStatus(status);
         });
+    });
 
-        function filterOrdersByStatus(status) {
-        const rows = document.querySelectorAll('.order-row');
-        rows.forEach(row => {
-            const rowStatus = row.getAttribute('data-status');
-            if (status === "Tất cả đơn hàng" || rowStatus === status || (status === "Chuẩn bị hàng" && rowStatus === "Chờ bàn giao đơn vị vận chuyển")) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
+    // Xử lý click cho các radio button
+    const orderFilters = document.querySelectorAll('input[name="orderFilter"]');
+    orderFilters.forEach(radio => {
+        radio.addEventListener('change', function () {
+            const filterValue = this.value;
+            console.log(`Order filter selected: ${filterValue}`);
+            filterOrdersByType(filterValue);
         });
-    }
+    });
+});
 
-        function filterOrdersByType(type) {
-            const rows = document.querySelectorAll('.order-row');
-            const today = new Date();
-            const formattedToday = ('0' + today.getDate()).slice(-2) + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + today.getFullYear();
-            console.log(formattedToday);
-            rows.forEach(row => {
-                const orderDate = row.getAttribute('data-date').split(" ")[1];
+function filterOrdersByStatus(status) {
+    const rows = document.querySelectorAll('.order-row');
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        const formattedStatus = getStatusText(rowStatus); // Lấy trạng thái đã format
 
-                if (type === "all" || (type === "today" && orderDate === formattedToday)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+        if (status === "Tất cả đơn hàng" || formattedStatus === status || (status === "Chuẩn bị hàng" && (formattedStatus === "Chuẩn bị hàng" || formattedStatus === "Chờ bàn giao đơn vị vận chuyển"))) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
+    });
+}
+
+function getStatusText(status) {
+    switch (parseInt(status)) {
+        case -1:
+        return "Đánh giá"
+        case 1:
+            return "Chờ xác nhận";
+        case 2:
+            return "Chuẩn bị hàng";
+        case 3:
+            return "Chờ bàn giao đơn vị vận chuyển";
+        case 4:
+            return "Đang giao hàng";
+        case 5:
+            return "Đã nhận hàng";
+        case 0:
+            return "Đã nhận hàng";
+        case 6:
+            return "Đã hủy";
+        case 7:
+            return "Hoàn đơn";
+        default:
+            return "Không xác định";
+    }
+}
+
+function filterOrdersByType(type) {
+    const rows = document.querySelectorAll('.order-row');
+    const today = new Date();
+    const formattedToday = ('0' + today.getDate()).slice(-2) + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + today.getFullYear();
+    console.log(formattedToday);
+    rows.forEach(row => {
+        const orderDate = row.getAttribute('data-date').split(" ")[1];
+
+        if (type === "all" || (type === "today" && orderDate === formattedToday)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
     </script>
 </body>
 

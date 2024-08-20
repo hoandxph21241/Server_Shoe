@@ -45,18 +45,19 @@
         .timeline-item {
             position: relative;
             margin: 0 0 20px 20px;
+            padding-left: 20px; /* Added padding for text */
         }
 
         .timeline-item:before {
-            position: absolute;
-            left: -8px;
-            width: 16px;
-            height: 16px;
-            content: '';
-            border-radius: 50%;
-            background-color: #fff;
-            border: 2px solid #6c757d;
-        }
+        position: absolute;
+        left: -10px; /* Adjusted for symmetry */
+        width: 20px;
+        height: 20px;
+        content: '';
+        border-radius: 50%;
+        background-color: #fff;
+        border: 3px solid #6c757d; /* Increased border width for visibility */
+    }
 
         .timeline-item.active:before {
             background-color: #007bff;
@@ -97,6 +98,9 @@
         .hidden {
             display: none;
         }
+        
+        
+        
     </style>
 </head>
 
@@ -120,23 +124,60 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                            <h5>Order ID: <span class="text-secondary">#<%= orderResponse._id %></span> <span
-                                    class="badge bg-warning text-dark">
-                                    <%= orderResponse.status %>
-                                </span></h5>
+                            <h5>Order ID: <span class="text-secondary">#<%= orderResponse._id %></span> 
+                                <span class="badge bg-warning text-dark">
+                                    <% 
+                                    // Determine the status text based on the status number
+                                    let statusText;
+                                    switch (orderResponse.status) {
+                                        case 0:
+                                            statusText = "Đã nhận hàng";
+                                            break;
+                                        case 1:
+                                            statusText = "Chờ xác nhận";
+                                            break;
+                                        case 2:
+                                            statusText = "Chuẩn bị hàng";
+                                            break;
+                                        case 3:
+                                            statusText = "Chờ bàn giao đơn vị vận chuyển";
+                                            break;
+                                        case 4:
+                                            statusText = "Đang giao hàng";
+                                            break;
+                                        case 5:
+                                            statusText = "Giao thành công";
+                                            break;
+                                        case 6:
+                                            statusText = "Đã nhận hàng";
+                                            break;
+                                        case 7:
+                                            statusText = "Hoàn đơn";
+                                            break;
+                                        default:
+                                            statusText = "Trạng thái không xác định";
+                                    }
+                                    %>
+                                    <%= statusText %>
+                                </span>
+                            </h5>
                             <p>
                                 <%= orderResponse.dateOrder %>
                             </p>
                         </div>
                         <div>
-                            <button class="btn btn-secondary"><img src="/images/fluent_print-16-regular.png" alt="Print"
-                                    style="filter: invert(100%);"></button>
+                            <button  class="btn btn-secondary hidden" id="print-btn">
+                                <button class="btn btn-secondary" onclick="printCustomContent()">In</button>
+                            </button>
                             <button class="btn btn-secondary" id="confirm-order-btn">Xác nhận</button>
-                            <button class="btn btn-secondary" id="cancel-order-btn">Cancel</button>
+                            <button class="btn btn-secondary" id="cancel-order-btn">Hủy</button>
                         </div>
                     </div>
+                </div>
+            </div>
+            
 
-                    <div class="row mb-4">
+                    <div  id="printable-area" class="row mb-4">
                         <div class="col-md-6">
                             <div class="col mb-4">
                                 <div class="card flex" style="display: table; height: 100%;">
@@ -222,12 +263,13 @@
                     <ul class="timeline">
                         <% orderResponse.orderStatusDetails.forEach(statusDetail=> { %>
                             <li class="timeline-item <%= statusDetail.status === 'Đã hủy' ? 'active' : '' %>">
+                                                                <div class="timeline-status <%= statusDetail.status === 'Đã hủy' ? 'canceled' : '' %>">
+                                    <%= statusDetail.status %>
+                                </div>
                                 <div class="timeline-time">
                                     <%= statusDetail.timestamp %>
                                 </div>
-                                <div class="timeline-status <%= statusDetail.status === 'Đã hủy' ? 'canceled' : '' %>">
-                                    <%= statusDetail.status %>
-                                </div>
+
                                 <div class="timeline-note <%= statusDetail.status === 'Đã hủy' ? 'canceled' : '' %>">
                                     <%= statusDetail.note %>
                                 </div>
@@ -244,15 +286,14 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="confirmOrderModalLabel">Xác nhận đơn hàngr</h5>
+                        <h5 class="modal-title" id="confirmOrderModalLabel">Xác nhận cập nhật trạng thái đơn hàng</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Are you sure you want to confirm this order?
+                        Bạn có chắc là bạn muốn xác nhận đơn này?
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" id="confirm-order">Confirm</button>
+                        <button type="button" class="btn btn-primary" id="confirm-order">Xác nhận</button>
                     </div>
                 </div>
             </div>
@@ -264,37 +305,47 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+                        <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận hủy đơn</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <form id="cancel-form">
                             <div class="mb-3">
-                                <label for="cancelReason" class="form-label">Reason for Cancellation</label>
+                                <label for="cancelReason" class="form-label">Nhập lý do huỷ đơn</label>
                                 <textarea class="form-control" id="cancelReason" rows="3" required></textarea>
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-danger" id="cancel-order">Cancel Order</button>
+                        <button type="button" class="btn btn-danger" id="cancel-order">Xác nhận</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <script>
+                const statusMapping = {
+        0: 'Đã nhận hàng',
+        1: 'Chờ xác nhận',
+        2: 'Chuẩn bị hàng',
+        3: 'Chờ bàn giao đơn vị vận chuyển',
+        4: 'Đang giao hàng',
+        5: 'Giao thành công',
+        6: 'Hủy đơn',
+        7: 'Hoàn đơn'
+    };
+            
             document.getElementById('confirm-order-btn').addEventListener('click', () => {
                 const currentStatus = '<%= orderResponse.status %>';
                 let apiUrl = '';
 
-                if (currentStatus === 'Chờ xác nhận') {
+                if (currentStatus == 1) {
                     apiUrl = `/order/prepareOrder/<%= orderResponse._id %>`;
-                } else if (currentStatus === 'Chuẩn bị hàng') {
+                } else if (currentStatus == 2) {
                     apiUrl = `/order/orderPreparedSuccessfully/<%= orderResponse._id %>`;
-                } else if (currentStatus === 'Chờ bàn giao đơn vị vận chuyển') {
+                } else if (currentStatus == 3) {
                     apiUrl = `/order/shipOrder/<%= orderResponse._id %>`;
-                } else if (currentStatus === 'Giao hàng') {
+                } else if (currentStatus == 4) {
                     apiUrl = `/order/confirmOrder/<%= orderResponse._id %>`;
                 } else {
                     alert('Invalid order status for confirmation.');
@@ -360,26 +411,51 @@
             });
 
             document.addEventListener('DOMContentLoaded', () => {
-    const orderStatus = parseInt('<%= orderResponse.status %>'); // Assuming orderStatus is a number
-    const userRole = parseInt('<%= userRole %>'); // Assuming userRole is a number
+    const orderStatus = parseInt('<%= orderResponse.status %>'); 
+    const userRole = parseInt('<%= userRole %>'); 
 
     const confirmButton = document.getElementById('confirm-order-btn');
     const cancelButton = document.getElementById('cancel-order-btn');
+    const printButton = document.getElementById('print-btn');
 
-    // Hide buttons based on order status and user role
     if (userRole !== 3) { 
-        if (orderStatus === 0 || orderStatus === 5 || orderStatus === 3 || orderStatus === 4) {
+        if (orderStatus === 0 || orderStatus === 5 || orderStatus === 3 || orderStatus === 4 ) {
             if (confirmButton) confirmButton.classList.add('hidden');
             if (cancelButton) cancelButton.classList.add('hidden');
         }
     } else { // Shipper role
-        if (orderStatus !== 4 && orderStatus !== 3) { // Show buttons only if status is "Đang giao hàng" or "Chờ bàn giao đơn vị vận chuyển"
+        if (orderStatus !== 4 && orderStatus !== 3) {
             if (confirmButton) confirmButton.classList.add('hidden');
             if (cancelButton) cancelButton.classList.add('hidden');
+            
         }
+    }
+    if (orderStatus === 2) { // Status "Chuẩn bị hàng"
+        if (printButton) printButton.classList.remove('hidden');
+    } else {
+        if (printButton) printButton.classList.add('hidden');
     }
 });
 
+
+// function printCustomContent() {
+//         // Lấy nội dung mà bạn muốn in
+//         const printContent = document.getElementById('printable-area').innerHTML;
+        
+//         // Tạo một cửa sổ mới
+//         const printWindow = window.open('', '', 'height=600,width=800');
+        
+//         // Tạo một kiểu HTML cho cửa sổ mới
+//         printWindow.document.write('<html><head><title>Print</title>');
+//         printWindow.document.write('</head><body>');
+//         printWindow.document.write(printContent);
+//         printWindow.document.write('</body></html>');
+        
+//         // Đóng tài liệu và in
+//         printWindow.document.close();
+//         printWindow.focus();
+//         printWindow.print();
+//     }
 
 
         </script>

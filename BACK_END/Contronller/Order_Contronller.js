@@ -12,28 +12,50 @@ const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
   timeZone: 'Asia/Ho_Chi_Minh'
 }).format(new Date());
 
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+
+  // Extract hours, minutes, and seconds
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  // Extract day, month, and year
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+  const year = date.getFullYear();
+
+  // Construct the formatted string
+  return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+}
+
+// Example usage:
+const isoDateString = "2024-08-14T13:58:28.000Z"; // Example ISO date string
+const formattedDate = formatDateTime(isoDateString);
+
+console.log(formattedDate); // Outputs: 13:58:28 14/08/2024
+
+
 const getAllOrders = async (req, res) => {
   const userRole = req.session.userLogin ? req.session.userLogin.role : null;
-console.log(userRole);
 
   try {
     const orders = await OrderModel.find()
-      .populate("userId", "nameAccount imageAccount")
-      .populate("discointId", "discountAmount")
-      .lean();
-
+    .populate("userId", "nameAccount imageAccount")
+    .populate("discointId", "discountAmount")
+    .lean();
+  
     const formattedOrders = orders.map((order) => {
       const formattedOrder = {
-        userID: order.userId?._id,
+        userID: order.userId?._id || null,
         userNameAccount: order.userId?.nameAccount || null,
         userImageAccount: order.userId?.imageAccount || null,
-        ...order,
-        // discountId: order.discointId?._id || null,
-        // discountAmount: order.discointId?.discountAmount || 0,
-      };
 
-      delete formattedOrder.userId;
-      delete formattedOrder.discointId;
+        total: order.total,
+        dateOrder: formatDateTime(order.dateOrder),
+        status: order.status,
+        _id: order._id
+      };
 
       return formattedOrder;
     });
@@ -128,7 +150,7 @@ const prepareOrder = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
     }
 
-    if (order.status !== "Chờ xác nhận") {
+    if (order.status != 1) {
       return res.status(400).json({
         message:
           'Chỉ có thể chuyển trạng thái đơn hàng từ "Chờ xác nhận" sang "Chuẩn bị hàng".',
@@ -137,6 +159,7 @@ const prepareOrder = async (req, res) => {
 
 
     const orderDetails = await OderDetailModel.find({ orderId });
+console.log(orderDetails);
 
     if (orderDetails.length === 0) {
       return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
@@ -192,7 +215,7 @@ const orderPreparedSuccessfully = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
     }
 
-    if (order.status !== "Chuẩn bị hàng") {
+    if (order.status != 2) {
       return res.status(400).json({
         message:
           'Chỉ có thể chuyển trạng thái đơn hàng từ "Chuẩn bị hàng" sang "Chờ bàn giao đơn vị vận chuyển".',
@@ -205,7 +228,7 @@ const orderPreparedSuccessfully = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
     }
 
-    order.status = "Chờ bàn giao đơn vị vận chuyển";
+    order.status = 3;
     order.orderStatusDetails.push({
       status: "Chờ bàn giao đơn vị vận chuyển",
       timestamp: vietnamDate,
@@ -255,7 +278,7 @@ const shipOrder = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
     }
 
-    if (order.status !== "Chờ bàn giao đơn vị vận chuyển") {
+    if (order.status != 3) {
       return res
         .status(400)
         .json({
@@ -270,7 +293,7 @@ const shipOrder = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
     }
 
-    order.status = "Giao hàng";
+    order.status = 4;
     order.orderStatusDetails.push({
       status: "Giao hàng",
       timestamp: vietnamDate,
@@ -322,7 +345,7 @@ const confirmOrderReceived = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
     }
 
-    if (order.status !== "Giao hàng") {
+    if (order.status != 4) {
       return res.status(400).json({
         message:
           'Chỉ có thể chuyển trạng thái đơn hàng từ "Giao hàng" sang "Đã nhận hàng".',
@@ -335,11 +358,11 @@ const confirmOrderReceived = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy chi tiết đơn hàng." });
     }
 
-    order.status = "Đã nhận hàng";
+    order.status = 5;
     order.orderStatusDetails.push({
-      status: "Đã nhận hàng",
+      status: "Giao thành công",
       timestamp: vietnamDate,
-      note: "Đơn hàng đã được nhận",
+      note: "Đơn hàng đã giao cho người nhận",
     });
 
     await order.save();
@@ -347,7 +370,7 @@ const confirmOrderReceived = async (req, res) => {
     sendNotificationUser(
       order.userId,
       'Xác nhận đã nhận hàng',
-      `Đơn hàng #${orderId} của bạn đã được xác nhận là đã giao hàng.`,
+      `Đơn hàng #${orderId} của bạn đã được giao vui lòng xác nhận đơn hàng.`,
       'OrderDelivered',
       orderDetails[0].shoeId,
       vietnamDate
