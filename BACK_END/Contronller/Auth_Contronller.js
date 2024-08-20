@@ -1,4 +1,5 @@
 var Model = require("../Models/DB_Shoes");
+const moment = require('moment');
 
 exports.Register = async (req, res, next) => {
   let msg = "";
@@ -149,6 +150,9 @@ exports.ProfileUser = async (req, res, next) => {
           })
           .lean();
 
+          const formattedDate = moment(order.dateOrder).format('HH:mm:ss DD/MM/YYYY');
+
+
         // Định dạng lại chi tiết đơn hàng
         const details = orderDetails.map((detail) => ({
           _id: detail._id,
@@ -166,7 +170,7 @@ exports.ProfileUser = async (req, res, next) => {
           userNameAccount: order.userId?.nameAccount || null,
           _id: order._id,
           orderId: order.orderId,
-          dateOrder: order.dateOrder,
+          dateOrder: formattedDate,
           total: order.total,
           status: order.status,
           details: details,

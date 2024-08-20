@@ -117,7 +117,7 @@
           <div class="row-md-3">
             <div class="card-statistic">
               <div class="align-items-center">
-                <h6>Total Orders</h6>
+                <h6>Tổng tiền</h6>
                 <div class="col d-flex">
                   <div class="col d-flex align-items-center justify-content-between">
                     <div class="row">
@@ -141,11 +141,11 @@
           <thead>
             <tr>
               <th>Order ID</th>
-              <th>Product</th>
-              <th>Total Quantity</th>
-              <th>Date</th>
-              <th>Total Amount</th>
-              <th>Status</th>
+              <th>Sản phẩm</th>
+              <th>Sl</th>
+              <th>Ngày</th>
+              <th>Tổng tiền</th>
+              <th>Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -188,8 +188,22 @@
                     <td rowspan="<%= order.details.length %>">
                       <%= order.total.toFixed(2) %> VND
                     </td>
-                    <td rowspan="<%= order.details.length %>" class="<%= order.status.toLowerCase() %>">
-                      <%= order.status %>
+                    <td rowspan="<%= order.details.length %>" class="<%= order.status%>">
+                      <% if (order.status === 0) { %>
+                        Đã nhận hàng
+                    <% } else if (order.status === 1) { %>
+                        Chờ xác nhận
+                    <% } else if (order.status === 2) { %>
+                        Chuẩn bị hàng
+                    <% } else if (order.status === 3) { %>
+                        Chờ bàn giao đơn vị vận chuyển
+                    <% } else if (order.status === 4) { %>
+                        Đang giao hàng
+                    <% } else if (order.status === 5) { %>
+                        Hủy đơn
+                    <% } else if (order.status === 6) { %>
+                        Hoàn đơn
+                    <% } %>
                     </td>
                     <% } %>
                 </tr>
