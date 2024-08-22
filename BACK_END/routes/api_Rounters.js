@@ -87,7 +87,7 @@ router.post("/createOrder",  Order_API.createOrder);
 router.put("/cancelOrder/:orderId", Order_API.cancelOrder);
 router.put('/confirmReceived/:orderId', Order_API.confirmOrderReceived);
 // hiển thị list đơn hàng user, lấy đơn hàng đầu tiên đại diện 1 đơn hàng
-router.get("/getUserOrder/:orderId", Order_API.getUserOrdersWithFirstItem);
+router.get("/getUserOrder/:userId", Order_API.getUserOrdersWithFirstItem);
 // Hiển thị thông tin đơn hàng by orderId
 router.get("/getOrderById/:orderId", Order_API.getOrderById);
 //Hiển thị list giày  by orderId
