@@ -256,10 +256,10 @@ var OderDetailSchema = new db.mongoose.Schema(
     orderDetailId: { type: String, require: true },
     orderId: { type: db.mongoose.Schema.Types.ObjectId, ref: "OrderModel" },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
+    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
     colorId: {
       type: db.mongoose.Schema.Types.ObjectId,
-      ref: "ShoeColorShoeModel",
+      ref: "ColorShoeModel",
     },
     quantity: { type: Number, require: false },
   },

@@ -1,6 +1,6 @@
 const { sendNotificationUser } = require('../../Contronller/api/Navigation_api');
 const { sendNotificationAdmin } = require('../../Contronller/Navigation_Controller');
-const { OrderModel, OderDetailModel, DiscountModel, ShoeModel } = require('../../Models/DB_Shoes');
+const { OrderModel, OderDetailModel, DiscountModel, ShoeModel,UserModel } = require('../../Models/DB_Shoes');
 const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
   month: '2-digit',
@@ -762,6 +762,12 @@ const getUserCompletedOrders = async (req, res) => {
       const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
       const totalPre = promo + order.total;
+      let statusLabel;
+      if (order.status === 0) {
+        statusLabel = "completed"; 
+      } else if (order.status === -1) {
+        statusLabel = "rateCompleted";
+      }
 
       const orderData = {
         _id: order._id,
@@ -772,7 +778,7 @@ const getUserCompletedOrders = async (req, res) => {
         totalPre: totalPre,
         total: order.total,
         promo: promo,
-        status: order.status === "0", 
+        status: statusLabel, 
         dateOrder: order.dateOrder,
         dateReceived: order.dateReceived,
         pay: order.pay,
