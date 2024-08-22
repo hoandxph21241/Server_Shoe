@@ -291,9 +291,8 @@ const confirmOrderReceived = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
     }
 
-    if (order.status != 5) {
-      return res.status(400).json({ message: 'Chỉ có thể chuyển trạng thái đơn hàng từ "Giao hàng" sang "Đã nhận hàng".' });
-    }
+    const orderDetails = await OderDetailModel.find({ orderId });
+
 
     order.status = 0;
     order.orderStatusDetails.push({
