@@ -8,7 +8,9 @@ const review = require("../Contronller/api/ReviewApi");
 const banner = require("../Contronller/api/BannerApi");
 var Users_API = require("../Contronller/api/User_api");
 var Product_API = require("../Contronller/api/Product_api");
-
+var Cart_API = require("../Contronller/api/CartApi");
+var Order_API = require("../Contronller/api/OrderApi");
+var Navigation_API = require("../Contronller/api/Navigation_api");
 
 // Auth Rounters
 router.get("/signin", Auth_API.Sign);
@@ -74,6 +76,31 @@ router.get("/getBanner", banner.getBanner);
 // http://localhost:3000/api/removeBanner
 router.delete("/removeBanner", banner.removeBanner);
 
+//Cart
+router.post('/addCart',  Cart_API.addCart);
+router.delete('/deleteCart/:cartId',   Cart_API.deleteCart);
+router.post('/updateNumberShoe/:cartId',   Cart_API.updateNumberShoe);
+router.get('/cartList/:userId',   Cart_API.cartListByUserId);
 
+//Order
+router.post("/createOrder",  Order_API.createOrder);
+router.put("/cancelOrder/:orderId", Order_API.cancelOrder);
+router.put('/confirmReceived/:orderId', Order_API.confirmOrderReceived);
+// hiển thị list đơn hàng user, lấy đơn hàng đầu tiên đại diện 1 đơn hàng
+router.get("/getUserOrder/:orderId", Order_API.getUserOrdersWithFirstItem);
+// Hiển thị thông tin đơn hàng by orderId
+router.get("/getOrderById/:orderId", Order_API.getOrderById);
+//Hiển thị list giày  by orderId
+router.get("/getOrderShoeById/:orderId", Order_API.getOrderShoeById);
+
+//
+
+// router.get('/getUserActiveOrders/:userId', Order_API.getUserActiveOrders);
+// router.post('/updateOrderAndRateShoe', Order_API.updateOrderAndRateShoe);
+// router.post("/oderstatus/:orderId",Order_API.updateOrderStatus);
+
+//Navigation
+router.get("/getListNavigationUser/:userId",  Navigation_API.getNotificationsByUser);
+router.post("/deleteNavigation/:notificationId", Navigation_API.deleteNotificationUser);
 
 module.exports = router;
