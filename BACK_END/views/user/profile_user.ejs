@@ -100,6 +100,10 @@
     .order-id-text {
       margin-right: 5px;
     }
+
+    .form-select {
+      width: 20%;
+    }
   </style>
 </head>
 
@@ -117,7 +121,7 @@
           <div class="row-md-3">
             <div class="card-statistic">
               <div class="align-items-center">
-                <h6>Tổng tiền</h6>
+                <h6>Tổng tiền hàng</h6>
                 <div class="col d-flex">
                   <div class="col d-flex align-items-center justify-content-between">
                     <div class="row">
@@ -135,7 +139,28 @@
           </div>
         </div>
       </div>
-      <h4>Đơn hàng đã đặt</h4>
+
+      <div class="mb-3">
+        <label for="statusFilter" class="form-label">
+          <h4>Đơn hàng đã đặt</h4>
+        </label>
+        <select id="statusFilter" class="form-select" onchange="filterOrdersByStatus()">
+          <option value="">Tất cả</option>
+          <option value="0">Đã nhận hàng</option>
+          <option value="1">Chờ xác nhận</option>
+          <option value="2">Chuẩn bị hàng</option>
+          <option value="3">Chờ bàn giao đơn vị vận chuyển</option>
+          <option value="4">Đang giao hàng</option>
+          <option value="5">Hủy đơn</option>
+          <option value="6">Hoàn đơn</option>
+        </select>
+      </div>
+
+      <p id="orderCountText">Tổng đơn hàng: <span id="orderCount">
+          <%= orders.length %>
+        </span></p>
+      <p id="noOrdersMessage" style="display: none;">Chưa có đơn .</p>
+
       <% if (orders.length> 0) { %>
         <table class="table table-hover align-middle">
           <thead>
@@ -148,10 +173,11 @@
               <th>Trạng thái</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="ordersTableBody">
             <% orders.forEach(order=> { %>
               <% order.details.forEach((detail, index)=> { %>
-                <tr onclick="handleRowClick(event, '<%= order._id %>')">
+                <tr class="order-row" data-status="<%= order.status %>"
+                  onclick="handleRowClick(event, '<%= order._id %>')">
                   <% if (index===0) { %>
                     <td rowspan="<%= order.details.length %>">
                       <%= order._id %>
@@ -188,22 +214,22 @@
                     <td rowspan="<%= order.details.length %>">
                       <%= order.total.toFixed(2) %> VND
                     </td>
-                    <td rowspan="<%= order.details.length %>" class="<%= order.status%>">
-                      <% if (order.status === 0) { %>
+                    <td rowspan="<%= order.details.length %>" class="<%= order.status %>">
+                      <% if (order.status===0) { %>
                         Đã nhận hàng
-                    <% } else if (order.status === 1) { %>
-                        Chờ xác nhận
-                    <% } else if (order.status === 2) { %>
-                        Chuẩn bị hàng
-                    <% } else if (order.status === 3) { %>
-                        Chờ bàn giao đơn vị vận chuyển
-                    <% } else if (order.status === 4) { %>
-                        Đang giao hàng
-                    <% } else if (order.status === 5) { %>
-                        Hủy đơn
-                    <% } else if (order.status === 6) { %>
-                        Hoàn đơn
-                    <% } %>
+                        <% } else if (order.status===1) { %>
+                          Chờ xác nhận
+                          <% } else if (order.status===2) { %>
+                            Chuẩn bị hàng
+                            <% } else if (order.status===3) { %>
+                              Chờ bàn giao đơn vị vận chuyển
+                              <% } else if (order.status===4) { %>
+                                Đang giao hàng
+                                <% } else if (order.status===5) { %>
+                                  Hủy đơn
+                                  <% } else if (order.status===6) { %>
+                                    Hoàn đơn
+                                    <% } %>
                     </td>
                     <% } %>
                 </tr>
@@ -212,7 +238,7 @@
           </tbody>
         </table>
         <% } else { %>
-          <p>No orders found.</p>
+          <p>Chưa đơn hàng.</p>
           <% } %>
             <script>
               function handleRowClick(event, orderId) {
@@ -233,7 +259,6 @@
                 }
               }
 
-              // Copy clipboard
               function copyToClipboard(event, orderId) {
                 event.stopPropagation();
                 const input = document.createElement('input');
@@ -244,7 +269,32 @@
                 document.body.removeChild(input);
                 alert('Mã đơn hàng ' + orderId);
               }
+
+              function filterOrdersByStatus() {
+                const selectedStatus = document.getElementById('statusFilter').value;
+                const rows = document.querySelectorAll('.order-row');
+                let visibleOrderCount = 0;
+
+                rows.forEach(row => {
+                  if (selectedStatus === "" || row.dataset.status === selectedStatus) {
+                    row.style.display = "";
+                    visibleOrderCount++;
+                  } else {
+                    row.style.display = "none";
+                  }
+                });
+
+                document.getElementById('orderCount').textContent = visibleOrderCount;
+
+                if (visibleOrderCount === 0) {
+                  document.getElementById('noOrdersMessage').style.display = 'block';
+                  document.querySelector('table').style.display = 'none';
+                } else {
+                  document.getElementById('noOrdersMessage').style.display = 'none';
+                  document.querySelector('table').style.display = '';
+                }
+              }
+
+
             </script>
 </body>
-
-</html>
