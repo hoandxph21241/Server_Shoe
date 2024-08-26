@@ -486,6 +486,8 @@ const updateOrderAndRateShoe = async (req, res) => {
       return res.status(400).json({ message: "Danh sách orderId không hợp lệ." });
     }
 
+
+    
     const updatedShoes = [];
     for (const shoeId of shoeIdArray) {
       console.log('shoeId:', shoeId);
@@ -497,6 +499,11 @@ const updateOrderAndRateShoe = async (req, res) => {
       const user = await UserModel.findById(userId);
       if (!user) {
         return res.status(404).json({ message: `Không tìm thấy người dùng với ID: ${userId}` });
+      }
+
+      const order = await OrderModel.findOne({ _id: { $in: orderIdArray }, status: -1 });
+      if (order) {
+          return res.status(400).json({ message: "Đơn hàng này đã được đánh giá, không thể đánh giá lại." });
       }
 
       const newComment = {
@@ -533,8 +540,8 @@ const updateOrderAndRateShoe = async (req, res) => {
       let newStatus;
       if (order.status === 0) {
         newStatus = -1;
-      } else if (order.status === -1) {
-        newStatus = 1;
+      // } else if (order.status === -1) {
+      //   newStatus = 1;
       }else {
         newStatus = order.status; 
       }
@@ -735,8 +742,9 @@ const getUserCompletedOrders = async (req, res) => {
       .populate('discointId')
       .lean();
     if (orders.length === 0) {
-      return res.status(404).json({ message: 'Người dùng chưa có đơn hàng hoàn thành hoặc bị hủy.' });
-    }
+      return res.status(200).json({ message: 'Danh Sách Trống.' });
+    } 
+
 
     const orderResponses = [];
 
@@ -786,6 +794,7 @@ const getUserCompletedOrders = async (req, res) => {
         orderDetails: orderDetails.map(detail => ({
           amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
           _id: detail._id,
+          shoeId:detail.shoeId._id,
           name: detail.shoeId.name,
           price: detail.shoeId.price,
           thumbnail: detail.shoeId.thumbnail,
@@ -881,14 +890,14 @@ const getUserActiveOrders = async (req, res) => {
   const { userId } = req.params;
   try {
     // Tìm các đơn hàng có userId và trạng thái lớn hơn 0 (tức là đơn hàng đang hoạt động)
-    const orders = await OrderModel.find({ userId, status: { $ne: 0 } })
+    const orders = await OrderModel.find({ userId, status: { $ne: 0, $ne:-1 } })
       .populate('userId', '_id')
       .populate('discointId')
       .lean();
 
     // Kiểm tra nếu không có đơn hàng nào đang hoạt động
     if (orders.length === 0) {
-      return res.status(404).json({ message: 'Người dùng chưa có đơn hàng đang hoạt động.' });
+      return res.status(200).json({ message: 'Danh Sách Trống.' });
     }
 
     const orderResponses_active = [];
