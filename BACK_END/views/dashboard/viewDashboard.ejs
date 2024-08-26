@@ -23,6 +23,26 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card-statistic h6 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .card-statistic .amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .card-statistic img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            margin-right: 10px;
         }
 
         .best-sellers img {
@@ -56,16 +76,13 @@
         <div class="content">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="me-auto">Dashboard</h5>
-                <div class="col-6 text-end">
-
-                </div>
+                <div class="col-6 text-end"></div>
             </div>
 
             <div class="row mb-4">
                 <div class="col-md-3">
                     <select class="form-select" id="queryType">
                         <option value="revenue">Doanh thu</option>
-                        <option value="getBestSellingDay">Ngày bán chạy nhất</option>
                         <option value="getBestSellingProduct">Sản phẩm bán chạy nhất</option>
                         <option value="leastSellingProducts">Sản phẩm bán ế nhất</option>
                         <option value="lowStock">Sản phẩm sắp hết hàng</option>
@@ -89,74 +106,29 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="row-md-3">
-                        <div class="card-statistic" id="totalOrdersCard">
-                            <div class="align-items-center">
-                                <h6>Doanh thu</h6>
-                                <div class="col d-flex">
-                                    <div class="col d-flex align-items-center justify-content-between">
-                                        <div class="row">
-                                            <div class="col d-flex align-items-center">
-                                                <img class="me-2" src="/images/shopping-card.png" alt="" width="50px"
-                                                    height="50">
-                                                <p class="m-0" id="totalOrdersAmount">0đ</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-statistic" id="totalProfitCard">
-                            <div class="align-items-center">
-                                <h6>Lợi nhuận</h6>
-                                <div class="col d-flex">
-                                    <div class="col d-flex align-items-center justify-content-between">
-                                        <div class="row">
-                                            <div class="col d-flex align-items-center">
-                                                <img class="me-2" src="/images/shopping-card.png" alt="" width="50px"
-                                                    height="50">
-                                                <p class="m-0" id="totalProfitAmount">0đ</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card-statistic" id="totalOrdersCard">
+                        <h6>Tổng doanh thu</h6>
+                        <div class="amount" id="totalOrdersAmount">0đ</div>
                     </div>
                 </div>
-
-                <!-- Thêm biểu đồ hình tròn ở đây -->
-                <div class="col-md-6">
-                    <div class="row-md-3">
-                        <div class="card-statistic">
-                            <div class="align-items-center">
-                                <h6>Trạng thái đơn</h6>
-                                <div>
-                                    <canvas id="statusPieChartSidebar" width="200" height="200"></canvas>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-4">
+                    <div class="card-statistic" id="totalCostCard">
+                        <h6>Tổng chi phí</h6>
+                        <div class="amount" id="totalTotalCostAmount">0đ</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card-statistic" id="totalProfitCard">
+                        <h6>Tổng lợi nhuận</h6>
+                        <div class="amount" id="totalProfitAmount">0đ</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Biểu đồ và Báo cáo -->
-            <div class="row">
-                <div class="col-md-8">
-
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <h6 class="me-3">Biểu đồ bán hàng</h6>
-                            </div>
-                            <canvas id="salesChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
+            <div class="row mt-4">
+                <div class="col-md-12">
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title" id="titleList"></h5>
@@ -168,343 +140,455 @@
             </div>
 
 
+            <!-- Biểu đồ và Báo cáo -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">Biểu đồ bán hàng</h6>
+                            <canvas id="salesChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pie Chart -->
+                <div class="col-md-6">
+                    <div class="card-statistic">
+                        <div class="align-items-center">
+                            <h6>Trạng thái đơn</h6>
+                            <div>
+                                <canvas id="statusPieChartSidebar" width="200" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
             <%- include('../inc/end.ejs') %>
+        </div>
 
-                <script>
+        <script>
 
 
-                    document.addEventListener('DOMContentLoaded', function () {
-                        function toggleTimePeriodVisibility() {
-                            const queryType = document.getElementById('queryType').value;
-                            const timePeriodContainer = document.getElementById('timePeriod').closest('.col-md-3');
-                            const customDateRange = document.getElementById('customDateRange');
+            document.addEventListener('DOMContentLoaded', function () {
+                function toggleTimePeriodVisibility() {
+                    const queryType = document.getElementById('queryType').value;
+                    const timePeriodContainer = document.getElementById('timePeriod').closest('.col-md-3');
+                    const customDateRange = document.getElementById('customDateRange');
 
-                            if (queryType === 'lowStock') {
-                                timePeriodContainer.style.display = 'none';
-                                customDateRange.style.display = 'none';
-                            } else {
-                                timePeriodContainer.style.display = 'block';
-                                const timePeriod = document.getElementById('timePeriod').value;
-                                if (timePeriod === 'custom') {
-                                    customDateRange.style.display = 'block';
-                                }
-                            }
+                    if (queryType === 'lowStock') {
+                        timePeriodContainer.style.display = 'none';
+                        customDateRange.style.display = 'none';
+                    } else {
+                        timePeriodContainer.style.display = 'block';
+                        const timePeriod = document.getElementById('timePeriod').value;
+                        if (timePeriod === 'custom') {
+                            customDateRange.style.display = 'block';
                         }
+                    }
+                }
 
-                        document.getElementById('queryType').addEventListener('change', function () {
-                            toggleTimePeriodVisibility();
+                document.getElementById('queryType').addEventListener('change', function () {
+                    toggleTimePeriodVisibility();
+                });
+
+                document.getElementById('timePeriod').addEventListener('change', function () {
+                    const customDateRange = document.getElementById('customDateRange');
+                    if (this.value === 'custom') {
+                        customDateRange.style.display = 'block';
+                    } else {
+                        customDateRange.style.display = 'none';
+                    }
+                });
+                async function fetchAndDisplayStatistics() {
+                    const queryType = document.getElementById('queryType').value;
+                    const timePeriod = document.getElementById('timePeriod').value;
+                    let startDate = null;
+                    let endDate = null;
+
+                    if (timePeriod === 'custom') {
+                        startDate = document.getElementById('startDate').value;
+                        endDate = document.getElementById('endDate').value;
+                    } else {
+                        const dates = getDatesForPeriod(timePeriod);
+                        startDate = dates.startDate;
+                        endDate = dates.endDate;
+                    }
+
+                    try {
+                        const response = await fetch('/dashboard/statistics', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                queryType,
+                                startDate,
+                                endDate
+                            })
                         });
 
-                        document.getElementById('timePeriod').addEventListener('change', function () {
-                            const customDateRange = document.getElementById('customDateRange');
-                            if (this.value === 'custom') {
-                                customDateRange.style.display = 'block';
-                            } else {
-                                customDateRange.style.display = 'none';
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+
+                        const data = await response.json();
+                        console.log('Received Data:', data);
+
+                        clearPreviousData(queryType);
+
+                        if (queryType === 'revenue') {
+                            updateRevenueAndProfit(data);
+                            updateRevenueAndBestSellingDaysChart(data.result);
+                        } else if (queryType === 'getBestSellingProduct' || queryType === 'leastSellingProducts') {
+                            updateBestSellers(data);
+                        } else if (queryType === 'lowStock') {
+                            updateLowStockProducts(data, true);
+                        }
+
+
+                        if (data.status) {
+                            updateStatusPieChart(data.status);
+                        }
+
+                    } catch (error) {
+                        console.error('Error fetching statistics:', error);
+                    }
+                }
+
+                function clearPreviousData(queryType) {
+                    if (queryType === 'revenue') {
+                        document.querySelector('#totalOrdersAmount').textContent = '';
+                        document.querySelector('#totalProfitAmount').textContent = '';
+                        if (window.revenueAndBestSellingDaysChart) {
+                            window.revenueAndBestSellingDaysChart.destroy();
+                        }
+                    } else if (queryType === 'getBestSellingProduct' || queryType === 'leastSellingProducts') {
+                        document.getElementById('bestSellersList').innerHTML = '';
+                    }
+                }
+
+                function updateRevenueAndProfit(data) {
+                    const formatter = new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                    });
+
+                    document.querySelector('#totalOrdersAmount').textContent = formatter.format(data.totalRevenue);
+                    document.querySelector('#totalTotalCostAmount').textContent = formatter.format(data.totalCost);
+                    document.querySelector('#totalProfitAmount').textContent = formatter.format(data.totalProfit);
+                }
+
+                function updateRevenueAndBestSellingDaysChart(revenueData) {
+                    const ctx = document.getElementById('salesChart').getContext('2d');
+
+                    let labels = [];
+                    let orderCountDataSet = [];
+                    let revenueDataSet = [];
+                    let costDataSet = [];
+                    let profitDataSet = [];
+                    let bestSellingDay = null;
+                    let maxOrderCount = 0;
+
+                    if (Array.isArray(revenueData) && revenueData.length > 0) {
+                        labels = revenueData.map(item => item.date);
+                        orderCountDataSet = revenueData.map(item => item.orderCount);
+                        revenueDataSet = revenueData.map(item => item.totalRevenue);
+                        costDataSet = revenueData.map(item => item.totalCost);
+                        profitDataSet = revenueData.map(item => item.totalProfit);
+
+                        revenueData.forEach(item => {
+                            if (item.orderCount > maxOrderCount) {
+                                maxOrderCount = item.orderCount;
+                                bestSellingDay = item.date;
                             }
                         });
-                        async function fetchAndDisplayStatistics() {
-                            const queryType = document.getElementById('queryType').value;
-                            const timePeriod = document.getElementById('timePeriod').value;
-                            let startDate = null;
-                            let endDate = null;
+                    }
 
-                            if (timePeriod === 'custom') {
-                                startDate = document.getElementById('startDate').value;
-                                endDate = document.getElementById('endDate').value;
-                            } else {
-                                const dates = getDatesForPeriod(timePeriod);
-                                startDate = dates.startDate;
-                                endDate = dates.endDate;
-                            }
+                    if (window.revenueAndBestSellingDaysChart) {
+                        window.revenueAndBestSellingDaysChart.destroy();
+                    }
 
-                            try {
-                                const response = await fetch('/dashboard/statistics', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        queryType,
-                                        startDate,
-                                        endDate
-                                    })
-                                });
-
-                                if (!response.ok) {
-                                    throw new Error('Network response was not ok');
-                                }
-
-                                const data = await response.json();
-                                console.log('Received Data:', data);
-
-                                clearPreviousData(queryType);
-
-                                if (queryType === 'revenue') {
-                                    updateRevenueAndProfit(data);
-                                    updateRevenueAndBestSellingDaysChart(data.result, null);
-                                } else if (queryType === 'getBestSellingDay') {
-                                    updateRevenueAndBestSellingDaysChart(null, data.matchedOrders);
-                                } else if (queryType === 'getBestSellingProduct' || queryType === 'leastSellingProducts') {
-
-                                    updateBestSellers(data);
-                                } else if (queryType === 'lowStock') {
-                                    updateLowStockProducts(data, true);
-                                }
-
-
-                                if (data.status) {
-                                    updateStatusPieChart(data.status);
-                                }
-
-                            } catch (error) {
-                                console.error('Error fetching statistics:', error);
-                            }
-                        }
-
-                        function clearPreviousData(queryType) {
-                            if (queryType === 'revenue') {
-                                document.querySelector('#totalOrdersAmount').textContent = '';
-                                document.querySelector('#totalProfitAmount').textContent = '';
-                                if (window.revenueAndBestSellingDaysChart) {
-                                    window.revenueAndBestSellingDaysChart.destroy();
-                                }
-                            } else if (queryType === 'getBestSellingDay') {
-                                if (window.revenueAndBestSellingDaysChart) {
-                                    window.revenueAndBestSellingDaysChart.destroy();
-                                }
-                            } else if (queryType === 'getBestSellingProduct' || queryType === 'leastSellingProducts') {
-                                document.getElementById('bestSellersList').innerHTML = '';
-                            }
-                        }
-
-                        function updateRevenueAndProfit(data) {
-                            const formatter = new Intl.NumberFormat('vi-VN', {
-                                style: 'currency',
-                                currency: 'VND',
-                            });
-
-                            document.querySelector('#totalOrdersAmount').textContent = formatter.format(data.totalRevenue);
-                            document.querySelector('#totalProfitAmount').textContent = formatter.format(data.totalProfit);
-                        }
-
-
-                        function updateRevenueAndBestSellingDaysChart(revenueData, bestSellingDaysData) {
-                            const ctx = document.getElementById('salesChart').getContext('2d');
-
-                            let labels = [];
-                            const datasets = [];
-
-                            if (revenueData && revenueData.length > 0) {
-                                labels = revenueData.map(item => item.date);
-                                datasets.push({
+                    window.revenueAndBestSellingDaysChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    type: 'line',
+                                    label: 'Số lượng đơn hàng',
+                                    data: orderCountDataSet,
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderWidth: 2,
+                                    yAxisID: 'y-orderCount',
+                                    pointBackgroundColor: labels.map(label => label === bestSellingDay ? 'red' : 'rgba(54, 162, 235, 1)'), // Highlight best-selling day
+                                    pointRadius: labels.map(label => label === bestSellingDay ? 6 : 3) // Larger point on best-selling day
+                                },
+                                {
                                     label: 'Doanh thu',
-                                    data: revenueData.map(item => item.totalRevenue),
+                                    data: revenueDataSet,
                                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                                     borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 1
-                                });
-                            }
-
-                            if (bestSellingDaysData && bestSellingDaysData.length > 0) {
-                                labels = bestSellingDaysData.map(item => item.date);
-                                datasets.push({
-                                    label: 'Ngày bán chạy nhất',
-                                    data: bestSellingDaysData.map(item => item.totalRevenue),
+                                    borderWidth: 1,
+                                    yAxisID: 'y-revenue'
+                                },
+                                {
+                                    label: 'Chi phí',
+                                    data: costDataSet,
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1,
+                                    yAxisID: 'y-revenue'
+                                },
+                                {
+                                    label: 'Lợi nhuận',
+                                    data: profitDataSet,
                                     backgroundColor: 'rgba(153, 102, 255, 0.2)',
                                     borderColor: 'rgba(153, 102, 255, 1)',
-                                    borderWidth: 1
-                                });
-                            }
-
-                            if (datasets.length === 0) {
-
-                                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                ctx.font = '16px Arial';
-                                ctx.fillText('Không có dữ liệu', 100, 100);
-                                return;
-                            }
-
-                            window.revenueAndBestSellingDaysChart = new Chart(ctx, {
-                                type: 'bar',
-                                data: {
-                                    labels: labels,
-                                    datasets: datasets
+                                    borderWidth: 1,
+                                    yAxisID: 'y-revenue'
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Ngày'
+                                    }
                                 },
-                                options: {
-                                    scales: {
-                                        x: {
-                                            beginAtZero: true
-                                        },
-                                        y: {
-                                            beginAtZero: true
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Giá trị (VND)'
+                                    },
+                                    position: 'left',
+                                    id: 'y-revenue',
+                                    ticks: {
+                                        callback: function (value, index, values) {
+                                            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
                                         }
                                     }
-                                }
-                            });
-                        }
-
-                        function updateStatusPieChart(statusData) {
-                            const ctx = document.getElementById('statusPieChartSidebar').getContext('2d');
-
-                            if (!statusData || statusData.length === 0) {
-
-                                if (window.statusPieChartSidebar instanceof Chart) {
-                                    window.statusPieChartSidebar.destroy();
-                                }
-                                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                                ctx.font = '16px Arial';
-                                ctx.fillText('Không có dữ liệu', 50, 100);
-                                return;
-                            }
-
-                            const labels = statusData.map(item => `${item._id} (${item.count})`);
-                            const counts = statusData.map(item => item.count);
-
-                            if (window.statusPieChartSidebar instanceof Chart) {
-                                window.statusPieChartSidebar.destroy();
-                            }
-
-                            window.statusPieChartSidebar = new Chart(ctx, {
-                                type: 'pie',
-                                data: {
-                                    labels: labels,
-                                    datasets: [{
-                                        label: 'Order Status',
-                                        data: counts,
-                                        backgroundColor: [
-                                            'rgba(255, 99, 132, 0.2)',
-                                            'rgba(54, 162, 235, 0.2)',
-                                            'rgba(255, 206, 86, 0.2)',
-                                            'rgba(75, 192, 192, 0.2)',
-                                            'rgba(153, 102, 255, 0.2)'
-                                        ],
-                                        borderColor: [
-                                            'rgba(255, 99, 132, 1)',
-                                            'rgba(54, 162, 235, 1)',
-                                            'rgba(255, 206, 86, 1)',
-                                            'rgba(75, 192, 192, 1)',
-                                            'rgba(153, 102, 255, 1)'
-                                        ],
-                                        borderWidth: 1
-                                    }]
                                 },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            position: 'top',
-                                        },
-                                        tooltip: {
-                                            callbacks: {
-                                                label: function (tooltipItem) {
-                                                    return `${tooltipItem.label}: ${tooltipItem.raw} orders`;
-                                                }
+                                'y-orderCount': {
+                                    beginAtZero: true,
+                                    position: 'right',
+                                    title: {
+                                        display: true,
+                                        text: 'Số lượng đơn hàng'
+                                    },
+                                    grid: {
+                                        drawOnChartArea: false,
+                                    },
+                                    ticks: {
+                                        stepSize: 1, 
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (tooltipItem) {
+                                            if (tooltipItem.dataset.label === 'Số lượng đơn hàng') {
+                                                return `${tooltipItem.dataset.label}: ${tooltipItem.raw}`;
+                                            }
+                                            return `${tooltipItem.dataset.label}: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tooltipItem.raw)}`;
+                                        }
+                                    }
+                                },
+                                annotation: {
+                                    annotations: {
+                                        bestSellingDay: {
+                                            type: 'line',
+                                            scaleID: 'x',
+                                            value: bestSellingDay,
+                                            borderColor: 'red',
+                                            borderWidth: 2,
+                                            label: {
+                                                content: `Ngày bán chạy nhất: ${bestSellingDay}`,
+                                                enabled: true,
+                                                position: 'top',
+                                                backgroundColor: 'red',
+                                                color: 'white'
                                             }
                                         }
                                     }
                                 }
-                            });
-                        }
-
-
-                        function updateBestSellers(data) {
-
-                            const bestSellersList = document.getElementById('bestSellersList');
-                            bestSellersList.innerHTML = '';
-
-                            if (!Array.isArray(data) || data.length === 0) {
-                                bestSellersList.innerHTML = '<p>Không có dữ liệu sản phẩm</p>';
-                                return;
                             }
+                        }
+                    });
+                }
 
-                            data.forEach(product => {
-                                const productElement = document.createElement('div');
-                                productElement.classList.add('product');
-                                productElement.innerHTML = `
+
+                function updateStatusPieChart(statusData) {
+                    const ctx = document.getElementById('statusPieChartSidebar').getContext('2d');
+
+                    if (!statusData || statusData.length === 0) {
+
+                        if (window.statusPieChartSidebar instanceof Chart) {
+                            window.statusPieChartSidebar.destroy();
+                        }
+                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        ctx.font = '16px Arial';
+                        ctx.fillText('Không có dữ liệu', 50, 100);
+                        return;
+                    }
+
+                    const labels = statusData.map(item => `${item.status} (${item.count})`);
+                    const counts = statusData.map(item => item.count);
+
+                    if (window.statusPieChartSidebar instanceof Chart) {
+                        window.statusPieChartSidebar.destroy();
+                    }
+
+                    window.statusPieChartSidebar = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Order Status',
+                                data: counts,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (tooltipItem) {
+                                            return `${tooltipItem.label}: ${tooltipItem.raw} orders`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+
+                function updateBestSellers(data) {
+
+                    const bestSellersList = document.getElementById('bestSellersList');
+                    bestSellersList.innerHTML = '';
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        bestSellersList.innerHTML = '<p>Không có dữ liệu sản phẩm</p>';
+                        return;
+                    }
+
+                    data.forEach(product => {
+                        const productElement = document.createElement('div');
+                        productElement.classList.add('product');
+                        productElement.innerHTML = `
                 <div class="product-info">
                     <img src="${product.thumbnail || '/images/default.png'}" alt="${product.name}">
                     <span>${product.name}</span>
                 </div>
-                <span>Sl: ${product.totalSold}</span>
+                <span>Sl: ${product.totalSold || product.sellQuanlityAll}</span>
             `;
-                                bestSellersList.appendChild(productElement);
-                            });
-                        }
+                        bestSellersList.appendChild(productElement);
+                    });
+                }
 
-                        function updateLowStockProducts(data) {
-                            // document.querySelector('#titleList').textContent = `Sản phẩm gần hết hàng`;
+                function updateLowStockProducts(data) {
+                    // document.querySelector('#titleList').textContent = `Sản phẩm gần hết hàng`;
 
-                            const bestSellersList = document.getElementById('bestSellersList');
-                            bestSellersList.innerHTML = '';
+                    const bestSellersList = document.getElementById('bestSellersList');
+                    bestSellersList.innerHTML = '';
 
-                            if (!Array.isArray(data) || data.length === 0) {
-                                bestSellersList.innerHTML = '<p>Không có sản phẩm gần hết hàng.</p>';
-                                return;
-                            }
+                    if (!Array.isArray(data) || data.length === 0) {
+                        bestSellersList.innerHTML = '<p>Không có sản phẩm gần hết hàng.</p>';
+                        return;
+                    }
 
-                            data.forEach(product => {
-                                const productElement = document.createElement('div');
-                                productElement.classList.add('product');
-                                productElement.innerHTML = `
+                    data.forEach(product => {
+                        const productElement = document.createElement('div');
+                        productElement.classList.add('product');
+                        productElement.innerHTML = `
                                  <div class="product-info">
                                  <img src="${product.thumbnail || '/images/default.png'}" alt="${product.name}" width="50px" height="50px">
                                  <span>${product.name} - Size: ${product.size}, Color: ${product.color}</span>
                                  </div>
             <span>Sl: ${product.quantity}</span>
         `;
-                                bestSellersList.appendChild(productElement);
-                            });
-                        }
-
-                        function getDatesForPeriod(period) {
-                            const today = new Date();
-                            let startDate, endDate;
-
-                            switch (period) {
-                                case 'today':
-                                    startDate = endDate = today.toISOString().split('T')[0];
-                                    break;
-                                case 'thisWeek':
-                                    const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1)); // Monday
-                                    const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7)); // Sunday
-                                    startDate = firstDayOfWeek.toISOString().split('T')[0];
-                                    endDate = lastDayOfWeek.toISOString().split('T')[0];
-                                    break;
-                                case 'thisMonth':
-                                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                                    startDate = startOfMonth.toISOString().split('T')[0];
-                                    endDate = today.toISOString().split('T')[0];
-                                    break;
-                                case 'thisYear':
-                                    const startOfYear = new Date(today.getFullYear(), 0, 1);
-                                    startDate = startOfYear.toISOString().split('T')[0];
-                                    endDate = today.toISOString().split('T')[0];
-                                    break;
-                                default:
-                                    startDate = endDate = null;
-                            }
-
-                            return { startDate, endDate };
-                        }
-
-                        fetchAndDisplayStatistics();
-
-                        document.getElementById('applyFilters').addEventListener('click', fetchAndDisplayStatistics);
-
-                        document.getElementById('timePeriod').addEventListener('change', function () {
-                            const timePeriod = this.value;
-                            const customDateRange = document.getElementById('customDateRange');
-                            if (timePeriod === 'custom') {
-                                customDateRange.style.display = 'block';
-                            } else {
-                                customDateRange.style.display = 'none';
-                            }
-                        });
+                        bestSellersList.appendChild(productElement);
                     });
+                }
 
-                </script>
+                function getDatesForPeriod(period) {
+                    const today = new Date();
+                    let startDate, endDate;
+
+                    switch (period) {
+                        case 'today':
+                            startDate = endDate = today.toISOString().split('T')[0];
+                            break;
+                        case 'thisWeek':
+                            const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1)); // Monday
+                            const lastDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 7)); // Sunday
+                            startDate = firstDayOfWeek.toISOString().split('T')[0];
+                            endDate = lastDayOfWeek.toISOString().split('T')[0];
+                            break;
+                        case 'thisMonth':
+                            const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                            startDate = startOfMonth.toISOString().split('T')[0];
+                            endDate = today.toISOString().split('T')[0];
+                            break;
+                        case 'thisYear':
+                            const startOfYear = new Date(today.getFullYear(), 0, 1);
+                            startDate = startOfYear.toISOString().split('T')[0];
+                            endDate = today.toISOString().split('T')[0];
+                            break;
+                        default:
+                            startDate = endDate = null;
+                    }
+
+                    return { startDate, endDate };
+                }
+
+                fetchAndDisplayStatistics();
+
+                document.getElementById('applyFilters').addEventListener('click', fetchAndDisplayStatistics);
+
+                document.getElementById('timePeriod').addEventListener('change', function () {
+                    const timePeriod = this.value;
+                    const customDateRange = document.getElementById('customDateRange');
+                    if (timePeriod === 'custom') {
+                        customDateRange.style.display = 'block';
+                    } else {
+                        customDateRange.style.display = 'none';
+                    }
+                });
+            });
+
+        </script>
 </body>
 
 </html>
