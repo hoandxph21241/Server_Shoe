@@ -1,4 +1,5 @@
 const { OrderModel, OderDetailModel, ShoeModel, DiscountModel, UserModel } = require("../Models/DB_Shoes");
+const moment = require('moment');
 
 const {
   getBestSellingProduct,
@@ -45,26 +46,25 @@ exports.Home = async (req, res, next) => {
         quantity: detail.quantity,
         price: detail.shoeId ? detail.shoeId.price : 0,
       }));
+      const formattedDate = moment(order.dateOrder).format('HH:mm:ss DD/MM/YYYY');
+
 
       return {
         userID: order.userId?._id,
         userNameAccount: order.userId?.nameAccount || null,
         userImageAccount: order.userId?.imageAccount || null,
         _id: order._id,
-        dateOrder: order.dateOrder,
+        formattedDate,
         status: order.status,
         total: order.total,
         details,
       };
     }));
 
-
-    // Other summary data
     const totalProducts = await ShoeModel.countDocuments({});
-    const totalOrder = await OrderModel.countDocuments({});
+    const totalOrder = await DiscountModel.countDocuments({});
     const totalUser = await UserModel.countDocuments({});
 
-    // Render the view with data
     res.render("home/viewHome.ejs", {
       orderPending: ordersWithDetails,
       totalProducts,
@@ -91,7 +91,6 @@ exports.Homes = async (req, res, next) => {
     startDate = new Date(today.getFullYear(), 0, 1);
     endDate = new Date();
   }
-  console.log(startDate);
 
   // Xác định khoảng thời gian dựa vào tham số period
   switch (period) {
