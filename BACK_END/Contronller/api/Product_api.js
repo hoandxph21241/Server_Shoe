@@ -594,7 +594,7 @@ exports.RemoveFavourites = async (req, res) => {
 exports.FindFavouritesByUserId = async (req, res) => {
   try {
     const favourites = await Model.FavouriteShoeModel.findOne({ userId:req.params.id })
-    .populate("shoeId", "name _id")
+    .populate("shoeId", "_id name thumbnail price")
     .populate("userId", "userName fullName _id");
     
     if (favourites) {

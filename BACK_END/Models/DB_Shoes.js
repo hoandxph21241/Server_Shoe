@@ -355,4 +355,5 @@ module.exports = {
   AdminNotificationModel,
   CartModel,
   AddressModel,
+  FavouriteShoeModel
 };

@@ -1,6 +1,7 @@
 const { NotificationModel, ShoeModel } = require("../../Models/DB_Shoes");
 const getUserFCMToken = require('../../utils/getUserFCMToken');
 const admin = require('../../config/firebase'); 
+const moment = require('moment'); 
 
 
 const getThumbnailForShoe = async (shoeId) => {
@@ -49,16 +50,50 @@ const sendNotificationUser = async (userId, title, body, typeNotification, shoeI
   }
 };
 
+
 const getNotificationsByUser = async (req, res) => {
+
   const { userId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
 
   try {
-    const notifications = await NotificationModel.find({ userId }).lean();
-    res.status(200).json(notifications);
+    let notifications = await NotificationModel.find({ userId })
+      .lean();
+
+    notifications = notifications.map(notification => {
+      const date = moment(notification.time, "HH:mm:ss DD/MM/YYYY").toDate();
+      return {
+        ...notification,
+        date 
+      };
+    });
+
+
+    notifications.sort((a, b) => b.date - a.date);
+
+    const formattedNotifications = notifications.map(notification => {
+      return {
+        ...notification,
+        time: moment(notification.date).format("HH:mm:ss DD/MM/YYYY") 
+      };
+    }).map(({ date, ...rest }) => rest); 
+
+    const totalNotifications = formattedNotifications.length;
+    const paginatedNotifications = formattedNotifications.slice((page - 1) * limit, page * limit);
+
+    res.status(200).json({
+      totalNotifications,
+      currentPage: page,
+      totalPages: Math.ceil(totalNotifications / limit),
+      notifications: paginatedNotifications
+    });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách thông báo.', error: err.message });
   }
 };
+
+
+
 
 const deleteNotificationUser = async (req, res) => {
   const { notificationId } = req.params;
