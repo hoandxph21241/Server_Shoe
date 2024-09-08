@@ -316,7 +316,7 @@ var CartSchema = new db.mongoose.Schema(
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
     sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" }, 
     colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
-    numberShoe: { type: String, require: false },
+    numberShoe: { type: Number, require: false },
   },
   {
     collation: { locale: "en_US", strength: 1 },

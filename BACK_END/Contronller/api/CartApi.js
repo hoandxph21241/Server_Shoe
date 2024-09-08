@@ -1,21 +1,62 @@
-const {CartModel} = require('../../Models/DB_Shoes');
+const { ShoeModel, SizeShoeModel, ColorShoeModel, StorageShoeModel, CartModel } = require('../../Models/DB_Shoes');
 
-const addCart = async (req, res, next) => {
+async function addCart(req, res) {
     try {
-        const { userId, shoeId, numberShoe, sizeId, colorId } = req.body;
-        const cart = new CartModel({
-            userId,
-            shoeId,
-            numberShoe,
-            sizeId,
-            colorId,
-        });
-        await cart.save();
-        res.status(201).json({ status: "success", cart });
+      const { shoeId, sizeId, colorId, numberShoe, userId } = req.body;
+
+      const shoe = await ShoeModel.findById(shoeId);
+      const size = await SizeShoeModel.findById(sizeId);
+      const color = await ColorShoeModel.findById(colorId);
+  
+      if (!shoe) {
+        return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+      }
+      if (!size) {
+        return res.status(404).json({ message: 'Không tìm thấy kích thước' });
+      }
+      if (!color) {
+        return res.status(404).json({ message: 'Không tìm thấy màu' });
+      }
+  
+      // Kiểm tra số lượng tồn kho
+      const storage = await StorageShoeModel.findOne({
+        shoeId: shoeId,
+        colorShoe: colorId,
+        'sizeShoe.sizeId': sizeId
+      });
+  
+      if (!storage) {
+        return res.status(404).json({ message: 'Không tìm thấy bản ghi tồn kho' });
+      }
+  
+      const sizeRecord = storage.sizeShoe.find(s => s.sizeId.toString() === sizeId.toString());
+  
+      if (!sizeRecord) {
+        return res.status(404).json({ message: 'Không tìm thấy kích thước trong bản ghi tồn kho' });
+      }
+  
+      if (sizeRecord.quantity < numberShoe) {
+        return res.status(400).json({ message: 'Số lượng trong kho không đủ' });
+      }
+  
+      const cartItem = new CartModel({
+        cartId: new db.mongoose.Types.ObjectId(),
+        userId: userId,
+        shoeId: shoeId,
+        sizeId: sizeId,
+        colorId: colorId,
+        numberShoe: numberShoe,
+      });
+  
+      await cartItem.save();
+      res.status(200).json({ message: 'Thêm vào giỏ hàng thành công' });
+  
     } catch (error) {
-        res.status(500).json({ status: "failed", error });
+      console.error('Lỗi khi thêm sản phẩm vào giỏ hàng:', error);
+      res.status(500).json({ message: 'Lỗi hệ thống' });
     }
-}
+  }
+
 const deleteCart = async (req, res, next) => {
     try {
         const { cartId } = req.params;
@@ -64,9 +105,9 @@ const cartListByUserId = async (req, res, next) => {
 
         // Format 
         const formattedCarts = carts.map(cart => ({
-            cartId: cart.cartId,
 
             shoe: {
+                shoeId: cart.shoeId._id,
                 name: cart.shoeId.name,
                 price: cart.shoeId.price,
                 thumbnail: cart.shoeId.thumbnail,
