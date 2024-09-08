@@ -821,7 +821,11 @@ const getUserCompletedOrders = async (req, res) => {
 const getUserActiveOrders = async (req, res) => {
   const { userId } = req.params;
   try {
-    const orders = await OrderModel.find({ userId, status: { $ne: 0, $ne:-1 } })
+    // const orders = await OrderModel.find({ userId, status: { $ne: 0, $ne:-1 } })
+    const orders = await OrderModel.find({ 
+      userId: userId, 
+      status: { $nin: [0, -1] }
+    })
       .populate('userId', '_id')
       .populate('discointId')
       .lean();
