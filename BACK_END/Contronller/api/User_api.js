@@ -340,7 +340,7 @@ exports.Send_Otp_By_Mail = async (req, res) => {
       }
     }
 
-    res.json({ success: true, message: "Mã OTP đã được gửi" });
+    res.json({ success: true, message: "Mã OTP đã được gửi",userId:user._id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Lỗi khi gửi email" });
@@ -644,22 +644,18 @@ exports.UpdateAddress = async (req, res, next) => {
 
     const userID = addressToUpdate.userId;
 
-    // Nếu permission của địa chỉ là 0 (đặt làm mặc định), chuyển tất cả các địa chỉ khác về permission = 1
     if (permission === "0") {
       await Model.AddressModel.updateMany(
         { userId: userID, _id: { $ne: addressID } },
         { $set: { permission: "1" } }
       );
     }
-
-    // Cập nhật thông tin địa chỉ
     addressToUpdate.nameAddress = nameAddress || addressToUpdate.nameAddress;
     addressToUpdate.detailAddress = detailAddress || addressToUpdate.detailAddress;
     addressToUpdate.latitude = latitude || addressToUpdate.latitude;
     addressToUpdate.longitude = longitude || addressToUpdate.longitude;
-    addressToUpdate.permission = permission === "0" ? "0" : "1"; // Cập nhật quyền mặc định hoặc không mặc định
+    addressToUpdate.permission = permission === "0" ? "0" : "1"; 
 
-    // Kiểm tra nếu thiếu thông tin địa chỉ
     if (!detailAddress || !latitude || !longitude) {
       return res.status(400).json({
         success: false,

@@ -40,7 +40,6 @@ async function addCart(req, res) {
       }
   
       const cartItem = new CartModel({
-        cartId: new db.mongoose.Types.ObjectId(),
         userId: userId,
         shoeId: shoeId,
         sizeId: sizeId,
@@ -80,52 +79,50 @@ const updateNumberShoe = async (req, res, next) => {
 }
 
 const cartListByUserId = async (req, res, next) => {
-    try {
-        const { userId } = req.params;
+  try {
+      const { userId } = req.params;
 
-        const carts = await CartModel.find({ userId })
-            .populate({
-                path: 'shoeId', 
-                select: 'name price thumbnail colorShoe sizeShoe', 
+      const carts = await CartModel.find({ userId })
+          .populate({
+              path: 'shoeId', 
+              select: 'name price thumbnail colorShoe sizeShoe', 
+          })
+          .populate({
+              path: 'sizeId',
+              select: 'size',
+          })
+          .populate({
+              path: 'colorId', 
+              select: 'textColor codeColor', 
+          })
+          .exec();
 
-            })
-            .populate({
-                path: 'sizeId',
-                select: 'size',
-            })
-            .populate({
-                path: 'colorId', 
-                select: 'textColor codeColor', 
-            })
-            .exec();
+      if (carts.length === 0) {
+          return res.status(404).json({ status: 'failed', message: 'No carts found for this user.' });
+      }
 
-        if (carts.length === 0) {
-            return res.status(404).json({ status: 'failed', message: 'No carts found for this user.' });
-        }
+      // Format and reverse
+      const formattedCarts = carts.map(cart => ({
+          shoe: {
+              cartId: cart._id,
+              shoeId: cart.shoeId._id,
+              name: cart.shoeId.name,
+              price: cart.shoeId.price,
+              thumbnail: cart.shoeId.thumbnail,
+              size: cart.sizeId ? cart.sizeId.size : null,
+              color: cart.colorId ? {
+                  textColor: cart.colorId.textColor,
+                  codeColor: cart.colorId.codeColor
+              } : null,
+              numberShoe: cart.numberShoe,
+          },
+      })).reverse(); // Reverse the array
 
-        // Format 
-        const formattedCarts = carts.map(cart => ({
-
-            shoe: {
-                shoeId: cart.shoeId._id,
-                name: cart.shoeId.name,
-                price: cart.shoeId.price,
-                thumbnail: cart.shoeId.thumbnail,
-                size: cart.sizeId ? cart.sizeId.size : null,
-                color: cart.colorId ? {
-                    textColor: cart.colorId.textColor,
-                    codeColor: cart.colorId.codeColor
-                } : null,
-                numberShoe: cart.numberShoe,
-
-            },
-        }));
-
-        res.status(200).json({ status: 'success', carts: formattedCarts });
-    } catch (error) {
-        console.error('Error retrieving cart list:', error); 
-        res.status(500).json({ status: 'failed', error: 'An error occurred while retrieving cart information.' });
-    }
+      res.status(200).json({ status: 'success', carts: formattedCarts });
+  } catch (error) {
+      console.error('Error retrieving cart list:', error); 
+      res.status(500).json({ status: 'failed', error: 'An error occurred while retrieving cart information.' });
+  }
 }
 
 
