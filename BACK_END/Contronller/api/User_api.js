@@ -565,6 +565,7 @@ exports.FindAddress = async (req, res, next) => {
 // };
 
 
+
 exports.UpdateAddress = async (req, res, next) => {
   let nameAddress = req.body.nameAddress;
   let detailAddress = req.body.detailAddress;
@@ -572,49 +573,58 @@ exports.UpdateAddress = async (req, res, next) => {
   let longitude = req.body.longitude;
   let permission = req.body.permission;
   let addressID = req.params.addressID;
-  let addressOld = await Model.AddressModel.findById(addressID);
+
   try {
-    let Address = await Model.AddressModel.findById(addressID);
-    if (Address) {
-      Address.nameAddress =  nameAddress ||Address.nameAddress;
-      Address.detailAddress =   detailAddress ||Address.detailAddress;
-      Address.latitude = latitude || Address.latitude ;
-      Address.longitude =  longitude ||Address.longitude;
-      Address.permission = permission === "0" ? "Default" : "No Default";
-
-      if ( !detailAddress || !latitude || !longitude) {
-        res.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
-        return;
-      }
-
-
-      if (
-        addressOld.nameAddress === nameAddress &&
-        addressOld.detailAddress === detailAddress
-      ) {
-        res.json({
-          success: false,
-          message: "Không được trùng tên địa chỉ hiện tại",
-        });
-        return;
-      }
-
-      await Address.save();
-      return res.status(200).json({
-        success: true,
-        message: "Cập nhật địa chỉ người dùng thành công",
-        Address: Address,
-      });
-    } else {
+    const addressToUpdate = await Model.AddressModel.findById(addressID);
+    if (!addressToUpdate) {
       return res.status(404).json({
         success: false,
-        message: "Không tìm thấy",
+        message: "Không tìm thấy địa chỉ.",
       });
     }
+    const userID = addressToUpdate.userId; 
+
+    if (permission === "0") {
+      await Model.AddressModel.updateMany(
+        { userId: userID, _id: { $ne: addressID } },
+        { $set: { permission: "No Default" } }
+      );
+    }
+    addressToUpdate.nameAddress = nameAddress || addressToUpdate.nameAddress;
+    addressToUpdate.detailAddress = detailAddress || addressToUpdate.detailAddress;
+    addressToUpdate.latitude = latitude || addressToUpdate.latitude;
+    addressToUpdate.longitude = longitude || addressToUpdate.longitude;
+    addressToUpdate.permission = permission === "0" ? "Default" : "No Default";
+
+    if (!detailAddress || !latitude || !longitude) {
+      return res.json({
+        success: false,
+        message: "Vui lòng nhập đầy đủ thông tin",
+      });
+    }
+
+    const addressOld = await Model.AddressModel.findById(addressID);
+    if (
+      addressOld.nameAddress === nameAddress &&
+      addressOld.detailAddress === detailAddress
+    ) {
+      return res.json({
+        success: false,
+        message: "Không được trùng tên địa chỉ hiện tại",
+      });
+    }
+
+    await addressToUpdate.save();
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật địa chỉ người dùng thành công",
+      Address: addressToUpdate,
+    });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ success: false, message: "Có lỗi xảy ra: " + error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Có lỗi xảy ra: " + error.message,
+    });
   }
 };
 

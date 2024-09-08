@@ -573,8 +573,7 @@ exports.ADDFavourite = async (req, res, next) => {
 };
 exports.RemoveFavourites = async (req, res) => {
   try {
-    const { userId, shoeId } = req.params;
-
+    const { userId, shoeId } = req.body;
     const existingFavourite = await Model.FavouriteShoeModel.findOne({
       userId: userId,
     });
