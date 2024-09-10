@@ -6,6 +6,7 @@ var Product_API = require("../Contronller/api/Product_api");
 var Cart_API = require("../Contronller/api/CartApi");
 var Order_API = require("../Contronller/api/OrderApi");
 var Navigation_API = require("../Contronller/api/Navigation_api");
+var Discount_API = require("../Contronller/api/DiscountApi");
 
 
 // Auth Routers
@@ -93,6 +94,9 @@ router.get('/filterdata/:idTyper?/:sizeId?/:textColor?/:shoeId?', Product_API.fi
 // Banner
 router.get("/banner-active", Product_API.getBanner);
 
+//Discount
+router.get("/checkDiscount", Discount_API.checkDiscount);
+router.get("/listDiscount", Discount_API.getDiscountList);
 
 
 //Cart
