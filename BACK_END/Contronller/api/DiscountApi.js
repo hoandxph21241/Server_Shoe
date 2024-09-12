@@ -56,15 +56,31 @@ const checkDiscount = async (req, res) => {
 const getDiscountList = async (req, res) => {
   try {
     const discounts = await DiscountModel.find({ isActive: true });
+
     if (!discounts || discounts.length === 0) {
       return res.status(404).json({
         Success: false,
         message: "Không tìm thấy mã giảm giá nào!",
       });
     }
+
+    const formattedDiscounts = discounts.map((discount) => {
+      const endDate = new Date(discount.endDate);
+      const formattedEndDate = endDate
+        .toLocaleString('vi-VN', { hour12: false })
+        .replace(',', '');
+
+      const { createAt, endDate: originalEndDate, ...discountWithoutDates } = discount._doc;
+
+      return {
+        ...discountWithoutDates,
+        formattedEndDate,
+      };
+    }).reverse();
+
     return res.status(200).json({
       Success: true,
-      discounts,
+      discounts: formattedDiscounts,
     });
   } catch (error) {
     console.log(error);
@@ -75,6 +91,11 @@ const getDiscountList = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 
 module.exports = {
   checkDiscount,
