@@ -212,6 +212,8 @@ var OrderSchema = new db.mongoose.Schema(
     dateOrder: { type: Date, required: false },
     pay: { type: String, require: false },
     status: { type: Number, require: false },
+    totalShip: { type: Number, require: false },
+
     orderStatusDetails: {
       type: [
         {
