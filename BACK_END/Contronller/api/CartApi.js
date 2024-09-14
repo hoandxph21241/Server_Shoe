@@ -109,8 +109,9 @@ const cartListByUserId = async (req, res, next) => {
               name: cart.shoeId.name,
               price: cart.shoeId.price,
               thumbnail: cart.shoeId.thumbnail,
-              size: cart.sizeId ? cart.sizeId.size : null,
+              size: cart.sizeId ,
               color: cart.colorId ? {
+                  colorId: cart.colorId._id,
                   textColor: cart.colorId.textColor,
                   codeColor: cart.colorId.codeColor
               } : null,

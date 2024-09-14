@@ -1,6 +1,6 @@
 const { sendNotificationUser } = require('../../Contronller/api/Navigation_api');
 const { sendNotificationAdmin } = require('../../Contronller/Navigation_Controller');
-const { OrderModel, OderDetailModel, DiscountModel, ShoeModel,UserModel } = require('../../Models/DB_Shoes');
+const { OrderModel, OderDetailModel, DiscountModel, ShoeModel,UserModel, AddressModel, CartModel } = require('../../Models/DB_Shoes');
 const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
   year: 'numeric',
   month: '2-digit',
@@ -12,112 +12,133 @@ const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
 }).format(new Date());
 
 const createOrder = async (req, res) => {
-  const { userId, nameOrder, phoneNumber, addressOrder, pay, items, discointId } = req.body;
+  const orderData = req.body;
 
   try {
-    let total = 0;
-    let discountAmount = 0;
-
-    // Tính tổng tiền dựa trên giá từ ShoeModel và cập nhật số lượng tồn kho
-    for (let item of items) {
-      const shoe = await ShoeModel.findById(item.shoeId);
-      if (shoe) {
-        // Tìm và cập nhật số lượng tồn kho cho size và màu cụ thể
-        const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
-        const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
-
-        if (sizeIndex !== -1 && colorIndex !== -1) {
-          if (shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity >= item.quantity) {
-            shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity -= item.quantity;
-            shoe.sellQuanlityAll += item.quantity;
-            shoe.sellQuanlityAll += item.quantity;
-            await shoe.save();
-          } else {
-            return res.status(400).json({ message: `Không đủ số lượng tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
-          }
-        } else {
-          return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
-        }
-
-        total += shoe.price * item.quantity;
-      } else {
-        return res.status(400).json({ message: `Không tìm thấy giày với id ${item.shoeId}` });
-      }
+    const address = await AddressModel.findById(orderData.addressId);
+    if (!address) {
+      return res.status(400).json({ message: `Không tìm thấy địa chỉ với id ${orderData.addressId}` });
     }
 
-    // Kiểm tra và áp dụng giảm giá
-    if (discointId) {
-      const discount = await DiscountModel.findById(discointId);
-      if (discount) {
-        if (discount.isActive && discount.maxUser > 0) {
-          discountAmount = parseFloat(discount.discountAmount) || 0;
-          total -= discountAmount;
+  const cartItems = [];
 
-          // Giảm số lần sử dụng của mã giảm giá
-          discount.maxUser -= 1;
-          await discount.save();
-        } else if (!discount.isActive) {
-          return res.status(400).json({ message: 'Mã giảm giá không hoạt động.' });
-        } else if (discount.maxUser <= 0) {
-          return res.status(400).json({ message: 'Mã giảm giá đã hết số lần sử dụng.' });
-        }
-      } else {
+  for (let item of orderData.items) {
+    const cartId = item.cartId;
+    const cartItem = await CartModel.findById(cartId);
+    if (!cartItem) {
+      return res.status(400).json({ message: `Không tìm thấy giỏ hàng với id ${cartId}` });
+    }
+    cartItems.push(cartItem);
+  }
+
+  // Kiểm tra và trừ số lượng giày trong kho
+  for (let item of cartItems) {
+    const shoe = await ShoeModel.findById(item.shoeId);
+    if (!shoe) {
+      return res.status(400).json({ message: `Không tìm thấy giày với id ${item.shoeId}` });
+    }
+
+    // const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
+    // const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
+
+    // if (sizeIndex === -1 || colorIndex === -1) {
+    //   return res.status(400).json({
+    //     message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.`
+    //   });
+    // }
+
+    // const stockIndex = sizeIndex * shoe.colorShoe.length + colorIndex;
+
+    // if (shoe.storageShoe[stockIndex].importQuanlity < item.numberShoe) {
+    //   return res.status(400).json({
+    //     message: `Không đủ số lượng tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.`
+    //   });
+    // }
+
+    // shoe.storageShoe[stockIndex].importQuanlity -= item.numberShoe;
+    // shoe.sellQuanlityAll += item.numberShoe;
+    // await shoe.save();
+  }
+
+    // Kiểm tra và áp dụng giảm giá
+    if (orderData.discointId) {
+      const discount = await DiscountModel.findById(orderData.discointId);
+      if (!discount) {
         return res.status(400).json({ message: 'Mã giảm giá không hợp lệ.' });
       }
+
+      if (!discount.isActive) {
+        return res.status(400).json({ message: 'Mã giảm giá không hoạt động.' });
+      }
+
+      if (discount.maxUser <= 0) {
+        return res.status(400).json({ message: 'Mã giảm giá đã hết số lần sử dụng.' });
+      }
+
+      discount.maxUser -= 1;
+      await discount.save();
     }
 
     const newOrder = await OrderModel.create({
-      userId,
-      nameOrder,
-      phoneNumber,
-      addressOrder,
-      pay,
-      total,
-      dateOrder: vietnamDate,
-      dateOrder: Date.now(), 
-      status: 'Chờ xác nhận',
-      discointId,
+      userId: address.userId,
+      nameOrder: address.nameAddress, 
+      phoneNumber: address.phoneNumber, 
+      addressOrder: address.detailAddress, 
+      pay: orderData.pay,
+      total: orderData.total,
+      dateOrder: Date.now(),
+      status: orderData.total === 0 ? 2 : 1,
+      totalShip: orderData.totalShip,
+      discointId: orderData.discointId || null,
       orderStatusDetails: [
         {
           status: 'Chờ xác nhận',
-          timestamp: vietnamDate,
-          note: 'Đơn hàng mới được tạo'
-        }
-      ]
+          timestamp: Date.now(),
+          note: 'Đơn hàng mới được tạo',
+        },
+      ],
     });
 
-    const orderDetails = items.map(item => ({
+    const orderDetails = cartItems.map(item => ({
       orderId: newOrder._id,
       shoeId: item.shoeId,
       sizeId: item.sizeId,
       colorId: item.colorId,
-      quantity: item.quantity,
+      quantity: item.numberShoe,
     }));
+
     await OderDetailModel.insertMany(orderDetails);
 
+    // const cartIds = orderData.items.map(item => item.cartId);
+    // await CartModel.deleteMany({ _id: { $in: cartIds } });
 
-    sendNotificationUser(
-      userId,
-      'Đơn hàng mới',
-      `Đơn hàng #${newOrder._id} của bạn đã được tạo thành công. Tổng tiền: ${total} VND`,
-      'OrderCreated',
-      items[0].shoeId,
-      vietnamDate
-    );
+    // Gửi thông báo
+    const notificationPromises = [
+      sendNotificationUser(
+        orderData.userId,
+        'Đơn hàng mới',
+        `Đơn hàng #${newOrder._id} của bạn đã được tạo thành công. Tổng tiền: ${orderData.total} VND`,
+        'OrderCreated',
+        orderData.items[0].shoeId,
+        Date.now()
+      ),
+      sendNotificationAdmin(
+        'Đơn hàng mới',
+        `Một đơn hàng mới #${newOrder._id} đã được đặt. Tổng tiền: ${orderData.total} VND`,
+        'OrderCreated',
+        orderData.items[0].shoeId,
+        Date.now()
+      ),
+    ];
 
-    sendNotificationAdmin(
-      'Đơn hàng mới',
-      `Một đơn hàng mới #${newOrder._id} đã được đặt. Tổng tiền: ${total} VND`,
-      'OrderCreated',
-      items[0].shoeId,
-      vietnamDate
-    );
+    await Promise.all(notificationPromises);
 
     res.status(201).json({ message: 'Đơn hàng đã được tạo và thông báo đã được gửi.', order: newOrder });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi tạo đơn hàng.', error: err.message });
   }
 };
+
 
 // Hủy đơn hàng trạng thái Chờ xác nhận
 const cancelOrder = async (req, res) => {
