@@ -11,99 +11,99 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
-    <style>
-        .content {
-            margin-left: 20px;
-            margin-right: 20px;
-        }
 
-        .breadcrumb-item a {
-            color: black;
-            text-decoration: none;
-        }
-
-        .breadcrumb-item a:hover {
-            text-decoration: underline;
-        }
-
-        .timeline {
-            position: relative;
-            padding: 20px 0;
-            list-style: none;
-        }
-
-        .timeline:before {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 20px;
-            width: 2px;
-            content: '';
-            background-color: #e9ecef;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin: 0 0 20px 20px;
-            padding-left: 20px; /* Added padding for text */
-        }
-
-        .timeline-item:before {
-        position: absolute;
-        left: -10px; /* Adjusted for symmetry */
-        width: 20px;
-        height: 20px;
-        content: '';
-        border-radius: 50%;
-        background-color: #fff;
-        border: 3px solid #6c757d; /* Increased border width for visibility */
+</head>
+<style>
+    .content {
+        margin-left: 20px;
+        margin-right: 20px;
     }
 
-        .timeline-item.active:before {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
+    .breadcrumb-item a {
+        color: black;
+        text-decoration: none;
+    }
 
-        .timeline-item:last-child {
-            margin-bottom: 0;
-        }
+    .breadcrumb-item a:hover {
+        text-decoration: underline;
+    }
 
-        .timeline-item .timeline-time {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+        list-style: none;
+    }
 
-        .timeline-item .timeline-status {
-            font-size: 1rem;
-            font-weight: bold;
-        }
+    .timeline:before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 20px;
+        width: 2px;
+        content: '';
+        background-color: #e9ecef;
+    }
 
-        .timeline-item .timeline-status.active {
-            color: #007bff;
-        }
+    .timeline-item {
+        position: relative;
+        margin: 0 0 20px 20px;
+        padding-left: 20px; /* Added padding for text */
+    }
 
-        .timeline-item .timeline-note {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
+    .timeline-item:before {
+    position: absolute;
+    left: -10px; /* Adjusted for symmetry */
+    width: 20px;
+    height: 20px;
+    content: '';
+    border-radius: 50%;
+    background-color: #fff;
+    border: 3px solid #6c757d; /* Increased border width for visibility */
+}
 
-        .timeline-item .timeline-note.canceled {
-            color: #ff0000;
-        }
+    .timeline-item.active:before {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
 
-        .timeline-item .timeline-note.completed {
-            color: #28a745;
-        }
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
 
-        .hidden {
-            display: none;
-        }
-        
-        
-        
-    </style>
-</head>
+    .timeline-item .timeline-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
 
+    .timeline-item .timeline-status {
+        font-size: 1rem;
+        font-weight: bold;
+    }
+
+    .timeline-item .timeline-status.active {
+        color: #007bff;
+    }
+
+    .timeline-item .timeline-note {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .timeline-item .timeline-note.canceled {
+        color: #ff0000;
+    }
+
+    .timeline-item .timeline-note.completed {
+        color: #28a745;
+    }
+
+    .hidden {
+        display: none;
+    }
+    
+    
+    
+</style>
 <body>
 
     <%- include('../inc/top.ejs') %>
@@ -149,7 +149,7 @@
                                             statusText = "Giao thành công";
                                             break;
                                         case 6:
-                                            statusText = "Đã nhận hàng";
+                                            statusText = "Đã hủy";
                                             break;
                                         case 7:
                                             statusText = "Hoàn đơn";
@@ -161,16 +161,30 @@
                                     <%= statusText %>
                                 </span>
                             </h5>
+                
                             <p>
-                                <%= orderResponse.dateOrder %>
+                                <%= orderResponse.dateOrder %><br>
+                                Mã Đơn Hàng: <span id="order-quick-code"><%= orderResponse.ghn.quickCode %></span><br>
+                                Trạng thái Giao Hàng Nhanh: <span id="delivery-status"><%= orderResponse.ghn.deliveryStatus %></span>
                             </p>
                         </div>
                         <div>
-                            <button  class="btn btn-secondary hidden" id="print-btn">
+                            <button  class="btn btn-secondary hidden" >
                                 <button class="btn btn-secondary" onclick="printCustomContent()">In</button>
                             </button>
+                            <% if (orderResponse.status !== 7) { %>
+
                             <button class="btn btn-secondary" id="confirm-order-btn">Xác nhận</button>
+                            <% } %>
+                            <% if (userRole === 2 ) { %>
+
                             <button class="btn btn-secondary" id="cancel-order-btn">Hủy</button>
+                            <% } %>
+                       
+  <% if (userRole === 3 && orderResponse.status === 4) { %>
+    <button class="btn btn-secondary" id="complete-order-btn">Hoàn đơn</button>
+<% } %>
+
                         </div>
                     </div>
                 </div>
@@ -280,6 +294,26 @@
             </div>
         </div>
 
+        <!-- Modal -->
+<div class="modal fade" id="failureReasonModal" tabindex="-1" aria-labelledby="failureReasonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="failureReasonModalLabel">Nhập lý do giao thất bại</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <textarea class="form-control" id="failureReason" rows="3" placeholder="Nhập lý do..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-primary" id="submitFailureReason">Gửi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
         <!-- Confirmation Dialog -->
         <div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel"
             aria-hidden="true">
@@ -334,6 +368,55 @@
         6: 'Hủy đơn',
         7: 'Hoàn đơn'
     };
+
+          document.addEventListener('DOMContentLoaded', () => {
+    const completeButton = document.getElementById('complete-order-btn');
+
+    if (completeButton) {
+        completeButton.addEventListener('click', () => {
+            const modal = new bootstrap.Modal(document.getElementById('failureReasonModal'));
+            modal.show();
+        });
+    }
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const submitFailureReasonButton = document.getElementById('submitFailureReason');
+
+    if (submitFailureReasonButton) {
+        submitFailureReasonButton.addEventListener('click', async () => {
+            const orderId = '<%= orderResponse._id %>';
+            const failureReason = document.getElementById('failureReason').value;
+
+            if (!failureReason) {
+                alert('Vui lòng nhập lý do giao thất bại.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/order/refundOrder/${orderId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ failureReason }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    const error = await response.json();
+                    alert(error.message);
+                }
+            } catch (error) {
+                console.error('Error completing order:', error);
+                alert('Error completing order. Please try again.');
+            }
+        });
+    }
+});
+
             
             document.getElementById('confirm-order-btn').addEventListener('click', () => {
                 const currentStatus = '<%= orderResponse.status %>';
@@ -410,6 +493,10 @@
                 }
             });
 
+
+      
+
+
             document.addEventListener('DOMContentLoaded', () => {
     const orderStatus = parseInt('<%= orderResponse.status %>'); 
     const userRole = parseInt('<%= userRole %>'); 
@@ -419,7 +506,7 @@
     const printButton = document.getElementById('print-btn');
 
     if (userRole !== 3) { 
-        if (orderStatus === 0 || orderStatus === 5 || orderStatus === 3 || orderStatus === 4 ) {
+        if (orderStatus === 0 || orderStatus === 5 || orderStatus === 3 || orderStatus === 4 || orderStatus === 6 || orderStatus === 7) {
             if (confirmButton) confirmButton.classList.add('hidden');
             if (cancelButton) cancelButton.classList.add('hidden');
         }
@@ -430,7 +517,7 @@
             
         }
     }
-    if (orderStatus === 2) { // Status "Chuẩn bị hàng"
+    if (orderStatus === 2 ) { // Status "Chuẩn bị hàng"
         if (printButton) printButton.classList.remove('hidden');
     } else {
         if (printButton) printButton.classList.add('hidden');
@@ -438,24 +525,24 @@
 });
 
 
-// function printCustomContent() {
-//         // Lấy nội dung mà bạn muốn in
-//         const printContent = document.getElementById('printable-area').innerHTML;
+function printCustomContent() {
+        // Lấy nội dung mà bạn muốn in
+        const printContent = document.getElementById('printable-area').innerHTML;
         
-//         // Tạo một cửa sổ mới
-//         const printWindow = window.open('', '', 'height=600,width=800');
+        // Tạo một cửa sổ mới
+        const printWindow = window.open('', '', 'height=600,width=800');
         
-//         // Tạo một kiểu HTML cho cửa sổ mới
-//         printWindow.document.write('<html><head><title>Print</title>');
-//         printWindow.document.write('</head><body>');
-//         printWindow.document.write(printContent);
-//         printWindow.document.write('</body></html>');
+        // Tạo một kiểu HTML cho cửa sổ mới
+        printWindow.document.write('<html><head><title>Print</title>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent);
+        printWindow.document.write('</body></html>');
         
-//         // Đóng tài liệu và in
-//         printWindow.document.close();
-//         printWindow.focus();
-//         printWindow.print();
-//     }
+        // Đóng tài liệu và in
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+    }
 
 
         </script>

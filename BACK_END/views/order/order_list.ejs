@@ -57,9 +57,12 @@
             <button class="btn btn-primary" data-status="Chuẩn bị hàng">Chuẩn bị hàng/Chờ bàn giao đơn vị vận chuyển</button>
             <button class="btn btn-success" data-status="Đang giao hàng">Đang giao hàng</button>
             <button class="btn btn-danger" data-status="Đã nhận hàng">Giao thành công</button>
+            <% if (userRole !== 3) { %>
             <button class="btn btn-dark" data-status="Đã hủy">Đã hủy đơn</button>
+            <% } %>
+
             <button class="btn btn-dark" data-status="Hoàn đơn">Đơn hoàn</button>
-            <button class="btn btn-dark" data-status="Đánh giá">Đã đánh giá</button>
+            
 
         </div>
 

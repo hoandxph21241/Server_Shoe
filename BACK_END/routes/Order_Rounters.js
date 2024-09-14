@@ -28,5 +28,6 @@ router.put("/orderPreparedSuccessfully/:orderId", Contronlers.orderPreparedSucce
 router.put("/shipOrder/:orderId", Contronlers.shipOrder);
 router.put("/confirmOrder/:orderId", Contronlers.confirmOrderReceived);
 
+router.put("/refundOrder/:orderId", Contronlers.failDeliveryOrder);
 
 module.exports = router;

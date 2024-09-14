@@ -11,105 +11,119 @@ const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
   timeZone: 'Asia/Ho_Chi_Minh'
 }).format(new Date());
 
+const cron = require('node-cron');
+
+cron.schedule('0 2 * * *', () => {
+  autoConfirmOrderReceived();
+});
+
+
 const createOrder = async (req, res) => {
-  const { userId, nameOrder, phoneNumber, addressOrder, pay, items, discointId } = req.body;
+  const orderData = req.body;
 
   try {
     let total = 0;
     let discountAmount = 0;
 
     // Tính tổng tiền dựa trên giá từ ShoeModel và cập nhật số lượng tồn kho
-    for (let item of items) {
+    for (let item of orderData.items) {
       const shoe = await ShoeModel.findById(item.shoeId);
-      if (shoe) {
-        // Tìm và cập nhật số lượng tồn kho cho size và màu cụ thể
-        const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
-        const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
-
-        if (sizeIndex !== -1 && colorIndex !== -1) {
-          if (shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity >= item.quantity) {
-            shoe.storageShoe[sizeIndex * shoe.colorShoe.length + colorIndex].importQuanlity -= item.quantity;
-            shoe.sellQuanlityAll += item.quantity;
-            await shoe.save();
-          } else {
-            return res.status(400).json({ message: `Không đủ số lượng tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
-          }
-        } else {
-          return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
-        }
-
-        total += shoe.price * item.quantity;
-      } else {
+      if (!shoe) {
         return res.status(400).json({ message: `Không tìm thấy giày với id ${item.shoeId}` });
       }
+
+      const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
+      const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
+
+      if (sizeIndex === -1 || colorIndex === -1) {
+        return res.status(400).json({ message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
+      }
+
+      const stockIndex = sizeIndex * shoe.colorShoe.length + colorIndex;
+
+      if (shoe.storageShoe[stockIndex].importQuanlity < item.quantity) {
+        return res.status(400).json({ message: `Không đủ số lượng tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.` });
+      }
+
+      shoe.storageShoe[stockIndex].importQuanlity -= item.quantity;
+      shoe.sellQuanlityAll += item.quantity;
+      await shoe.save();
+
+      total += shoe.price * item.quantity;
     }
 
     // Kiểm tra và áp dụng giảm giá
-    if (discointId) {
-      const discount = await DiscountModel.findById(discointId);
-      if (discount) {
-        if (discount.isActive && discount.maxUser > 0) {
-          discountAmount = parseFloat(discount.discountAmount) || 0;
-          total -= discountAmount;
-
-          // Giảm số lần sử dụng của mã giảm giá
-          discount.maxUser -= 1;
-          await discount.save();
-        } else if (!discount.isActive) {
-          return res.status(400).json({ message: 'Mã giảm giá không hoạt động.' });
-        } else if (discount.maxUser <= 0) {
-          return res.status(400).json({ message: 'Mã giảm giá đã hết số lần sử dụng.' });
-        }
-      } else {
+    if (orderData.discointId) {
+      const discount = await DiscountModel.findById(orderData.discointId);
+      if (!discount) {
         return res.status(400).json({ message: 'Mã giảm giá không hợp lệ.' });
       }
+
+      if (!discount.isActive) {
+        return res.status(400).json({ message: 'Mã giảm giá không hoạt động.' });
+      }
+
+      if (discount.maxUser <= 0) {
+        return res.status(400).json({ message: 'Mã giảm giá đã hết số lần sử dụng.' });
+      }
+
+      discountAmount = parseFloat(discount.discountAmount) || 0;
+      total -= discountAmount;
+
+      discount.maxUser -= 1;
+      await discount.save();
     }
 
+    // Tạo đơn hàng mới
     const newOrder = await OrderModel.create({
-      userId,
-      nameOrder,
-      phoneNumber,
-      addressOrder,
-      pay,
+      userId: orderData.userId,
+      nameOrder: orderData.nameOrder,
+      phoneNumber: orderData.phoneNumber,
+      addressOrder: orderData.addressOrder,
+      pay: orderData.pay,
       total,
-      dateOrder: Date.now(), 
+      dateOrder: Date.now(),
       status: 1,
-      discointId,
+      discointId: orderData.discointId,
       orderStatusDetails: [
         {
           status: 'Chờ xác nhận',
-          timestamp: vietnamDate,
-          note: 'Đơn hàng mới được tạo'
-        }
-      ]
+          timestamp: Date.now(),
+          note: 'Đơn hàng mới được tạo',
+        },
+      ],
     });
 
-    const orderDetails = items.map(item => ({
+    const orderDetails = orderData.items.map(item => ({
       orderId: newOrder._id,
       shoeId: item.shoeId,
       sizeId: item.sizeId,
       colorId: item.colorId,
       quantity: item.quantity,
     }));
+
     await OderDetailModel.insertMany(orderDetails);
 
+    // Gửi thông báo
+    const notificationPromises = [
+      sendNotificationUser(
+        orderData.userId,
+        'Đơn hàng mới',
+        `Đơn hàng #${newOrder._id} của bạn đã được tạo thành công. Tổng tiền: ${total} VND`,
+        'OrderCreated',
+        orderData.items[0].shoeId,
+        Date.now()
+      ),
+      sendNotificationAdmin(
+        'Đơn hàng mới',
+        `Một đơn hàng mới #${newOrder._id} đã được đặt. Tổng tiền: ${total} VND`,
+        'OrderCreated',
+        orderData.items[0].shoeId,
+        Date.now()
+      ),
+    ];
 
-    sendNotificationUser(
-      userId,
-      'Đơn hàng mới',
-      `Đơn hàng #${newOrder._id} của bạn đã được tạo thành công. Tổng tiền: ${total} VND`,
-      'OrderCreated',
-      items[0].shoeId,
-      vietnamDate
-    );
-
-    sendNotificationAdmin(
-      'Đơn hàng mới',
-      `Một đơn hàng mới #${newOrder._id} đã được đặt. Tổng tiền: ${total} VND`,
-      'OrderCreated',
-      items[0].shoeId,
-      vietnamDate
-    );
+    await Promise.all(notificationPromises);
 
     res.status(201).json({ message: 'Đơn hàng đã được tạo và thông báo đã được gửi.', order: newOrder });
   } catch (err) {
@@ -331,6 +345,56 @@ const confirmOrderReceived = async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái đơn hàng.', error: err.message });
   }
 };
+const autoConfirmOrderReceived = async () => {
+  try {
+    const daysToWait = 7; // Số ngày chờ trước khi tự động xác nhận
+    const now = new Date();
+    const cutoffDate = new Date(now.setDate(now.getDate() - daysToWait));
+console.log(cutoffDate);
+
+    // Tìm các đơn hàng đã giao nhưng chưa được xác nhận và đã vượt quá số ngày chờ
+    const ordersToConfirm = await OrderModel.find({
+      status: 5, // Giao thành công
+      dateOrder: { $lte: cutoffDate }
+    });
+
+
+
+    for (const order of ordersToConfirm) {
+      order.status = 0; // Đã nhận hàng
+      order.orderStatusDetails.push({
+        status: 'Đã nhận hàng',
+        timestamp: vietnamDate,
+        note: 'Hệ thống tự động xác nhận đơn hàng.'
+      });
+  
+    const orderDetails = await OderDetailModel.find( order.orderId );
+
+
+      await order.save();
+
+      sendNotificationUser(
+        order.userId,
+        'Đơn hàng đã được xác nhận tự động',
+        `Đơn hàng #${order._id} của bạn đã được hệ thống tự động xác nhận là đã nhận hàng.`,
+        'OrderDelivered',
+        orderDetails[0].shoeId,
+        vietnamDate
+      );
+
+      sendNotificationAdmin(
+        'Đơn hàng đã được xác nhận tự động',
+        `Đơn hàng #${order._id} đã được hệ thống tự động xác nhận là đã giao hàng.`,
+        'OrderDelivered',
+        orderDetails[0].shoeId,
+        vietnamDate
+      );
+    }
+  } catch (err) {
+    console.error('Lỗi khi tự động xác nhận đơn hàng:', err.message);
+  }
+};
+
 
 // hiển thị list đơn hàng user, lấy đơn hàng đầu tiên đại diện 1 đơn hàng
 const getUserOrdersWithFirstItem = async (req, res) => {
@@ -474,6 +538,7 @@ module.exports = {
   cancelOrder,
   returnOrder,
   confirmOrderReceived,
+  autoConfirmOrderReceived,
   getUserOrdersWithFirstItem,
   getOrderById,
   getOrderShoeById
