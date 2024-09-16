@@ -71,21 +71,10 @@ exports.BrandList = async (req, res) => {
 };
 
 
-// exports.ProductList = async (req, res, next) => {
-//     try {
-//         const brand = await Model.TypeShoeModel.find();
-//         if (!brand) {
-//             return res.status(404).send("Not Found");
-//         };
-
-//         res.render('manager/product/product.ejs', { brands: brand });
-//         // res.json(brand)
-//     } catch (error) {
-//         console.error(error);
-//     }
-// };
-
-exports.AllProduct = async (req, res, next) => {
+exports.ProductList = async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 15;
+    const skip = (page - 1) * limit;
     try {
         let shoes = await Model.ShoeModel.find()
             .populate({
@@ -109,12 +98,37 @@ exports.AllProduct = async (req, res, next) => {
             return res.status(404).send("Not Found");
         };
 
+
         if (shoes.length > 0) {
             // return res.status(200).json(shoes);
             res.render('manager/product/product.ejs', { shoes: shoes, typerShoe: typerShoe });
         } else {
             return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
         }
+        const totalShoes = await Model.ShoeModel.countDocuments();
+
+        let shoes = await Model.ShoeModel.find({ status: 0 }).skip(skip).limit(limit)
+            .populate({
+                path: "sizeShoe",
+                match: { isEnable: true },
+                select: "size sizeId -_id",
+            })
+            .populate({
+                path: "imageShoe",
+                select: "imageUrl -_id",
+            })
+            .populate({
+                path: "colorShoe",
+                select: "textColor codeColor -_id",
+            })
+            .populate("typerShoe", "nameType _id")
+            .select("-__v");
+
+        const totalPages = Math.ceil(totalShoes / limit);
+
+
+        res.render('manager/product/product.ejs', { brands: brand, shoes: shoes, currentPage: page, totalPages: totalPages });
+        // res.json(brand)
     } catch (error) {
         return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
     }
@@ -122,6 +136,38 @@ exports.AllProduct = async (req, res, next) => {
 
 const formatString = (inputString) => {
     return inputString.toLowerCase().replace(/\s+/g, "-");
+
+exports.HideShoe = async (req, res) => {
+    try {
+        const shoeId = req.params._id;
+        const shoe = await Model.ShoeModel.findById(shoeId);
+        if(!shoe) {
+            return res.send("Not Found");
+        };
+
+        shoe.status = 1;
+        await shoe.save();
+        res.redirect('/manager/productlist');
+    } catch (error) {
+        console.log("Failed to hide:",error);
+    }
+};
+
+exports.ListProductWithBrand = async (req, res) => {
+    try {
+        const { brandId } = req.body;
+
+        const shoe = await Model.ShoeModel.findById(brandId);
+        if (!shoe) {
+            return res.send("Not Found");
+        };
+        console.log(shoe);
+        res.render('manager/product/list_product_with_type.ejs', { shoes: shoe });
+    } catch (error) {
+        console.log("Error:", error);
+
+    }
+    res.render('manager/product/list_product_with_type.ejs');
 };
 
 exports.AddProduct = async (req, res, next) => {
@@ -344,11 +390,17 @@ exports.VorcherList = async (req, res, next) => {
 
 exports.BannerList = async (req, res, next) => {
     try {
-        const banner = await Model.BannerModel.find({ hide: false });
+        const page = parseInt(req.query.page) || 1;
+        const limit = 15;
+
+        const banner = await Model.BannerModel.find({ hide: false }).skip((page - 1) * limit).limit(limit);
+
+        const totalItem = await Model.BannerModel.countDocuments({ hide: false });
+        const totalPage = Math.ceil(totalItem / limit);
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
-        res.render('manager/banner/hide_banner.ejs', { banner: banner });
+        res.render('manager/banner/hide_banner.ejs', { banner: banner, currentPage: page, totalPage: totalPage });
     } catch (error) {
         console.log("Đã có lỗi lấy danh sách banner: " + error);
     }

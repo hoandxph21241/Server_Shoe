@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Thêm sản phẩm</title>
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/css/multi-select-tag.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -67,6 +67,7 @@
                         <div class="mb-3">
                             <label for="nameShoe" class="form-label">Tên sản phẩm:</label>
                             <input type="text" class="form-control" id="nameShoe" name="name">
+
                         </div>
                         <div class="mb-3">
                             <label for="price" class="form-label">Giá:</label>
@@ -74,13 +75,16 @@
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Mô tả:</label>
+
                             <textarea class="form-control" id="description" rows="3" name="description"></textarea>
+
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="productImage" class="form-label">Ảnh sản phẩm:</label>
                             <input type="file" class="form-control" id="productImage" name="imageShoe" multiple>
+
                         </div>
                         <div class="mb-3">
                             <label for="brand" class="form-label">Hãng:</label>
@@ -138,9 +142,9 @@
             </div>
             
         </div>
-        <script
-            src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/js/multi-select-tag.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@3.0.1/dist/js/multi-select-tag.js"></script>
         <script>
+
             document.addEventListener('DOMContentLoaded', function () {
                 let selectedSizes = [];
                 let selectedColors = [];
@@ -292,6 +296,7 @@
         </script>
 
         <%- include('../../inc/end.ejs') %>
+
 </body>
 
 </html>
