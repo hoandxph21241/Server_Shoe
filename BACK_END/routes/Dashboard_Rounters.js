@@ -18,9 +18,7 @@ function requireAdmin(req, res, next) {
     }
 }
 
-router.get("", Contronlers.Dashboard);
-
-router.post("/statistics", Contronlers.statistics);
+router.get("",requireAdmin, Contronlers.Dashboard);
 
 
 module.exports = router;
