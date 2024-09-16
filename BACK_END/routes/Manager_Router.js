@@ -16,7 +16,8 @@ router.get("/list-brand",ManagerController.BrandList);
 router.get('/productlist',ManagerController.AllProduct);
 router.get('/edit-product',ManagerController.EditProduct);
 router.get('/addproduct',ManagerController.AddProduct);
-
+router.post('/addproduct',ManagerController.AddProduct);
+router.post('/uploadsFile',upload.fields([{name:'imageShoe'},{name:'thumbnail'}]),ManagerController.uploadFiles);
 router.get('/vorcherlist',ManagerController.VorcherList);
 
 
