@@ -10,6 +10,10 @@ const vietnamDate = new Intl.DateTimeFormat('vi-VN', {
   second: '2-digit',
   timeZone: 'Asia/Ho_Chi_Minh'
 }).format(new Date());
+const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const createOrder = async (req, res) => {
   const orderData = req.body;
@@ -133,11 +137,252 @@ const createOrder = async (req, res) => {
 
     await Promise.all(notificationPromises);
 
+    await sendOrderInfoEmail(address.nameAddress,address.userId, orderData.total, newOrder._id, address.detailAddress, address.phoneNumber, orderDetails);
+
     res.status(201).json({ message: 'Đơn hàng đã được tạo và thông báo đã được gửi.', order: newOrder });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi tạo đơn hàng.', error: err.message });
   }
 };
+
+const sendOrderInfoEmail = async (nameOrder,userId, total, orderId, addressOrder, phoneNumber, orderDetails) => {
+  const oAuth2Client = new google.auth.OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    process.env.REDIRECT_URI
+  );
+  oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+
+  const accessTokenResponse = await oAuth2Client.getAccessToken();
+  const accessToken = accessTokenResponse.token;
+
+  const user = await UserModel.findById(userId).populate("nameAccount").lean();
+  // if (!user.imageAccount || !user.imageAccount.$binary || !user.imageAccount.$binary.base64) {
+  //   throw new Error("User image data is missing");
+  // }  
+  // const base64Data = user.imageAccount.$binary.base64;
+  // const imageBuffer = Buffer.from(base64Data, 'base64');
+  
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      type: "OAuth2",
+      user: "hzdev231@gmail.com",
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      refreshToken: process.env.REFRESH_TOKEN,
+      accessToken: accessToken,
+    },
+  });
+
+  let productInfo = '';
+  orderDetails.forEach(detail => {
+    productInfo += `- Sản phẩm ID: ${detail.shoeId}, Số lượng: ${detail.quantity}\n`;
+  });
+  
+  // const mailOptions = {
+  //   from: "hzdev231@gmail.com",
+  //   to: user.nameAccount, 
+  //   subject: "Thông tin Đơn hàng của bạn",
+  //   text: `Thông tin đơn hàng:\n- Tên người nhận: ${nameOrder}\n- Số điện thoại: ${phoneNumber}\n- Địa chỉ: ${addressOrder}\n- Tổng tiền: ${total}\n- Mã đơn hàng: ${orderId}\n- Sản phẩm:\n${productInfo}`,
+  //   attachments: [
+  //     {
+  //       filename: 'profile.jpg',
+  //       content: imageBuffer,
+  //       contentType: 'image/jpeg'
+  //     }
+  //   ]
+  // };
+
+  // const mailOptions = {
+  //   from: "hzdev231@gmail.com",
+  //   to: user.nameAccount,
+  //   subject: "Thông tin Đơn hàng của bạn",
+  //   text: `Thông tin đơn hàng:\n- Tên người nhận: ${nameOrder}\n- Số điện thoại: ${phoneNumber}\n- Địa chỉ: ${addressOrder}\n- Tổng tiền: ${total}\n- Mã đơn hàng: ${orderId}\n- Sản phẩm:\n${productInfo}`,
+  //   html: `
+  //     <p>Thông tin đơn hàng:</p>
+  //     <ul>
+  //       <li>Tên người nhận: ${nameOrder}</li>
+  //       <li>Số điện thoại: ${phoneNumber}</li>
+  //       <li>Địa chỉ: ${addressOrder}</li>
+  //       <li>Tổng tiền: ${total}</li>
+  //       <li>Mã đơn hàng: ${orderId}</li>
+  //       <li>Sản phẩm:</li>
+  //       <ul>
+  //         ${orderDetails.map(item => `<li>Sản phẩm ID: ${item.shoeId}, Số lượng: ${item.quantity}</li>`).join('')}
+  //       </ul>
+  //     </ul>
+  //     <p><img src="data:image/jpeg;base64,${user.imageAccount.data}" alt="User Image" /></p>
+  //   `,
+  //   attachments: [
+  //     {
+  //       filename: 'profile.jpg',
+  //       content: imageBuffer,
+  //       contentType: 'image/jpeg'
+  //     }
+  //   ]
+  // };
+
+  const mailOptions = {
+    from: "hzdev231@gmail.com",
+    to: user.nameAccount,
+    subject: "Thông tin Đơn hàng của bạn",
+    text: `Thông tin đơn hàng:\n- Tên người nhận: ${nameOrder}\n- Số điện thoại: ${phoneNumber}\n- Địa chỉ: ${addressOrder}\n- Tổng tiền: ${total}\n- Mã đơn hàng: ${orderId}\n- Sản phẩm:\n${productInfo}`,
+    html: `
+      <p>Thông tin đơn hàng:</p>
+      <ul>
+        <li>Tên người nhận: ${nameOrder}</li>
+        <li>Số điện thoại: ${phoneNumber}</li>
+        <li>Địa chỉ: ${addressOrder}</li>
+        <li>Tổng tiền: ${total}</li>
+        <li>Mã đơn hàng: ${orderId}</li>
+        <li>Sản phẩm:</li>
+        <ul>
+          ${orderDetails.map(item => `<li>Sản phẩm ID: ${item.shoeId}, Số lượng: ${item.quantity}</li>`).join('')}
+        </ul>
+      </ul> 
+       `,
+  };
+
+  console.log(user);
+  console.log(user.nameAccount);
+  console.log(nameOrder);
+  console.log(total);
+  console.log(orderId);
+  console.log(addressOrder);
+  
+  
+  const result = await transporter.sendMail(mailOptions);
+  console.log("Email sent: " + result.response);
+};
+
+// const sendOrderInfoEmail = async (nameOrder, userId, total, orderId, addressOrder, phoneNumber, orderDetails) => {
+//   const oAuth2Client = new google.auth.OAuth2(
+//     process.env.CLIENT_ID,
+//     process.env.CLIENT_SECRET,
+//     process.env.REDIRECT_URI
+//   );
+//   oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+
+//   const accessTokenResponse = await oAuth2Client.getAccessToken();
+//   const accessToken = accessTokenResponse.token;
+
+//   if (!accessToken) {
+//     throw new Error("Failed to obtain access token");
+//   }
+
+//   const user = await UserModel.findById(userId).lean();
+//   if (!user) {
+//     throw new Error("User not found");
+//   }
+
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       type: "OAuth2",
+//       user: "hzdev231@gmail.com",
+//       clientId: process.env.CLIENT_ID,
+//       clientSecret: process.env.CLIENT_SECRET,
+//       refreshToken: process.env.REFRESH_TOKEN,
+//       accessToken: accessToken,
+//     },
+//   });
+
+
+//   const shoeIds = orderDetails.map(detail => detail.shoeId);
+//   const shoes = await ShoeModel.find({ _id: { $in: shoeIds } }).lean();
+
+//   const productInfo = orderDetails.map(detail => {
+//     const shoe = shoes.find(shoe => shoe._id.toString() === detail.shoeId.toString());
+//     const shoeImage = shoe ? shoe.imageUrl : 'default-image-url.jpg';
+//     return `- Sản phẩm ID: ${detail.shoeId}, Số lượng: ${detail.quantity}, Hình ảnh: <img src="${shoeImage}" alt="Shoe Image" />`;
+//   }).join('\n');
+
+//   const mailOptions = {
+//     from: "hzdev231@gmail.com",
+//     to: user.nameAccount,
+//     subject: "Thông tin Đơn hàng của bạn",
+//     text: `Thông tin đơn hàng:\n- Tên người nhận: ${nameOrder}\n- Số điện thoại: ${phoneNumber}\n- Địa chỉ: ${addressOrder}\n- Tổng tiền: ${total}\n- Mã đơn hàng: ${orderId}\n- Sản phẩm:\n${productInfo}`,
+//     html: `
+//       <p>Thông tin đơn hàng:</p>
+//       <ul>
+//         <li>Tên người nhận: ${nameOrder}</li>
+//         <li>Số điện thoại: ${phoneNumber}</li>
+//         <li>Địa chỉ: ${addressOrder}</li>
+//         <li>Tổng tiền: ${total}</li>
+//         <li>Mã đơn hàng: ${orderId}</li>
+//         <li>Sản phẩm:</li>
+//         <ul>
+//           ${productInfo}
+//         </ul>
+//       </ul>
+//     `,
+//   };
+
+//   const result = await transporter.sendMail(mailOptions);
+//   console.log("Email sent: " + result.response);
+// };
+
+// const sendOrderInfoEmail = async (nameOrder, userId, total, orderId, addressOrder, phoneNumber, orderDetails) => {
+//   const oAuth2Client = new google.auth.OAuth2(
+//     process.env.CLIENT_ID,
+//     process.env.CLIENT_SECRET,
+//     process.env.REDIRECT_URI
+//   );
+//   oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+
+//   const accessTokenResponse = await oAuth2Client.getAccessToken();
+//   const accessToken = accessTokenResponse.token;
+
+//   if (!accessToken) {
+//     throw new Error("Failed to obtain access token");
+//   }
+
+//   const user = await UserModel.findById(userId).lean();
+//   const thumbnailUrl = orderDetails.map(item => item.shoeId.thumbnail).join(', '); // Lấy thumbnail cho tất cả sản phẩm trong đơn hàng
+
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       type: "OAuth2",
+//       user: "hzdev231@gmail.com",
+//       clientId: process.env.CLIENT_ID,
+//       clientSecret: process.env.CLIENT_SECRET,
+//       refreshToken: process.env.REFRESH_TOKEN,
+//       accessToken: accessToken,
+//     },
+//   });
+
+//   let productInfo = '';
+//   orderDetails.forEach(detail => {
+//     productInfo += `- Sản phẩm ID: ${detail.shoeId._id}, Số lượng: ${detail.quantity}\n`;
+//   });
+
+//   const mailOptions = {
+//     from: "hzdev231@gmail.com",
+//     to: user.nameAccount,
+//     subject: "Thông tin Đơn hàng của bạn",
+//     text: `Thông tin đơn hàng:\n- Tên người nhận: ${nameOrder}\n- Số điện thoại: ${phoneNumber}\n- Địa chỉ: ${addressOrder}\n- Tổng tiền: ${total}\n- Mã đơn hàng: ${orderId}\n- Sản phẩm:\n${productInfo}`,
+//     html: `
+//       <p>Thông tin đơn hàng:</p>
+//       <ul>
+//         <li>Tên người nhận: ${nameOrder}</li>
+//         <li>Số điện thoại: ${phoneNumber}</li>
+//         <li>Địa chỉ: ${addressOrder}</li>
+//         <li>Tổng tiền: ${total}</li>
+//         <li>Mã đơn hàng: ${orderId}</li>
+//         <li>Sản phẩm:</li>
+//         <ul>
+//           ${orderDetails.map(item => `<li>Sản phẩm ID: ${item.shoeId._id}, Số lượng: ${item.quantity} <br><img src="${item.shoeId.thumbnail}" alt="Shoe Image" /></li>`).join('')}
+//         </ul>
+//       </ul>
+//     `,
+//   };
+
+//   const result = await transporter.sendMail(mailOptions);
+//   console.log("Email sent: " + result.response);
+// };
+
 
 
 // Hủy đơn hàng trạng thái Chờ xác nhận
