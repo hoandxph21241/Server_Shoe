@@ -120,7 +120,7 @@
                     <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addModal">Add</button>
                 </div>
             </div>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-3">
                 <!-- Repeat this card for each product -->
                 <% discounts.forEach(function(discount) { %>
                     <div class="row mt-5">
@@ -152,7 +152,7 @@
                                         </div>
 
                                     </div>
-                                    <p class="card-text fw-bold">$<%= discount.discountAmount %>
+                                    <p class="card-text fw-bold"><%= discount.discountAmount %>%
                                     </p>
                                     <div class="card">
                                         <div class="card-body">
@@ -168,7 +168,8 @@
                                                 <div class="d-flex align-items-center">
                                                     <div class="ms-2 me-2" style="width: 50px;">
                                                         <div>
-                                                            <!-- <div class="progress-bar bg-warning" role="progressbar" ></div> -->
+                                                            <div class="progress-bar bg-warning" role="progressbar">
+                                                            </div>
                                                             <small class="text-muted">
                                                                 <%= discount.maxUser%>
                                                             </small>
@@ -209,9 +210,22 @@
                                                 name="discountAmount" placeholder="Nhập giảm giá" required>
                                         </div>
                                         <div class="mb-3">
-                                            <label for="editEndDate" class="form-label">Thời gian kết thúc:</label>
-                                            <input type="text" class="form-control" id="editEndDate" name="endDate"
-                                                required>
+                                            <label for="endDate" class="form-label">Thời gian kết thúc:</label>
+                                            <div class="d-flex">
+                                                <!-- Input cho giờ -->
+                                                <div class="me-2">
+                                                    <label for="endDateTime" class="form-label">Giờ:</label>
+                                                    <input type="time" class="form-control" id="endDateTime" name="hour"
+                                                        required>
+                                                </div>
+                                                <!-- Input cho ngày -->
+                                                <div>
+                                                    <label for="endDateDate" class="form-label">Ngày:</label>
+                                                    <input type="date" class="form-control" id="endDateDate" name="date"
+                                                        required>
+                                                </div>
+
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label for="editMaxUser" class="form-label">Số lượng:</label>
@@ -250,18 +264,35 @@
                             <div class="mb-3">
                                 <label for="discountAmount" class="form-label">Giảm giá:</label>
                                 <input type="number" class="form-control" id="discountAmount" name="discountAmount"
-                                    placeholder="Nhập giảm giá">
+                                    placeholder="Nhập giảm giá" required>
                             </div>
                             <div class="mb-3">
                                 <label for="endDate" class="form-label">Thời gian kết thúc:</label>
-                                <input type="text" class="form-control" id="endDate" name="endDate"
-                                    placeholder="Thời gian kết thúc">
+                                <div class="d-flex">
+                                    <!-- Input cho giờ -->
+                                    <div class="me-2">
+                                        <label for="endDateTime" class="form-label">Giờ:</label>
+                                        <input type="time" class="form-control" id="endDateTime" name="hour" required>
+                                    </div>
+                                    <!-- Input cho ngày -->
+                                    <div>
+                                        <label for="endDateDate" class="form-label">Ngày:</label>
+                                        <input type="date" class="form-control" id="endDateDate" name="date" required>
+                                    </div>
+
+                                </div>
                             </div>
+
                             <div class="mb-3">
                                 <label for="maxUser" class="form-label">Số lượng:</label>
                                 <input type="number" class="form-control" id="maxUser" name="maxUser"
-                                    placeholder="Nhập số lượng vorcher">
+                                    placeholder="Nhập số lượng vorcher" required>
                             </div>
+                            <div class="mb-3">
+                                <label for="Title" class="form-label">Mô tả:</label>
+                                <textarea class="form-control" id="title" name="title" rows="3" placeholder="Nhập mô tả" required></textarea>
+                            </div>
+                            
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-save">Save</button>
@@ -272,6 +303,34 @@
                 </div>
             </div>
         </div>
+
+        <% if (totalPages > 1) { %>
+            <nav aria-label="Page navigation">
+              <ul class="pagination">
+                <% if (currentPage > 1) { %>
+                  <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
+                      <span aria-hidden="true">&laquo;</span>
+                    </a>
+                  </li>
+                <% } %>
+          
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                  <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                  </li>
+                <% } %>
+          
+                <% if (currentPage < totalPages) { %>
+                  <li class="page-item">
+                    <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
+                      <span aria-hidden="true">&raquo;</span>
+                    </a>
+                  </li>
+                <% } %>
+              </ul>
+            </nav>
+          <% } %>
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {

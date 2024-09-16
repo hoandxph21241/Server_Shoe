@@ -1,41 +1,46 @@
 const { DiscountModel } = require("../Models/DB_Shoes");
 const parseDateString = (dateString) => {
-  const [time, date] = dateString.split(' ');
-  const [hours, minutes, seconds] = time.split(':').map(Number);
-  const [day, month, year] = date.split('/').map(Number);
-  return new Date(year, month - 1, day, hours, minutes, seconds);
+  const [date, time] = dateString.split(' ');
+  const [year, month, day] = date.split('-').map(Number);
+  const [hours, minutes] = time.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes);
 };
+
 const addDiscount = async (req, res) => {
   try {
-    let msg = "";
-    const { discountAmount, endDate, maxUser, description } = req.body;
-    console.log(maxUser);
-    console.log(endDate);
-
+    const { discountAmount, title, maxUser, date, hour } = req.body;
+    const discountPercent = parseFloat(discountAmount);
+    if (isNaN(discountPercent) || discountPercent < 0 || discountPercent > 100) {
+      return res.send("Giảm giá không hợp lệ. Phải là phần trăm từ 0 đến 100.");
+    }
+    // Combine date and hour into a single string
+    const endDateString = `${date} ${hour}`;
+    // Parse the combined date and time string
+    const endDate = parseDateString(endDateString);
+    const now = new Date();
+    // Check if the discount is still valid
+    if (endDate <= now) {
+      return res.send("Discount hết hạn");
+    }
     let couponCode = Math.random().toString(36).substring(7).toUpperCase();
     while (await DiscountModel.findOne({ couponCode: couponCode })) {
       couponCode = Math.random().toString(36).substring(7).toUpperCase();
     }
-    const time = parseDateString(endDate);
-    const now = new Date();
-    // if(time >= now) {
-    //   return res.send("Discount hết hạn");
-    // }
+
     const discount = new DiscountModel({
       couponCode,
-      discountAmount,
-      endDate: time,
+      title,
+      discountAmount:discountPercent,
+      endDate,
       maxUser,
       isActive: true
     });
-    console.log(discount);
-    
-    await discount.save();
-    res.redirect('/discount')
-  } catch (err) {
-    console.log(err);
-    console.log("Lỗi : ", err);
 
+    await discount.save();
+    res.redirect('/discount');
+  } catch (err) {
+    console.log("Lỗi : ", err);
+    res.status(500).send("Lỗi xảy ra khi thêm mã giảm giá.");
   }
 };
 const hiddenDiscount = async (req, res) => {
@@ -75,7 +80,7 @@ const editDiscount = async (req, res) => {
     const { couponCode, discountAmount, endDate, maxUser } = req.body;
     const discount = await DiscountModel.findOne({ couponCode });
     if (!discount) {
-     res.status(404).send("Discount not found");
+      res.status(404).send("Discount not found");
     }
     discount.discountAmount = discountAmount || discount.discountAmount;
     discount.endDate = parseDateString(endDate) || discount.endDate;
@@ -92,8 +97,15 @@ const editDiscount = async (req, res) => {
 }
 const getListDiscount = async (req, res) => {
   try {
-    const discount = await DiscountModel.find({isActive:true}).sort({ endDate: 1 });
-    return res.render('manager/vorcher/vorcher.ejs', { discounts: discount });
+    const page = parseInt(req.query.page) || 1;
+    const limit = 9;
+
+    const skip = (page - 1) * limit;
+    const discountCount = await DiscountModel.countDocuments({ isActive: true });
+    const discount = await DiscountModel.find({ isActive: true }).sort({ endDate: 1 }).skip(skip).limit(limit);
+
+    const totalPage = Math.ceil(discountCount / limit);
+    return res.render('manager/vorcher/vorcher.ejs', { discounts: discount, currentPage: page, totalPages: totalPage });
 
   } catch (err) {
     console.log(err);
