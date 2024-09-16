@@ -459,6 +459,8 @@ exports.Address_ADD = async (req, res, next) => {
   let latitude = req.body.latitude;
   let longitude = req.body.longitude;
   let userId = req.body.userId;
+  let phoneNumber= req.body.phoneNumber;
+  let fullName= req.body.fullName;
   let addressOld = await Model.AddressModel.findOne({userId});
   try {
     if (!addressOld) {
@@ -479,7 +481,7 @@ exports.Address_ADD = async (req, res, next) => {
         return;
       }
     }
-    if (!nameAddress || !detailAddress || !latitude || !longitude || !userId) {
+    if (!nameAddress || !detailAddress || !latitude || !longitude || !userId || !phoneNumber || !fullName) {
       res.json({ success: false, message: "Vui lòng nhập đầy đủ thông tin" });
       return;
     }
@@ -490,16 +492,17 @@ exports.Address_ADD = async (req, res, next) => {
       latitude: req.body.latitude,
       longitude: req.body.longitude,
       userId: req.body.userId,
+      phoneNumber:req.body.phoneNumber,
+      fullName:req.body.fullName
     });
     let new_Ur = await objSP.save();
-    res.json({ success: true, message: "Đăng ký thành công" });
+    res.json({ success: true, message: "Đăng ký thành công",new_Ur });
   } catch (error) {
     msg = "Lỗi " + error.message;
     console.log(error);
     res.status(500).json({ success: false, message: "Lỗi máy chủ" });
   }
 };
-
 exports.GetAllAddress = async (req, res, next) => {
   msg = "Danh sach Du Lieu";
   try {
@@ -629,7 +632,7 @@ exports.FindAddress = async (req, res, next) => {
 // };
 
 exports.UpdateAddress = async (req, res, next) => {
-  const { nameAddress, detailAddress, latitude, longitude, permission } = req.body;
+  const { nameAddress, detailAddress, latitude, longitude, permission, phoneNumber,fullName } = req.body;
   const addressID = req.params.addressID;
 
   try {
@@ -654,6 +657,9 @@ exports.UpdateAddress = async (req, res, next) => {
     addressToUpdate.detailAddress = detailAddress || addressToUpdate.detailAddress;
     addressToUpdate.latitude = latitude || addressToUpdate.latitude;
     addressToUpdate.longitude = longitude || addressToUpdate.longitude;
+    
+    addressToUpdate.phoneNumber = phoneNumber || addressToUpdate.phoneNumber;
+    addressToUpdate.fullName = fullName || addressToUpdate.fullName;
     addressToUpdate.permission = permission === "0" ? "0" : "1"; 
 
     if (!detailAddress || !latitude || !longitude) {
@@ -663,11 +669,11 @@ exports.UpdateAddress = async (req, res, next) => {
       });
     }
 
-    // Kiểm tra trùng lặp địa chỉ
+    // check chỉ 1
     const addressOld = await Model.AddressModel.findOne({
       userId: userID,
       detailAddress: detailAddress,
-      _id: { $ne: addressID }, // Loại trừ chính địa chỉ đang cập nhật
+      _id: { $ne: addressID },
     });
 
     if (addressOld) {
@@ -677,7 +683,6 @@ exports.UpdateAddress = async (req, res, next) => {
       });
     }
 
-    // Lưu lại địa chỉ đã cập nhật
     await addressToUpdate.save();
 
     return res.status(200).json({
@@ -692,6 +697,7 @@ exports.UpdateAddress = async (req, res, next) => {
     });
   }
 };
+
 
 
 exports.Address_DELETE = async (req, res, next) => {

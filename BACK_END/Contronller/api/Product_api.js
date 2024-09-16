@@ -226,7 +226,7 @@ exports.AllProduct = async (req, res) => {
             colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
             sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
             importQuanlity: item.importQuanlity,
-            sellQuanlity: item.sellQuanlity
+            soldQuanlity: item.soldQuanlity
           };
         }
         return null;
@@ -280,6 +280,190 @@ exports.FindProduct = async (req, res, next) => {
   }
 };
 
+// exports.ReviewProduct = async (req, res, next) => {
+//   try {
+//     let shoeId = req.params.id;
+//     let shoe = await Model.ShoeModel.findById(shoeId)
+//       .select('rateShoe')
+//       .populate({
+//         path: 'rateShoe.comment',
+//         populate: { path: 'userName', select: 'fullName imageAccount' }  //do img nặng ai test thì bỏ comment
+//         // populate: { path: 'userName', select: 'fullName' }
+//       })
+//       .lean();
+
+//     if (!shoe) {
+//       return res.status(404).json({ msg: "Không tìm thấy đánh giá của sản phẩm" });
+//     }
+//     if (shoe.rateShoe && shoe.rateShoe.comment) {
+//       shoe.rateShoe.comment.sort((a, b) => {
+//         return new Date(b.createDate) - new Date(a.createDate);
+//       });
+//     }
+
+//     res.status(200).json({
+//       shoeId: shoe._id,
+//       rateShoe: shoe.rateShoe
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+//   }
+// };
+
+// exports.ReviewProduct = async (req, res, next) => {
+//   try {
+//     let shoeId = req.params.id;
+//     let shoe = await Model.ShoeModel.findById(shoeId)
+//       .select('rateShoe')
+//       .populate({
+//         path: 'rateShoe.comment',
+//         populate: { path: 'userName', select: '_id fullName ' }
+//       })
+//       .lean();
+
+//     if (!shoe) {
+//       return res.status(404).json({ msg: "Không tìm thấy đánh giá của sản phẩm" });
+//     }
+//     if (shoe.rateShoe && shoe.rateShoe.comment) {
+//       // shoe.rateShoe.comment.forEach(comment => {
+//       //   if (comment.userName && comment.userName.imageAccount) {
+//       //     comment.userName.imageAccount = {
+//       //       "$binary": {
+//       //         "base64": comment.userName.imageAccount.toString('base64'),
+//       //         "subType": "10"
+//       //       }
+//       //     };
+//       //   }
+//       // });
+
+//       // let user = await Model.UserModel.findById(shoe.rateShoe.comment.userName._id);
+//       console.log(shoe.rateShoe.comment.userName);
+//       // console.log(user);
+      
+      
+//       // if (user.imageAccount) {
+//       //   user.imageAccount = {
+//       //     "$binary": {
+//       //       "base64": user.imageAccount.toString('base64'),
+//       //       "subType": "00"
+//       //     }
+//       //   };
+//       // }
+
+//       shoe.rateShoe.comment.sort((a, b) => {
+//         return new Date(b.createDate) - new Date(a.createDate);
+//       });
+//     }
+
+//     res.status(200).json({
+//       shoeId: shoe._id,
+//       rateShoe: shoe.rateShoe,
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+//   }
+// };
+
+// exports.ReviewProduct = async (req, res, next) => {
+//   try {
+//     let shoeId = req.params.id;
+//     let shoe = await Model.ShoeModel.findById(shoeId)
+//       .select('rateShoe')
+//       .populate({
+//         path: 'rateShoe.comment',
+//         populate: { path: 'userName', select: '_id fullName imageAccount' }
+//       })
+//       .lean();
+
+//     if (!shoe) {
+//       return res.status(404).json({ msg: "Không tìm thấy đánh giá của sản phẩm" });
+//     }
+
+//     if (shoe.rateShoe && shoe.rateShoe.comment) {
+//       shoe.rateShoe.comment.forEach(comment => {
+//         if (comment.userName && comment.userName.imageAccount) {
+//           if (Buffer.isBuffer(comment.userName.imageAccount)) {
+//             comment.userName.imageAccount = {
+//               "$binary": {
+//                 "base64": comment.userName.imageAccount.toString('base64'),
+//                 "subType": "00"
+//               }
+//             };
+//           }
+//         }
+//       });
+
+//       shoe.rateShoe.comment.sort((a, b) => {
+//         return new Date(b.createDate) - new Date(a.createDate);
+//       });
+//     }
+
+//     res.status(200).json({
+//       shoeId: shoe._id,
+//       rateShoe: shoe.rateShoe
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+//   }
+// };
+
+exports.ReviewProduct = async (req, res, next) => {
+  try {
+    let shoeId = req.params.id;
+    let shoe = await Model.ShoeModel.findById(shoeId)
+      .select('rateShoe')
+      .populate({
+        path: 'rateShoe.comment',
+        populate: { path: 'userName', select: '_id fullName imageAccount' }
+      })
+      .lean();
+
+    if (!shoe) {
+      return res.status(404).json({ msg: "Không tìm thấy đánh giá của sản phẩm" });
+    }
+    
+    if (shoe.rateShoe && shoe.rateShoe.comment) {
+      let userIds = shoe.rateShoe.comment.map(comment => comment.userName._id);
+      let users = await Model.UserModel.find({ '_id': { $in: userIds } })
+      .select('_id fullName imageAccount') 
+      .lean();
+      // Chuyển đổi thông tin người dùng
+      let userMap = users.reduce((acc, user) => {
+        if (user.imageAccount) {
+          user.imageAccount = {
+            "$binary": {
+              "base64": user.imageAccount.toString('base64'),
+              "subType": "00" 
+            }
+          };
+        }
+        acc[user._id] = user;
+        return acc;
+      }, {});
+      shoe.rateShoe.comment.forEach(comment => {
+        if (comment.userName && userMap[comment.userName._id]) {
+          comment.userName = userMap[comment.userName._id];
+        }
+      });
+
+      shoe.rateShoe.comment.sort((a, b) => {
+        return new Date(b.createDate) - new Date(a.createDate);
+      });
+    }
+
+    res.status(200).json({
+      shoeId: shoe._id,
+      rateShoe: shoe.rateShoe
+    });
+
+  } catch (error) {
+    return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
+  }
+};
+
 
 exports.FindByName = async (req, res, next) => {
   try {
@@ -288,7 +472,10 @@ exports.FindByName = async (req, res, next) => {
       const productName = decodeURIComponent(req.query.name);
       conditions.name = new RegExp(productName, "i");
     }
-    const shoes = await Model.ShoeModel.find(conditions);
+    const shoes = await Model.ShoeModel.find(conditions)
+    .select("_id name thumbnail imageShoe")
+    .lean();
+
     console.log("=Tìm Kiếm=");
     console.log("Số sản phẩm phù hợp: " + shoes.length);
     console.log("=Tìm Kiếm END=");
@@ -388,7 +575,8 @@ exports.findShoes_DATA = async (req, res, next) => {
 const formatString = (inputString) => {
   return inputString.toLowerCase().replace(/\s+/g, "-");
 };
-
+const now = new Date();
+const formattedDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`; 
 
 exports.ADD_Product = async (req, res) => {
   try {
@@ -403,27 +591,23 @@ exports.ADD_Product = async (req, res) => {
       imageShoe,
     } = req.body;
 
-    // Kiểm tra xem giày đã tồn tại chưa
     let shoe = await Model.ShoeModel.findOne({ name });
     if (shoe) {
       return res.status(400).json({ message: "Shoe already exists" });
     }
 
-    // Lấy thông tin loại giày
     const type = await Model.TypeShoeModel.findById(typerShoeId);
     if (!type) {
       return res.status(404).json({ message: "TypeShoe not found" });
     }
     const shoeId = formatString(type.nameType);
 
-    // Tập hợp thông tin về màu sắc và kích thước giày
     const colorIds = new Set();
     const sizeIds = new Set();
 
     let importQuanlityAll = 0;
     let soldQuanlityAll = 0;
 
-    // Tạo document mới trong ShoeModel (lưu trước để lấy shoeId)
     shoe = new Model.ShoeModel({
       shoeId,
       name,
@@ -433,16 +617,17 @@ exports.ADD_Product = async (req, res) => {
       thumbnail,
       status,
       imageShoe,
-      colorShoe: [], // Sẽ cập nhật sau
-      sizeShoe: [], // Sẽ cập nhật sau
+      colorShoe: [], 
+      sizeShoe: [], 
       importQuanlityAll,
       soldQuanlityAll,
-      storageShoe: [] // Sẽ cập nhật sau
+      storageShoe: [],
+      createDate: formattedDate
     });
 
     const savedShoe = await shoe.save();
 
-    // Lưu thông tin storageShoe vào StorageShoeModel và cập nhật lại ShoeModel
+
     const storage = [];
     for (const storageItem of storageShoe) {
       const colorDoc = await Model.ColorShoeModel.findById(storageItem.colorShoe);
@@ -461,14 +646,13 @@ exports.ADD_Product = async (req, res) => {
         sizeIds.add(sizeDoc._id);
 
         const importQuantity = parseInt(size.quantity, 10);
-        const soldQuantity = parseInt(size.quantity, 10);
+        const soldQuanlity = parseInt(size.quantity, 10);
 
         importQuanlityAll += importQuantity;
-        soldQuanlityAll += soldQuantity;
+        soldQuanlityAll += soldQuanlity;
 
-        // Tạo document mới trong StorageShoeModel
         const newStorage = new Model.StorageShoeModel({
-          shoeId: savedShoe._id, // Liên kết đến ShoeModel
+          shoeId: savedShoe._id,
           colorShoe: colorDoc._id,
           sizeShoe: [
             {
@@ -477,12 +661,10 @@ exports.ADD_Product = async (req, res) => {
             }
           ],
           importQuanlity: importQuantity,
-          soldQuanlity: soldQuantity
+          soldQuanlity: soldQuanlity
         });
 
         const savedStorage = await newStorage.save();
-
-        // Thêm ID của storage vừa tạo vào danh sách storage của ShoeModel
         storage.push({
           importQuanlity: savedStorage.importQuanlity,
           soldQuanlity: savedStorage.soldQuanlity,
@@ -490,8 +672,6 @@ exports.ADD_Product = async (req, res) => {
         });
       }
     }
-
-    // Cập nhật lại ShoeModel với thông tin đầy đủ
     savedShoe.colorShoe = [...colorIds];
     savedShoe.sizeShoe = [...sizeIds];
     savedShoe.storageShoe = storage;
@@ -508,6 +688,144 @@ exports.ADD_Product = async (req, res) => {
   }
 };
 
+exports.UPDATE_Product = async (req, res) => {
+  let id=req.params.id;
+  try {
+    const {
+      name,
+      price,
+      description,
+      typerShoeId,
+      thumbnail,
+      status,
+      storageShoe,
+      imageShoe,
+    } = req.body;
+
+    let shoe = await Model.ShoeModel.findById(id);
+    if (!shoe) {
+      return res.status(404).json({ message: "Shoe not found" });
+    }
+
+    if (name && shoe.name !== name) {
+      let existingShoe = await Model.ShoeModel.findOne({ name });
+      if (existingShoe) {
+        return res.status(400).json({ message: "Shoe with this name already exists" });
+      }
+    }
+
+    if (typerShoeId && shoe.typerShoe.toString() !== typerShoeId) {
+      const type = await Model.TypeShoeModel.findById(typerShoeId);
+      if (!type) {
+        return res.status(404).json({ message: "TypeShoe not found" });
+      }
+      shoe.typerShoe = type._id;
+    }
+
+    if (name) shoe.name = name;
+    if (price) shoe.price = price;
+    if (description) shoe.description = description;
+    if (thumbnail) shoe.thumbnail = thumbnail;
+    if (status !== undefined) shoe.status = status;
+    if (imageShoe) shoe.imageShoe = imageShoe;
+
+
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    shoe.updateDate = formattedDate;
+
+    let importQuanlityAll = shoe.importQuanlityAll || 0;
+    let soldQuanlityAll = shoe.soldQuanlityAll || 0;
+    const colorIds = new Set();
+    const sizeIds = new Set();
+    const storage = [];
+
+    for (const storageItem of storageShoe) {
+      const colorDoc = await Model.ColorShoeModel.findById(storageItem.colorShoe);
+      if (!colorDoc) {
+        continue;
+      }
+      colorIds.add(colorDoc._id);
+
+      for (const size of storageItem.sizeShoe) {
+        const sizeId = formatString(size.size);
+        const sizeDoc = await Model.SizeShoeModel.findOneAndUpdate(
+          { size: size.size },
+          { $setOnInsert: { size: size.size, isEnable: true, sizeId: sizeId } },
+          { new: true, upsert: true }
+        );
+        sizeIds.add(sizeDoc._id);
+
+        const importQuantity = parseInt(size.quantity, 10);
+        const soldQuanlity = parseInt(size.quantity, 10);
+
+        let existingStorage = await Model.StorageShoeModel.findOne({
+          shoeId: shoe._id,
+          colorShoe: colorDoc._id,
+          "sizeShoe.sizeId": sizeDoc._id,
+        });
+
+        if (existingStorage) {
+          existingStorage.importQuanlity += importQuantity;
+          existingStorage.soldQuanlity += soldQuanlity;
+
+          const sizeIndex = existingStorage.sizeShoe.findIndex(
+            (s) => s.sizeId.toString() === sizeDoc._id.toString()
+          );
+          if (sizeIndex > -1) {
+            existingStorage.sizeShoe[sizeIndex].quantity += importQuantity;
+          }
+
+          await existingStorage.save();
+          storage.push({
+            importQuanlity: existingStorage.importQuanlity,
+            soldQuanlity: existingStorage.soldQuanlity,
+            _id: existingStorage._id,
+          });
+        } else {
+          const newStorage = new Model.StorageShoeModel({
+            shoeId: shoe._id,
+            colorShoe: colorDoc._id,
+            sizeShoe: [
+              {
+                sizeId: sizeDoc._id,
+                quantity: importQuantity,
+              },
+            ],
+            importQuanlity: importQuantity,
+            soldQuanlity: soldQuanlity,
+          });
+
+          const savedStorage = await newStorage.save();
+
+          storage.push({
+            importQuanlity: savedStorage.importQuanlity,
+            soldQuanlity: savedStorage.soldQuanlity,
+            _id: savedStorage._id,
+          });
+        }
+
+        importQuanlityAll += importQuantity;
+        soldQuanlityAll += soldQuanlity;
+      }
+    }
+
+    shoe.colorShoe = [...colorIds];
+    shoe.sizeShoe = [...sizeIds];
+    shoe.storageShoe = storage;
+    shoe.importQuanlityAll = importQuanlityAll;
+    shoe.soldQuanlityAll = soldQuanlityAll;
+
+    await shoe.save();
+
+    console.log("Shoe updated successfully:", shoe);
+
+    res.status(200).json({ message: "Shoe updated successfully", data: shoe });
+  } catch (error) {
+    console.error("Error during shoe update:", error);
+    res.status(500).json({ message: "Internal Server Error", error });
+  }
+};
 
 exports.rateShoe = async (req, res) => {
   try {
@@ -525,10 +843,11 @@ exports.rateShoe = async (req, res) => {
 
     const newComment = {
       userName: user._id,
-      commentText: commentText,
+      commetText: commentText,
       rateNumber: rateNumber,
+      createDate: formattedDate
     };
-
+    
     shoe.rateShoe.comment.push(newComment);
 
     let totalRating = shoe.rateShoe.comment.reduce(
@@ -549,7 +868,6 @@ exports.rateShoe = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
-
 
 exports.ADDFavourite = async (req, res, next) => {
   try {

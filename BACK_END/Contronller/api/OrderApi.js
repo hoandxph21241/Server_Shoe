@@ -797,6 +797,14 @@ const getUserCompletedOrders = async (req, res) => {
       const discountAmount = order.discointId ? order.discointId.discountAmount : 0;
       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
       const totalPre = promo + order.total;
+      const formattedDateOrder = new Date(order.dateOrder).toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
       let statusLabel;
       if (order.status === 0) {
         statusLabel = "completed"; 
@@ -814,7 +822,7 @@ const getUserCompletedOrders = async (req, res) => {
         total: order.total,
         promo: promo,
         status: statusLabel, 
-        dateOrder: order.dateOrder,
+        dateOrder: formattedDateOrder,
         dateReceived: order.dateReceived,
         pay: order.pay,
         orderStatusDetails: order.orderStatusDetails,
@@ -885,6 +893,15 @@ const getUserActiveOrders = async (req, res) => {
       const promo = orderDetails.reduce((sum, detail) => sum + (discountAmount * detail.quantity), 0);
       const totalPre = promo + order.total;
 
+      const formattedDateOrder = new Date(order.dateOrder).toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
       // Tạo dữ liệu phản hồi cho đơn hàng
       const orderData = {
         _id: order._id,
@@ -896,7 +913,7 @@ const getUserActiveOrders = async (req, res) => {
         total: order.total,
         promo: promo,
         status: "active",
-        dateOrder: order.dateOrder,
+        dateOrder: formattedDateOrder,
         pay: order.pay,
         orderStatusDetails: order.orderStatusDetails, // Hiển thị chi tiết trạng thái đơn hàng
         orderDetails: orderDetails.map(detail => ({

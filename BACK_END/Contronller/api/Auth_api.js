@@ -21,6 +21,11 @@ exports.Sign = async (req, res, next) => {
           namePassword +
           " = Đăng nhập thành công"
       );
+      if (req.body.fcmToken) {
+        user.fcmToken = req.body.fcmToken;
+        await user.save();
+        console.log("FCM Token saved:", req.body.fcmToken);
+      }
       res.status(200).json({ success: true, user: user, userID: user.userID });
     } else {
       console.log(

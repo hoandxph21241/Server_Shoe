@@ -36,6 +36,8 @@ var AddressSchema = new db.mongoose.Schema(
     longitude: { type: String, require: false },
     permission: { type: String, require: true, default: 1 },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    phoneNumber:{type:String,require: true},
+    fullName:{type:String,require:true}
   },
   {
     collection: "Address",
