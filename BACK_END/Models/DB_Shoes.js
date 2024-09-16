@@ -5,7 +5,7 @@ var userSchema = new db.mongoose.Schema(
     nameAccount: { type: String, require: true },
     namePassword: { type: String, require: true },
     // imageAccount: { type: String, require: false },
-    imageAccount: { type: Buffer },
+    imageAccount: { type: Buffer},
     phoneNumber: { type: String, require: false },
     userName: { type: String, require: false },
     fullName: { type: String, require: false },
@@ -18,8 +18,8 @@ var userSchema = new db.mongoose.Schema(
     locked: { type: Boolean, require: true, default: false },
     // OTP đổi mật khẩu
     otp: { type: String, require: false },
-    // notification
-    fcmToken: { type: String, require: false },
+   // notification 
+    fcmToken:{ type: String, require: false },
   },
   {
     collection: "User",
@@ -43,6 +43,7 @@ var AddressSchema = new db.mongoose.Schema(
 );
 let AddressModel = db.mongoose.model("AddressModel", AddressSchema);
 
+
 var BannerSchema = new db.mongoose.Schema(
   {
     bannerId: { type: String, require: true },
@@ -52,7 +53,8 @@ var BannerSchema = new db.mongoose.Schema(
     title: { type: String, require: false },
     type: { type: String, require: false },
     description: { type: String, require: false },
-    hide: { type: Boolean, default: false },
+    hide:{type:Boolean,default: false}
+
   },
   {
     collation: { locale: "en_US", strength: 1 },
@@ -107,7 +109,7 @@ var FavouriteShoeSchema = new db.mongoose.Schema(
   {
     favouriteId: { type: String, require: false },
     shoeId: [{ type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" }],
-    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    userId: {type: db.mongoose.Schema.Types.ObjectId,ref: "UserModel"},
   },
   {
     collation: { locale: "en_US", strength: 1 },
@@ -124,7 +126,6 @@ var ShoeSchema = new db.mongoose.Schema(
     shoeId: { type: String, require: true },
     name: { type: String, require: true },
     price: { type: Number, require: false },
-    importPrice: { type: Number, require: false },
     description: { type: String, require: false },
     number: { type: Number, require: false },
     gender: { type: String, require: false },
@@ -200,28 +201,17 @@ var ShoeSchema = new db.mongoose.Schema(
 );
 let ShoeModel = db.mongoose.model("ShoeModel", ShoeSchema);
 
-var OrderSchema = new db.mongoose.Schema(
+var OderSchema = new db.mongoose.Schema(
   {
     orderId: { type: String, require: true },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     nameOrder: { type: String, require: false },
-    phoneNumber: { type: Number, require: false },
-    addressOrder: { type: String, require: false },
-    total: { type: Number, require: false },
+    phoneNumber: { type: String, require: false },
+    adressOrder: { type: String, require: false },
+    total: { type: String, require: false },
     dateOrder: { type: String, require: false },
-    dateOrder: { type: Date, required: false },
     pay: { type: String, require: false },
     status: { type: String, require: false },
-    orderStatusDetails: {
-      type: [
-        {
-          status: { type: String, required: true },
-          timestamp: { type: String, require: false },
-          note: { type: String, required: true },
-        },
-      ],
-      default: [],
-    },
     discointId: {
       type: db.mongoose.Schema.Types.ObjectId,
       ref: "DiscountModel",
@@ -229,39 +219,35 @@ var OrderSchema = new db.mongoose.Schema(
   },
   {
     collation: { locale: "en_US", strength: 1 },
-    collection: "Order",
+    collection: "OderModel",
   }
 );
-let OrderModel = db.mongoose.model("OrderModel", OrderSchema);
+let OderModel = db.mongoose.model("OderModel", OderSchema);
 
 var DiscountSchema = new db.mongoose.Schema(
   {
     discountId: { type: String, require: true },
     couponCode: { type: String, require: false },
-    discountAmount: { type: Number, require: false },
+    discountAmount: { type: String, require: false },
     endDate: { type: String, require: false },
-    maxUser: { type: Number, require: false },
-    isActive: { type: Boolean, require: false },
+    maxUses: { type: String, require: false },
+    isActive: { type: String, require: false },
   },
   {
     collation: { locale: "en_US", strength: 1 },
     collection: "Discount",
   }
 );
-
 let DiscountModel = db.mongoose.model("DiscountModel", DiscountSchema);
 
 var OderDetailSchema = new db.mongoose.Schema(
   {
     orderDetailId: { type: String, require: true },
-    orderId: { type: db.mongoose.Schema.Types.ObjectId, ref: "OrderModel" },
+    orderId: { type: db.mongoose.Schema.Types.ObjectId, ref: "OderModel" },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" },
-    colorId: {
-      type: db.mongoose.Schema.Types.ObjectId,
-      ref: "ColorShoeModel",
-    },
-    quantity: { type: Number, require: false },
+    imageShoe: { type: String, require: false },
+    nameShoe: { type: String, require: false },
+    quanlity: { type: String, require: false },
   },
   {
     collation: { locale: "en_US", strength: 1 },
@@ -270,52 +256,11 @@ var OderDetailSchema = new db.mongoose.Schema(
 );
 let OderDetailModel = db.mongoose.model("OderDetailModel", OderDetailSchema);
 
-const notificationSchema = new db.mongoose.Schema(
-  {
-    userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
-    title: { type: String, required: true },
-    body: { type: String, required: true },
-    image: { type: String, required: false },
-    time: { type: String, required: false },
-    typeNotification: { type: String, required: true }, // Loại thông báo (e.g., "OrderCreated", "OrderStatusUpdated")
-  },
-  {
-    collection: "Notification",
-    collation: { locale: "en_US", strength: 1 },
-  }
-);
-
-const NotificationModel = db.mongoose.model(
-  "NotificationModel",
-  notificationSchema
-);
-
-const adminNotificationSchema = new db.mongoose.Schema(
-  {
-    title: { type: String, required: true },
-    body: { type: String, required: true },
-    image: { type: String, required: false },
-    time: { type: String, required: false },
-    typeNotification: { type: String, required: true }, // Loại thông báo (e.g., "OrderCreated", "OrderStatusUpdated")
-  },
-  {
-    collection: "AdminNotification",
-    collation: { locale: "en_US", strength: 1 },
-  }
-);
-
-const AdminNotificationModel = db.mongoose.model(
-  "AdminNotificationModel",
-  adminNotificationSchema
-);
-
 var CartSchema = new db.mongoose.Schema(
   {
     cartId: { type: String, require: true },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ShoeModel" },
-    sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: "SizeShoeModel" }, 
-    colorId: { type: db.mongoose.Schema.Types.ObjectId, ref: "ColorShoeModel" },
     numberShoe: { type: String, require: false },
   },
   {
@@ -325,21 +270,6 @@ var CartSchema = new db.mongoose.Schema(
 );
 let CartModel = db.mongoose.model("CartModel", CartSchema);
 
-const StorageShoeSchema = new db.mongoose.Schema({
-  shoeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ShoeModel' },
-  colorShoe: { type: db.mongoose.Schema.Types.ObjectId, ref: 'ColorShoeModel' },
-  sizeShoe: [
-    {
-      sizeId: { type: db.mongoose.Schema.Types.ObjectId, ref: 'SizeShoeModel' },
-      quantity: { type: Number, required: true }
-    }
-  ],
-  importQuanlity: { type: Number, required: true },
-  soldQuanlity: { type: Number, required: true }
-});
-
-const StorageShoeModel = db.mongoose.model('StorageShoe', StorageShoeSchema);
-
 module.exports = {
   UserModel,
   BannerModel,
@@ -347,12 +277,10 @@ module.exports = {
   ShoeModel,
   SizeShoeModel,
   ColorShoeModel,
-  StorageShoeModel,
-  OrderModel,
+  OderModel,
   DiscountModel,
   OderDetailModel,
-  NotificationModel,
-  AdminNotificationModel,
   CartModel,
   AddressModel,
+  FavouriteShoeModel,
 };

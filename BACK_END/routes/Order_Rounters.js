@@ -18,12 +18,11 @@ function requireAdmin(req, res, next) {
 }
 
 
-router.get("/orderList", Contronlers.getAllOrders);
-router.get("/orderDetails/:orderId", Contronlers.getOrdersDetailt);
+router.get("/orderlist",requireAdmin, Contronlers.Order_List);
+router.post("/orderlist",requireAdmin, Contronlers.Order_List);
 
-router.put("/prepareOrder/:orderId", Contronlers.prepareOrder);
-router.put("/shipOrder/:orderId", Contronlers.shipOrder);
-router.put("/confirmOrder/:orderId", Contronlers.confirmOrderReceived);
 
+router.get("/orderdetails",requireAdmin, Contronlers.Order_Details);
+router.post("/orderdetails",requireAdmin, Contronlers.Order_Details);
 
 module.exports = router;
