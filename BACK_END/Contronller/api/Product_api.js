@@ -589,6 +589,8 @@ exports.ADD_Product = async (req, res) => {
       status,
       storageShoe,
       imageShoe,
+      importPrice,
+      sellPrice
     } = req.body;
 
     let shoe = await Model.ShoeModel.findOne({ name });
@@ -622,6 +624,8 @@ exports.ADD_Product = async (req, res) => {
       importQuanlityAll,
       soldQuanlityAll,
       storageShoe: [],
+      importPrice,
+      sellPrice,
       createDate: formattedDate
     });
 
