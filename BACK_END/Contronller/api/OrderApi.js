@@ -97,7 +97,7 @@ const createOrder = async (req, res) => {
       orderStatusDetails: [
         {
           status: 'Chờ xác nhận',
-          timestamp: Date.now(),
+          timestamp: vietnamDate,
           note: 'Đơn hàng mới được tạo',
         },
       ],
@@ -124,14 +124,14 @@ const createOrder = async (req, res) => {
         `Đơn hàng #${newOrder._id} của bạn đã được tạo thành công. Tổng tiền: ${orderData.total} VND`,
         'OrderCreated',
         orderData.items[0].shoeId,
-        Date.now()
+        vietnamDate
       ),
       sendNotificationAdmin(
         'Đơn hàng mới',
         `Một đơn hàng mới #${newOrder._id} đã được đặt. Tổng tiền: ${orderData.total} VND`,
         'OrderCreated',
         orderData.items[0].shoeId,
-        Date.now()
+        vietnamDate
       ),
     ];
 
