@@ -680,7 +680,7 @@ exports.ADD_Product = async (req, res) => {
     savedShoe.sizeShoe = [...sizeIds];
     savedShoe.storageShoe = storage;
     savedShoe.importQuanlityAll = importQuanlityAll;
-    savedShoe.soldQuanlityAll = soldQuanlityAll;
+    savedShoe.soldQuanlityAll = 0;
     await savedShoe.save();
 
     console.log("Shoe created successfully:", savedShoe);
