@@ -266,7 +266,7 @@ exports.FindProduct = async (req, res, next) => {
           colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
           sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
           importQuanlity: item.importQuanlity,
-          sellQuanlity: item.sellQuanlity
+          soldQuanlity: item.soldQuanlity
         };
       }
       return null;
@@ -274,7 +274,7 @@ exports.FindProduct = async (req, res, next) => {
 
     shoe.storageShoe = formattedStorageItems;
 
-    res.status(200).json(shoe);  // Trả về một sản phẩm cụ thể
+    res.status(200).json(shoe); 
   } catch (error) {
     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
   }
