@@ -207,24 +207,35 @@ exports.deleteTypeShoe = async (req, res) => {
 exports.AllProduct = async (req, res) => {
   try {
     let shoes = await Model.ShoeModel.find()
-      .populate('typerShoe', 'nameType id') 
-      .populate('colorShoe', 'textColor codeColor' )
+      .populate('typerShoe', 'nameType id')
+      .populate('colorShoe', 'textColor codeColor')
       .populate('sizeShoe', 'size sizeId')
+      .populate({
+        path: 'rateShoe.comment',
+        populate: { path: 'userName', select: 'fullName' }
+      })
       .lean();
-    
+
     const shoesWithStorage = [];
 
     for (const shoe of shoes) {
+      if (shoe.rateShoe && shoe.rateShoe.comment) {
+        shoe.rateShoe.comment.sort((a, b) => {
+          return new Date(b.createDate) - new Date(a.createDate);
+        });
+      }
+
       const storageItems = await Model.StorageShoeModel.find({ shoeId: shoe._id })
-        .populate('colorShoe', 'textColor')
-        .populate('sizeShoe.sizeId', 'size')
+        .populate('colorShoe', '_id textColor')
+        .populate('sizeShoe.sizeId', '_id size')
         .lean();
+
       const formattedStorageItems = storageItems.map(item => {
         if (item.sizeShoe.length > 0) {
           const sizeItem = item.sizeShoe[0];
           return {
-            colorShoe: item.colorShoe ? { textColor: item.colorShoe.textColor } : null,
-            sizeShoe: sizeItem.sizeId ? { size: sizeItem.sizeId.size } : null,
+            colorShoe: item.colorShoe ? { _id:item.colorShoe._id,textColor: item.colorShoe.textColor } : null,
+            sizeShoe: sizeItem.sizeId ? { _id:sizeItem.sizeId._id,size: sizeItem.sizeId.size } : null,
             importQuanlity: item.importQuanlity,
             soldQuanlity: item.soldQuanlity
           };
@@ -235,7 +246,12 @@ exports.AllProduct = async (req, res) => {
       shoe.storageShoe = formattedStorageItems;
       shoesWithStorage.push(shoe);
     }
-    res.status(200).json( shoesWithStorage );
+
+    if (shoesWithStorage && shoesWithStorage.length > 0) {
+      shoesWithStorage.reverse();
+    }
+
+    res.status(200).json(shoesWithStorage);
   } catch (error) {
     return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
   }
@@ -243,22 +259,29 @@ exports.AllProduct = async (req, res) => {
 
 exports.FindProduct = async (req, res, next) => {
   try {
-    let shoeId = req.params.id;  // Lấy shoeId từ request params
+    let shoeId = req.params.id;
     let shoe = await Model.ShoeModel.findById(shoeId)
-      .populate('typerShoe', 'nameType id') 
+      .populate('typerShoe', 'nameType id')
       .populate('colorShoe', 'textColor codeColor')
       .populate('sizeShoe', 'size sizeId')
+      .populate({
+        path: 'rateShoe.comment',
+        populate: { path: 'userName', select: 'fullName' }
+      })
       .lean();
 
     if (!shoe) {
       return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
     }
-
+    if (shoe.rateShoe && shoe.rateShoe.comment) {
+      shoe.rateShoe.comment.sort((a, b) => {
+        return new Date(b.createDate) - new Date(a.createDate);
+      });
+    }
     const storageItems = await Model.StorageShoeModel.find({ shoeId: shoe._id })
       .populate('colorShoe', 'textColor')
       .populate('sizeShoe.sizeId', 'size')
       .lean();
-
     const formattedStorageItems = storageItems.map(item => {
       if (item.sizeShoe.length > 0) {
         const sizeItem = item.sizeShoe[0];
@@ -271,10 +294,9 @@ exports.FindProduct = async (req, res, next) => {
       }
       return null;
     }).filter(item => item !== null);
-
     shoe.storageShoe = formattedStorageItems;
 
-    res.status(200).json(shoe); 
+    res.status(200).json(shoe);
   } catch (error) {
     return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
   }
@@ -914,11 +936,15 @@ exports.RemoveFavourites = async (req, res) => {
 
 exports.FindFavouritesByUserId = async (req, res) => {
   try {
-    const favourites = await Model.FavouriteShoeModel.findOne({ userId:req.params.id })
-    .populate("shoeId", "_id name thumbnail price")
+    let userId = req.params.id;
+    console.log(userId);
+    const favourites = await Model.FavouriteShoeModel.findOne({ userId: userId })
+    .populate("shoeId", "_id name thumbnail price status")
     .populate("userId", "userName fullName _id");
-    
     if (favourites) {
+      if (favourites.shoeId && favourites.shoeId.length > 0) {
+        favourites.shoeId.reverse();
+      }
       res.status(200).json({message:'Favorite List',favourites});
     } else {
       res.status(404).json({ message: 'No favorites found' });

@@ -1019,7 +1019,6 @@ const getUserCompletedOrders = async (req, res) => {
       return res.status(200).json({ message: 'Danh Sách Trống.' });
     } 
 
-
     const orderResponses = [];
 
     for (const order of orders) {
@@ -1148,7 +1147,6 @@ const getUserActiveOrders = async (req, res) => {
         year: 'numeric',
       });
 
-      // Tạo dữ liệu phản hồi cho đơn hàng
       const orderData = {
         _id: order._id,
         nameOrder: order.nameOrder,
@@ -1161,7 +1159,7 @@ const getUserActiveOrders = async (req, res) => {
         status: "active",
         dateOrder: formattedDateOrder,
         pay: order.pay,
-        orderStatusDetails: order.orderStatusDetails, // Hiển thị chi tiết trạng thái đơn hàng
+        orderStatusDetails: order.orderStatusDetails, 
         orderDetails: orderDetails.map(detail => ({
           amount: detail.quantity * (order.discointId ? discountAmount : detail.shoeId.price),
           _id: detail._id,
