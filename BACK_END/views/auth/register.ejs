@@ -23,9 +23,9 @@
     <div class="row justify-content-center">
       <div class="col-md-4">
         <div class="card mt-4">
-          <h3 class=" text-secondary fs-2 fw-bold">Register</h3>
+          <h3 class=" text-secondary fs-2 fw-bold">Đăng Ký </h3>
 
-          <% if (msg) { %>
+          <%if (msg && msg.length > 0) {%>
             <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
               <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"
                   width="24" height="24" viewBox="0 0 16 16" role="img" aria-label="Warning:">
@@ -48,24 +48,24 @@
                 <input type="email" class="form-control" name="nameAccount" placeholder="example@gmail.com" required>
               </div>
               <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" name="namePassword" placeholder="@#*%" required>
+                <label for="password" class="form-label">Mật Khẩu</label>
+                <input type="password" class="form-control" name="namePassword" placeholder="Nhập Mật Khẩu" required>
               </div>
               <div class="mb-3">
-                <label for="confirm-password" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control"  name="confirmPassword"   placeholder="@#*%" required>
+                <label for="confirm-password" class="form-label">Xác Nhận Mật Khẩu</label>
+                <input type="password" class="form-control"  name="confirmPassword"   placeholder="Nhập Lại Mật Khẩu" required>
               </div>
               <div class="mb-3 form-check">
                 <input type="checkbox" class="form-check-input" id="terms" required>
-                <label class="form-check-label" for="terms">I agree the
-                  <a href="#" class="text-secondary">Terms & Conditions</a>
+                <label class="form-check-label" for="terms">Tôi đồng ý với 
+                  <a href="#" class="text-secondary">Điều khoản & Điều kiện</a>
                 </label>
               </div>
-              <button type="submit" class="btn bg-success w-100 fw-bold text-light">Register</button>
+              <button type="submit" class="btn bg-success w-100 fw-bold text-light fw">ĐĂNG KÝ</button>
             </form>
           </div>
           <div class="text-center">
-            I have an account? <a href="/auth/signin" class="fw-bold text-secondary">Sign In</a>
+           Bạn đã có tài khoản? <a href="/auth/signin" class="fw-bold text-secondary">Đăng Nhập</a>
           </div>
         </div>
       </div>
