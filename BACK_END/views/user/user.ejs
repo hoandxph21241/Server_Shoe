@@ -75,22 +75,7 @@
 <body>
     <%- include('../inc/top.ejs') %>
         <div class="content">
-            <div class="stats">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h2 class="card-title">
-                            <%= users.length %>
-                        </h2>
-                        <p class="card-text">Đang hoạt động</p>
-                    </div>
-                </div>
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h2 class="card-title">5</h2>
-                        <p class="card-text">Đã bị khóa</p>
-                    </div>
-                </div>
-            </div>
+
 
             <div class="dropdown mb-3">
                 <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
@@ -99,7 +84,6 @@
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <a class="dropdown-item" href="#">Hoạt động</a>
-                    <a class="dropdown-item" href="#">Bị khóa</a>
                 </div>
             </div>
             <table class="table table-hover align-middle">
