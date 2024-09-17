@@ -9,6 +9,7 @@ exports.Sign = async (req, res, next) => {
   if (req.method === "POST") {
     let nameAccount = req.body.nameAccount;
     let namePassword = req.body.namePassword;
+    let fcmToken = req.body.fcmToken;
 
     let user = await Model.UserModel.findOne({ nameAccount: nameAccount });
     if (user && user.namePassword === namePassword) {
@@ -21,10 +22,10 @@ exports.Sign = async (req, res, next) => {
           namePassword +
           " = Đăng nhập thành công"
       );
-      if (req.body.fcmToken) {
-        user.fcmToken = req.body.fcmToken;
+      if (fcmToken) {
+        user.fcmToken = fcmToken;
         await user.save();
-        console.log("FCM Token saved:", req.body.fcmToken);
+        console.log("FCM Token saved:", fcmToken);
       }
       res.status(200).json({ success: true, user: user, userID: user.userID });
     } else {
