@@ -36,6 +36,8 @@ var AddressSchema = new db.mongoose.Schema(
     longitude: { type: String, require: false },
     permission: { type: String, require: true, default: 1 },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
+    phoneNumber:{type:String,require: true},
+    fullName:{type:String,require:true}
   },
   {
     collection: "Address",
@@ -179,6 +181,8 @@ var ShoeSchema = new db.mongoose.Schema(
     importPrice: { type: Number, require: false },
     sellPrice: { type: Number, require: false },
     discountPrice: { type: Number, require: false },
+    createDate:{type:String,require:false},
+    updateDate:{type:String,require:false},
     rateShoe: {
       starRate: { type: Number, require: false },
       comment: [
@@ -187,6 +191,7 @@ var ShoeSchema = new db.mongoose.Schema(
             type: db.mongoose.Schema.Types.ObjectId,
             ref: "UserModel",
           },
+          createDate:{type:String,require:false},
           commetText: { type: String, require: false },
           rateNumber: { type: Number, require: false },
         },
