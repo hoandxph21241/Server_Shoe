@@ -665,13 +665,13 @@ exports.ADD_Product = async (req, res) => {
             }
           ],
           importQuanlity: importQuantity,
-          soldQuanlity: soldQuanlity
+          soldQuanlity: 0
         });
 
         const savedStorage = await newStorage.save();
         storage.push({
           importQuanlity: savedStorage.importQuanlity,
-          soldQuanlity: savedStorage.soldQuanlity,
+          soldQuanlity: 0,
           _id: savedStorage._id
         });
       }
