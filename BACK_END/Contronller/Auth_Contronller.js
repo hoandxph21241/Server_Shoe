@@ -1,4 +1,5 @@
 var Model = require("../Models/DB_Shoes");
+const moment = require('moment');
 
 exports.Register = async (req, res, next) => {
   let msg = "";
@@ -9,29 +10,33 @@ exports.Register = async (req, res, next) => {
       return res.render("auth/register.ejs", { msg: msg });
     }
 
-    // Kiểm tra nameAccount 
-    const userExists = await Model.UserModel.findOne({ nameAccount: req.body.nameAccount });
+    // Kiểm tra nameAccount
+    const userExists = await Model.UserModel.findOne({
+      nameAccount: req.body.nameAccount,
+    });
     if (userExists) {
       msg = "Email is already in use";
       return res.render("auth/register.ejs", { msg: msg });
     }
 
-    // Kiểm tra  namePassword và confirmPassword
+    // Kiểm tra namePassword và confirmPassword
     if (req.body.namePassword !== req.body.confirmPassword) {
-      console.log(req.body.namePassword+" "+req.body.confirmPassword);
+      console.log(req.body.namePassword + " " + req.body.confirmPassword);
       msg = "Password and Confirm Password are incorrect";
       return res.render("auth/register.ejs", { msg: msg });
     }
+
     const user = new Model.UserModel({
       nameAccount: req.body.nameAccount,
       namePassword: req.body.namePassword,
-      role: 1 
+      role: 1,
     });
     const savedUser = await user.save();
-    console.log( "Register Success!");
-    console.log( "|"+savedUser+"|")
+    console.log("Register Success!");
+    console.log("|" + savedUser + "|");
     msg = "Đăng ký thành công!";
   } catch (error) {
+    console.error("Error during registration:", error.message);
     msg = error.message;
   }
   res.render("auth/register.ejs", { msg: msg });
@@ -74,6 +79,7 @@ exports.SignIn = async (req, res, next) => {
         msg = "Không tồn tại user " + req.body.nameAccount;
       }
     } catch (error) {
+      console.error("Error during sign-in:", error.message);
       msg = error.message;
     }
   }
@@ -98,25 +104,173 @@ exports.SignOut = async (req, res, next) => {
       // Hủy session
       req.session.destroy((err) => {
         if (err) {
-          console.log(err);
+          console.log("Error destroying session:", err);
+          return res.redirect("/auth/signin");
         } else {
           console.log("Complete_Data_session");
+          return res.redirect("/auth/signin");
         }
       });
     } else {
       console.log("Session_Empty_And_Null");
+      return res.redirect("/auth/signin");
     }
-    res.redirect("/auth/signin");
   } catch (error) {
-    console.error(error);
+    console.error("Error during sign-out:", error.message);
     res.redirect("/auth/signin");
   }
 };
 
-exports.UserList = async (req,res,next) => {
-  res.render("user/user.ejs");
+exports.UserList = async (req, res, next) => {
+  try {
+    const listUser = await Model.UserModel.find();
+    console.log("List of users:", listUser);
+    return res.render("user/user.ejs", {
+      users: listUser.length ? listUser : [],
+    });
+  } catch (error) {
+    console.error("Error fetching user list:", error.message);
+    res.status(500).json({ msg: "Server error: " + error.message });
+  }
 };
 
-exports.ProfileUser = async (req,res,next) => {
-  res.render("user/profile_user.ejs");
+exports.ProfileUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const user = await Model.UserModel.findById(userId);
+
+    const orders = await Model.OrderModel.find({ userId })
+      .populate("discointId", "discountAmount")
+      .lean();
+
+    const totalAmount = orders.reduce((acc, order) => acc + order.total, 0);
+
+    const ordersResponse = await Promise.all(
+      orders.map(async (order) => {
+        const orderDetails = await Model.OderDetailModel.find({
+          orderId: order._id,
+        })
+          .populate({
+            path: "shoeId",
+            select: "name price thumbnail",
+          })
+          .populate({
+            path: "sizeId",
+            model: "SizeShoeModel",
+            select: "size",
+          })
+          .populate({
+            path: "colorId",
+            model: "ColorShoeModel",
+            select: "textColor codeColor",
+          })
+          .lean();
+
+          const formattedDate = moment(order.dateOrder).format('HH:mm:ss DD/MM/YYYY');
+
+
+        // Định dạng lại chi tiết đơn hàng
+        const details = orderDetails.map((detail) => ({
+          _id: detail._id,
+          shoeId: detail.shoeId ? detail.shoeId._id : null,
+          name: detail.shoeId ? detail.shoeId.name : "N/A",
+          thumbnail: detail.shoeId ? detail.shoeId.thumbnail : "",
+          size: detail.sizeId ? detail.sizeId.size : "N/A",
+          textColor: detail.colorId ? detail.colorId.textColor : "N/A",
+          codeColor: detail.colorId ? detail.colorId.codeColor : "",
+          quantity: detail.quantity,
+          price: detail.shoeId ? detail.shoeId.price : 0,
+        }));
+
+        return {
+          userNameAccount: order.userId?.nameAccount || null,
+          _id: order._id,
+          orderId: order.orderId,
+          dateOrder: formattedDate,
+          total: order.total,
+          status: order.status,
+          details: details,
+        };
+      })
+    );
+    console.log(ordersResponse);
+    res.render("user/profile_user.ejs", {
+      user,
+      orders: ordersResponse,
+      totalAmount,
+    });
+  } catch (err) {
+    console.error("Error fetching profile user orders:", err.message);
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy danh sách đơn hàng.", error: err.message });
+  }
+};
+
+exports.UserOrderDetail = async (req, res, next) => {
+  const { orderId } = req.params;
+
+  try {
+    if (!orderId) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    const order = await Model.OrderModel.findById(orderId)
+      .populate("discointId", "discountAmount")
+      .lean();
+
+    if (!orderId) {
+      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+    }
+
+    const orderDetails = await Model.OderDetailModel.find({ orderId })
+      .populate({
+        path: "shoeId",
+        select: "name price thumbnail",
+      })
+      .populate({
+        path: "sizeId",
+        model: "SizeShoeModel",
+        select: "size",
+      })
+      .populate({
+        path: "colorId",
+        model: "ColorShoeModel",
+        select: "textColor codeColor",
+      })
+      .lean();
+
+    // Định dạng lại chi tiết đơn hàng
+    const orderResponse = {
+      _id: orderId,
+      userId: order.userId,
+      nameOrder: order.nameOrder,
+      phoneNumber: order.phoneNumber,
+      addressOrder: order.addressOrder,
+      dateOrder: order.dateOrder,
+      pay: order.pay,
+      status: order.status,
+      total: order.total,
+      discountAmount: order.discointId ? order.discointId.discountAmount : 0,
+      details: orderDetails.map((detail) => ({
+        shoeId: {
+          _id: detail.shoeId._id,
+          name: detail.shoeId.name,
+          price: detail.shoeId.price,
+          thumbnail: detail.shoeId.thumbnail,
+          size: detail.sizeId ? detail.sizeId.size : null,
+          textColor: detail.colorId ? detail.colorId.textColor : null,
+          codeColor: detail.colorId ? detail.colorId.codeColor : null,
+          quantity: detail.quantity,
+        },
+      })),
+    };
+
+    console.log(orderResponse);
+    res.render("user/user_order_details.ejs", { orderResponse });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
+  }
 };

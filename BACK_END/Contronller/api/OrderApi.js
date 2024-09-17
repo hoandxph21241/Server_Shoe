@@ -25,7 +25,7 @@ const createOrder = async (req, res) => {
     }
 
   const cartItems = [];
-
+    
   for (let item of orderData.items) {
     const cartId = item.cartId;
     const cartItem = await CartModel.findById(cartId);
@@ -136,14 +136,15 @@ const createOrder = async (req, res) => {
     ];
 
     await Promise.all(notificationPromises);
-
     await sendOrderInfoEmail(address.nameAddress,address.userId, orderData.total, newOrder._id, address.detailAddress, address.phoneNumber, orderDetails);
+
 
     res.status(201).json({ message: 'Đơn hàng đã được tạo và thông báo đã được gửi.', order: newOrder });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi khi tạo đơn hàng.', error: err.message });
   }
 };
+
 
 const sendOrderInfoEmail = async (nameOrder,userId, total, orderId, addressOrder, phoneNumber, orderDetails) => {
   const oAuth2Client = new google.auth.OAuth2(
