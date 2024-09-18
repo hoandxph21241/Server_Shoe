@@ -49,7 +49,7 @@ app.use("/dashboard", DashboardRounter);
 var ManagerRouter = require('./routes/Manager_Router');
 app.use("/manager",ManagerRouter);
 
-const discountRouter = require('./routes/Discount_rounters');
+const discountRouter = require('./routes/Discount_rounters.js');
 app.use("/discount", discountRouter);
 
 //Navigation
