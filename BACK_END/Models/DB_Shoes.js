@@ -213,7 +213,6 @@ var OrderSchema = new db.mongoose.Schema(
     phoneNumber: { type: String, require: false },
     addressOrder: { type: String, require: false },
     total: { type: Number, require: false },
-    dateOrder: { type: String, require: false },
     dateOrder: { type: Date, required: false },
     pay: { type: String, require: false },
     status: { type: Number, require: false },
