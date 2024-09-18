@@ -4,17 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
-
+    <title>Edit Product</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
         .main-content {
-            margin-left: 30px;
-            margin-right: 30px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-top: 30px;
         }
 
         .form-control:disabled,
@@ -29,92 +33,188 @@
         }
 
         .storage-container {
-            display: flex;
-            align-items: flex-start;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
+            background-color: #f1f3f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
 
         .storage-color {
-            flex: 1;
             font-weight: bold;
+            color: #495057;
         }
 
         .storage-size-quantity {
-            flex: 2;
+            margin-top: 10px;
+        }
+
+        .btn-custom {
+            width: 150px;
+            height: 40px;
+        }
+
+        .btn-cancel {
+            background-color: #f6f6f6;
+            color: #4340DA;
+        }
+
+        .btn-save {
+            background-color: #4340DA;
+            color: #ffffff;
         }
     </style>
 </head>
 
 <body>
     <%- include('../../inc/top.ejs') %>
-        <div class="main-content">
-            <h1>Sửa sản phẩm</h1>
-            <div class="row mb-3">
-                <div class="col-12">
-                    <img src="https://via.placeholder.com/200x100" class="img-fluid" alt="Product Image">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="thumbnail" class="form-label">Ảnh thumbnail:</label>
-                        <input type="file" class="form-control" id="thumbnail">
-                    </div>
-                    <div class="mb-3">
-                        <label for="nameShoe" class="form-label">Tên sản phẩm:</label>
-                        <input type="text" class="form-control" id="nameShoe" value="<%= product.name %>">
-                    </div>
-                    <div class="mb-3">
-                        <label for="price" class="form-label">Gía tiền:</label>
-                        <input type="number" class="form-control" id="price" value="<%= product.sellPrice %>">
-                    </div>
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Mô tả:</label>
-                        <textarea class="form-control" id="description" rows="3"><%= product.description %></textarea>
+        <div class="container main-content">
+            <h1 class="text-center mb-4">Chỉnh sửa sản phẩm</h1>
+            <form id="editProductForm">
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        <img src="<%= product.thumbnail %>" class="img-fluid rounded" alt="Product Image"
+                            style="max-height: 200px;">
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="productImage" class="form-label">Ảnh sản phẩm:</label>
-                        <input type="file" class="form-control" id="productImage" multiple>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="thumbnail" class="form-label">Ảnh thumbnail:</label>
+                            <input type="file" class="form-control" id="thumbnail">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nameShoe" class="form-label">Tên sản phẩm:</label>
+                            <input type="text" class="form-control" id="nameShoe" value="<%= product.name %>" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Gía:</label>
+<input type="number" class="form-control" id="price" value="<%= product.sellPrice %>"
+                                readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Mô tả:</label>
+                            <textarea class="form-control" id="description" rows="3"
+                                readonly><%= product.description %></textarea>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="typerShoe" class="form-label">Hãng:</label>
-                        <input type="text" class="form-control" id="typerShoe" value="<%= product.typerShoe.nameType %>">
-                    </div>
-                    <div class="mb-3">
-                        <label for="size" class="form-label">Kho:</label>
-                        <div class="row">
-                            <% storages.forEach(function(storage) { %>
-                              <div class="storage-container">
-                                <div class="storage-color">
-                                  <h6>Color: <%= storage.colorShoe ? storage.colorShoe.textColor : 'Not Available' %></h6>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="productImage" class="form-label">Ảnh sản phẩm:</label>
+                            <input type="file" class="form-control" id="productImage" multiple>
+                        </div>
+                        <div class="mb-3">
+                            <label for="typerShoe" class="form-label">Hãng:</label>
+                            <input type="text" class="form-control" id="typerShoe"
+                                value="<%= product.typerShoe.nameType %>" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kho:</label>
+                            <input type="hidden" id="shoeId" value="<%= product._id %>">
+                            <% storages.forEach(function(storage, index) { %>
+                                <div class="storage-container">
+                                    <div class="storage-color">
+                                        <h6>Màu: <%= storage.colorShoe ? storage.colorShoe.textColor : 'Not Available'
+                                                %>
+                                        </h6>
+                                    </div>
+                                    <div class="storage-size-quantity">
+                                        <% if (Array.isArray(storage.sizeShoe) && storage.sizeShoe.length> 0) { %>
+                                            <% storage.sizeShoe.forEach(function(size) { %>
+                                                <div class="row d-flex align-items-center mb-2">
+                                                    <div class="col-6">
+                                                        <p class="mb-0">Size: <%= size.sizeId.size %>
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <input type="number" class="form-control quantity-input"
+                                                            data-color="<%= storage.colorShoe._id %>"
+                                                            data-size="<%= size.sizeId._id %>"
+value="<%= size.quantity %>">
+                                                    </div>
+                                                </div>
+                                                <% }); %>
+                                                    <% } else { %>
+                                                        <p>No sizes available.</p>
+                                                        <% } %>
+                                    </div>
                                 </div>
-                                <div class="storage-size-quantity">
-                                  <% if (Array.isArray(storage.sizeShoe) && storage.sizeShoe.length > 0) { %>
-                                    <% storage.sizeShoe.forEach(function(size) { %>
-                                      <p>Size: <%= size.sizeId.size %> - Quantity: <%= size.quantity %></p>
-                                    <% }); %>
-                                  <% } else { %>
-                                    <p>No sizes available.</p>
-                                  <% } %>
-                                </div>
-                              </div>
-                            <% }); %>
+                                <% }); %>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="d-flex justify-content-center">
-                <button type="button" class="btn me-2"
-                    style="width: 150px; height: 40px;background-color: #f6f6f6;color: #4340DA;">Hủy</button>
-                <button type="button" class="btn text-white"
-                    style="width: 150px; height: 40px;background-color: #4340DA;">Lưu</button>
-            </div>
+                <div class="d-flex justify-content-center mt-4">
+                    <button type="button" class="btn btn-custom btn-cancel me-2">Cancel</button>
+                    <button type="submit" class="btn btn-custom btn-save" id="saveButton">Save</button>
+                </div>
+            </form>
         </div>
-    <%- include('../../inc/end.ejs') %>
+        <%- include('../../inc/end.ejs') %>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.getElementById('saveButton').addEventListener('click', function (e) {
+                        e.preventDefault(); // Ngăn chặn form submit mặc định
+
+                        const shoeId = document.getElementById('shoeId').value; // Lấy shoe ID
+                        const storageShoeData = {}; // Để nhóm theo màu sắc
+
+                        // Lặp qua tất cả các input số lượng
+                        document.querySelectorAll('.quantity-input').forEach(function (input) {
+                            const colorId = input.getAttribute('data-color'); // Lấy data-color từ input
+                            const sizeId = input.getAttribute('data-size'); // Lấy data-size từ input
+                            const quantity = input.value; // Lấy giá trị quantity từ input
+
+                            // Nếu chưa có colorShoe trong storageShoeData thì khởi tạo nó
+                            if (!storageShoeData[colorId]) {
+                                storageShoeData[colorId] = {
+                                    colorShoe: colorId,
+                                    sizeShoe: [] // Tạo mảng sizeShoe
+                                };
+                            }
+
+                            // Thêm đối tượng kích thước và số lượng vào mảng sizeShoe của màu
+                            storageShoeData[colorId].sizeShoe.push({
+                                sizeId: sizeId,
+                                quantity: quantity
+                            });
+                        });
+
+                        // Chuyển đổi storageShoeData thành mảng
+                        const formattedStorageShoe = Object.values(storageShoeData);
+
+                        // Tạo đối tượng để gửi
+                        const dataToSend = {
+shoeId: shoeId,
+                            storageShoe: formattedStorageShoe
+                        };
+
+                        console.log("data == ",dataToSend);
+                        
+
+                        // Gửi dữ liệu lên server qua Fetch API
+                        fetch('/manager/updateproduct', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(dataToSend),
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert('Số lượng đã được lưu thành công!');
+                                    // Thực hiện điều hướng hoặc hành động khác sau khi lưu thành công
+                                } else {
+                                    alert('Đã xảy ra lỗi khi lưu dữ liệu.');
+                                }
+                            })
+                            .catch((error) => {
+                                console.error('Error:', error);
+                            });
+                    });
+                });
+            </script>
+
 </body>
 
 </html>

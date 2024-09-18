@@ -382,6 +382,69 @@ exports.EditProduct = async (req, res, next) => {
     }
 }
 
+exports.UpdateProductQuantity = async (req, res, next) => {
+    try {
+        const { shoeId, storageShoe } = req.body;
+        console.log("Received data:", { shoeId, storageShoe });
+        if (!shoeId || !Array.isArray(storageShoe) || storageShoe.length === 0) {
+            console.log("Invalid input data");
+            return res.status(400).json({ error: "Invalid input data" });
+        }
+        const shoe = await Model.ShoeModel.findById(shoeId);
+        if (!shoe) {
+            console.log("Shoe not found:", shoeId);
+            return res.status(404).json({ error: "Shoe not found" });
+        }
+
+        let importQuantityDelta = 0;
+        let soldQuantityDelta = 0;
+
+        await Promise.all(storageShoe.map(async (storageItem) => {
+            const storages = await Model.StorageShoeModel.find({
+                shoeId: shoe._id,
+                colorShoe: storageItem.colorShoe
+            });
+
+            await Promise.all(storageItem.sizeShoe.map(async (size) => {
+                await Promise.all(storages.map(async (storage) => {
+                    const sizeIndex = storage.sizeShoe.findIndex(s => s.sizeId.toString() === size.sizeId);
+                    if (sizeIndex === -1) return;
+
+                    const currentQuantity = storage.sizeShoe[sizeIndex].quantity;
+                    const newQuantity = parseInt(size.quantity, 10);
+
+                    const quantityDelta = newQuantity - currentQuantity;
+                    storage.sizeShoe[sizeIndex].quantity = newQuantity;
+                    storage.importQuanlity += quantityDelta;
+                    storage.soldQuanlity += quantityDelta;
+
+                    importQuantityDelta += quantityDelta;
+                    soldQuantityDelta += quantityDelta;
+
+                    await storage.save();
+
+                    console.log("Updated storage:", storage);
+                }));
+            }));
+        }));
+
+        shoe.importQuanlityAll += importQuantityDelta;
+        shoe.soldQuanlityAll += soldQuantityDelta;
+
+        await shoe.save();
+
+        console.log("Updated shoe:", shoe);
+
+        res.json({ success: true, message: "Update successful" });
+    } catch (error) {
+        console.error("Error during product quantity update:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+
+
 
 
 
