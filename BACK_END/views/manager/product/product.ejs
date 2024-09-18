@@ -74,9 +74,11 @@
                                                         aria-valuenow="<%= shoe.importQuanlityAll - shoe.soldQuanlityAll %>"
                                                         aria-valuemin="0" aria-valuemax="<%= shoe.importQuanlityAll %>">
                                                     </div> -->
-                                                    <div id="progress-bar-<%= shoe._id %>" class="progress-bar bg-warning" role="progressbar"
+                                                    <div id="progress-bar-<%= shoe._id %>"
+                                                        class="progress-bar bg-warning" role="progressbar"
                                                         aria-valuenow="<%= shoe.importQuanlityAll - shoe.soldQuanlityAll %>"
-                                                        aria-valuemin="0" aria-valuemax="<%= shoe.importQuanlityAll %>"></div>
+                                                        aria-valuemin="0" aria-valuemax="<%= shoe.importQuanlityAll %>">
+                                                    </div>
 
                                                 </div>
                                             </div>
@@ -113,11 +115,37 @@
 
 
 
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination justify-content-start">
-                        <li class="page-item"><a class="page-link text-dark " href="#">1</a></li>
-                        <li class="page-item"><a class="page-link text-dark" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link text-dark" href="#">3</a></li>
+                <!-- Hiển thị phần phân trang chỉ khi có nhiều hơn một trang -->
+                <% if (totalPage> 1) { %>
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <% if (currentPage> 1) { %>
+                                <!-- Nút 'Previous' -->
+                                <li class="page-item">
+                                    <a class="page-link text-dark" href="?page=<%= currentPage - 1 %>">Previous</a>
+                                </li>
+                                <% } %>
+
+                                    <!-- Tạo các nút trang -->
+                                    <% for (let i=1; i <=totalPage; i++) { %>
+                                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                            <a class="page-link text-dark" href="?page=<%= i %>">
+                                                <%= i %>
+                                            </a>
+                                        </li>
+                                        <% } %>
+
+                                            <% if (currentPage < totalPage) { %>
+                                                <!-- Nút 'Next' -->
+                                                <li class="page-item">
+                                                    <a class="page-link text-dark"
+                                                        href="?page=<%= currentPage + 1 %>">Next</a>
+                                                </li>
+                                                <% } %>
+                        </ul>
+                    </nav>
+                    <% } %>
+
 
 
                         <%- include('../../inc/end.ejs') %>

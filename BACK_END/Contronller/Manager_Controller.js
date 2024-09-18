@@ -87,6 +87,11 @@ exports.BrandList = async (req, res) => {
 
 exports.AllProduct = async (req, res, next) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = 9;
+        const skip = (page - 1) * limit;
+
+        // Lấy sản phẩm với phân trang
         let shoes = await Model.ShoeModel.find()
             .populate({
                 path: "sizeShoe",
@@ -102,16 +107,24 @@ exports.AllProduct = async (req, res, next) => {
                 select: "textColor codeColor -_id",
             })
             .populate("typerShoe", "nameType _id")
-            .select("-__v");
+            .select("-__v")
+            .skip(skip)
+            .limit(limit);
 
+        // Đếm tổng số sản phẩm
+        const totalItem = await Model.ShoeModel.countDocuments();
+        // Tính số trang tổng cộng
+        const totalPages = Math.ceil(totalItem / limit);
+
+        // Lấy thông tin loại giày
         const typerShoe = await Model.TypeShoeModel.find();
         if (!typerShoe) {
             return res.status(404).send("Not Found");
         };
 
         if (shoes.length > 0) {
-            // return res.status(200).json(shoes);
-            res.render('manager/product/product.ejs', { shoes: shoes, typerShoe: typerShoe });
+            // Render trang sản phẩm với thông tin phân trang
+            res.render('manager/product/product.ejs', { shoes: shoes, typerShoe: typerShoe, currentPage: page, totalPage: totalPages, totalItem: totalItem });
         } else {
             return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
         }
@@ -119,6 +132,7 @@ exports.AllProduct = async (req, res, next) => {
         return res.status(500).json({ msg: "Có lỗi xảy ra: " + error.message });
     }
 };
+
 
 const formatString = (inputString) => {
     return inputString.toLowerCase().replace(/\s+/g, "-");
@@ -128,12 +142,12 @@ exports.AddProduct = async (req, res, next) => {
     try {
         const {
             name,
-            price,
+            importPrice,
             description,
             typerShoeId,
             thumbnail,
             imageShoe,
-            storageShoe = [], // Khởi tạo default là mảng
+            storageShoe = [],
             color = [],
             size = [],
         } = req.body;
@@ -145,7 +159,7 @@ exports.AddProduct = async (req, res, next) => {
 
         // Validate required fields
         if (!name) errors.push("Name is required");
-        if (!price) errors.push("Price is required");
+        if (!importPrice) errors.push("Price is required");
         if (!description) errors.push("Description is required");
         if (!typerShoeId) errors.push("TypeShoeId is required");
         if (errors.length > 0) {
@@ -183,11 +197,15 @@ exports.AddProduct = async (req, res, next) => {
         const sizeIds = new Set(size);
         let importQuanlityAll = 0;
         let soldQuanlityAll = 0;
-        console.log("lỗi");
+        const price = importPrice * 1.2;
+
+        const sellPrice = price * 0.98;
         shoe = new Model.ShoeModel({
             shoeId,
             name,
-            price,
+            importPrice,
+            price: price,
+            sellPrice: sellPrice,
             description,
             typerShoe: type._id,
             thumbnail,
@@ -198,10 +216,7 @@ exports.AddProduct = async (req, res, next) => {
             soldQuanlityAll,
             storageShoe: [],
         });
-        console.log("lỗi 1");
-        
         const savedShoe = await shoe.save();
-
         const storage = [];
         for (const storageItem of storageShoe) {
             const colorDoc = await Model.ColorShoeModel.findById(storageItem.colorShoe);
@@ -233,33 +248,24 @@ exports.AddProduct = async (req, res, next) => {
                         }
                     ],
                     importQuanlity: importQuantity,
-                    soldQuanlity: soldQuantity
+                    soldQuanlity: 0,
                 });
 
                 const savedStorage = await newStorage.save();
 
                 storage.push({
                     importQuanlity: savedStorage.importQuanlity,
-                    soldQuanlity: savedStorage.soldQuanlity,
+                    soldQuanlity: 0,
                     _id: savedStorage._id
                 });
             }
         }
-        console.log("lỗi 2");
         savedShoe.colorShoe = [...colorIds];
         savedShoe.sizeShoe = [...sizeIds];
         savedShoe.storageShoe = storage;
         savedShoe.importQuanlityAll = importQuanlityAll;
-        savedShoe.soldQuanlityAll = soldQuanlityAll;
+        savedShoe.soldQuanlityAll = 0;
         await savedShoe.save();
-        console.log('Request Body:', req.body);
-        console.log('StorageShoe:', storageShoe);
-        console.log('colorIds:', colorIds);
-        console.log('sizeIds:', sizeIds);
-        console.log(imageShoe);
-        console.log(thumbnail);
-        
-        
         console.log("Shoe created successfully:", savedShoe);
 
         res.render('manager/product/add_product.ejs', {
@@ -322,8 +328,8 @@ exports.uploadFiles = async (req, res) => {
         }
         console.log(thumbnail);
         console.log(imageShoe);
-        
-        
+
+
         res.status(200).json({ thumbnail, imageShoe });
     } catch (error) {
         console.error("Error during file upload:", error);

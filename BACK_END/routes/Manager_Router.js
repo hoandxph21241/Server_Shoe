@@ -20,7 +20,6 @@ router.post('/addproduct',ManagerController.AddProduct);
 router.post('/uploadsFile',upload.fields([{name:'imageShoe'},{name:'thumbnail'}]),ManagerController.uploadFiles);
 router.get('/vorcherlist',ManagerController.VorcherList);
 
-
 router.get('/bannerlist',ManagerController.BannerList);
 router.get('/banner-hide',ManagerController.Banner_Hide);
 // router.get('/bannerlist',ManagerController.BannerList);

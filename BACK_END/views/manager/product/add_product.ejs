@@ -69,8 +69,8 @@
                             <input type="text" class="form-control" id="nameShoe" name="name">
                         </div>
                         <div class="mb-3">
-                            <label for="price" class="form-label">Giá:</label>
-                            <input type="number" class="form-control" id="price" name="price">
+                            <label for="importPrice" class="form-label">Giá:</label>
+                            <input type="number" class="form-control" id="importPrice" name="importPrice">
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Mô tả:</label>
@@ -93,35 +93,39 @@
                             </select>
                         </div>
                         <!-- Color Selection Form -->
-                        <div class="mb-3">
-                            <form id="colorForm" class="d-inline">
-                                <label for="color" class="mb-3">Chọn Màu</label>
-                                <select name="colorShoe" id="color" multiple>
-                                    <% listColor.forEach(function(color) { %>
-                                        <option value="<%= color._id %>">
-                                            <%= color.textColor %>
-                                        </option>
-                                        <% }); %>
-                                </select>
-                            </form>
+                        <div class="mb-3 row" id="formContainer">
+                            <div class="col-md-6">
+                                <form id="colorForm" class="d-inline">
+                                    <label for="color" class="mb-3">Chọn Màu</label>
+                                    <select name="colorShoe" id="color" multiple>
+                                        <% listColor.forEach(function(color) { %>
+                                            <option value="<%= color._id %>">
+                                                <%= color.textColor %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                </form>
+                            </div>
+                      
+                            <!-- Size Selection Form -->
+                            <div class="col-md-6">
+                                <form id="sizeForm" class="d-inline">
+                                    <label for="size" class="mb-3">Chọn Size</label>
+                                    <select name="sizeShoe" id="size" multiple>
+                                        <% listSize.forEach(function(size) { %>
+                                            <option value="<%= size.size %>">
+                                                <%= size.sizeId %>
+                                            </option>
+                                            <% }); %>
+                                    </select>
+                                    <div id="sizeQuantity"></div>
+                                </form>
+                            </div>
+
+                            <div class="col-md-2">
+                                <button>+</button>
+                            </div>
                         </div>
-                        <!-- Size Selection Form -->
-                        <div class="mb-3">
-                            <form id="sizeForm" class="d-inline">
-                                <label for="size" class="mb-3">Chọn Size</label>
-                                <select name="sizeShoe" id="size" multiple>
-                                    <% listSize.forEach(function(size) { %>
-                                        <option value="<%= size.size %>">
-                                            <%= size.sizeId %>
-                                        </option>
-                                        <% }); %>
-                                </select>
-                                <div id="sizeQuantity"></div>
-                            </form>
-                        </div>
-
-
-
                     </div>
                 </div>
                 <div class="d-flex justify-content-center">
@@ -254,7 +258,7 @@
                         });
                         const data = {
                             name: formObject.name,
-                            price: parseFloat(formObject.price),
+                            importPrice: parseFloat(formObject.importPrice),
                             description: formObject.description,
                             typerShoeId: formObject.typerShoeId,
                             thumbnail: fileUploadData.thumbnail,
