@@ -54,6 +54,8 @@ const checkDiscount = async (req, res) => {
 }
 
 const getDiscountList = async (req, res) => {
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
+
   try {
     const discounts = await DiscountModel.find({ isActive: true });
 
@@ -81,6 +83,7 @@ const getDiscountList = async (req, res) => {
     return res.status(200).json({
       Success: true,
       discounts: formattedDiscounts,
+       userRole: userRole
     });
   } catch (error) {
     console.log(error);

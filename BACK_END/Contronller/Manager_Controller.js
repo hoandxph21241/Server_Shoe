@@ -345,7 +345,7 @@ exports.EditProduct = async (req, res, next) => {
 };
 
 exports.VorcherList = async (req, res, next) => {
-    res.render('manager/vorcher/vorcher.ejs');
+   
 };
 
 exports.BannerList = async (req, res, next) => {
