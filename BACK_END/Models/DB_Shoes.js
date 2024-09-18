@@ -210,7 +210,7 @@ var OrderSchema = new db.mongoose.Schema(
     orderId: { type: String, require: true },
     userId: { type: db.mongoose.Schema.Types.ObjectId, ref: "UserModel" },
     nameOrder: { type: String, require: false },
-    phoneNumber: { type: Number, require: false },
+    phoneNumber: { type: String, require: false },
     addressOrder: { type: String, require: false },
     total: { type: Number, require: false },
     dateOrder: { type: String, require: false },
