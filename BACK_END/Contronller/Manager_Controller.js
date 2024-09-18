@@ -87,6 +87,7 @@ exports.BrandList = async (req, res) => {
 
 exports.AllProduct = async (req, res, next) => {
     try {
+        const userRole = req.session.userLogin ? req.session.userLogin.role : null;
         const page = parseInt(req.query.page) || 1;
         const limit = 9;
         const skip = (page - 1) * limit;
@@ -124,7 +125,7 @@ exports.AllProduct = async (req, res, next) => {
 
         if (shoes.length > 0) {
             // Render trang sản phẩm với thông tin phân trang
-            res.render('manager/product/product.ejs', { shoes: shoes, typerShoe: typerShoe, currentPage: page, totalPage: totalPages, totalItem: totalItem });
+            res.render('manager/product/product.ejs', { shoes: shoes, typerShoe: typerShoe, currentPage: page, totalPage: totalPages, totalItem: totalItem,userRole :userRole });
         } else {
             return res.status(404).json({ msg: "Không tìm thấy sản phẩm" });
         }
@@ -139,6 +140,7 @@ const formatString = (inputString) => {
 };
 
 exports.AddProduct = async (req, res, next) => {
+    const userRole = req.session.userLogin ? req.session.userLogin.role : null;
     try {
         const {
             name,
@@ -168,6 +170,7 @@ exports.AddProduct = async (req, res, next) => {
                 listTyper: listTyper,
                 listSize: listSize,
                 errors: errors,
+                userRole:userRole
             });
         }
         let shoe = await Model.ShoeModel.findOne({ name });
@@ -178,6 +181,7 @@ exports.AddProduct = async (req, res, next) => {
                 listTyper: listTyper,
                 listSize: listSize,
                 errors: errors,
+                userRole:userRole
             });
         }
         const type = await Model.TypeShoeModel.findById(typerShoeId);
@@ -188,6 +192,7 @@ exports.AddProduct = async (req, res, next) => {
                 listTyper: listTyper,
                 listSize: listSize,
                 errors: errors,
+                userRole:userRole
             });
         }
         const shoeId = formatString(type.nameType);
@@ -271,7 +276,8 @@ exports.AddProduct = async (req, res, next) => {
         res.render('manager/product/add_product.ejs', {
             listColor: listColor,
             listTyper: listTyper,
-            listSize: listSize
+            listSize: listSize,
+            userRole:userRole
         });
     } catch (error) {
         console.error("Error during shoe creation:", error);
@@ -279,6 +285,7 @@ exports.AddProduct = async (req, res, next) => {
             listColor: listColor,
             listTyper: listTyper,
             listSize: listSize,
+            userRole:userRole,
             errors: ["Internal Server Error"],
         });
     }
@@ -326,10 +333,10 @@ exports.uploadFiles = async (req, res) => {
                 imageShoe.push(url);
             }
         }
+
         console.log(thumbnail);
         console.log(imageShoe);
-
-
+        
         res.status(200).json({ thumbnail, imageShoe });
     } catch (error) {
         console.error("Error during file upload:", error);
@@ -349,30 +356,33 @@ exports.VorcherList = async (req, res, next) => {
 };
 
 exports.BannerList = async (req, res, next) => {
+    const userRole = req.session.userLogin ? req.session.userLogin.role : null;
     try {
         const banner = await Model.BannerModel.find({ hide: false });
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
-        res.render('manager/banner/hide_banner.ejs', { banner: banner });
+        res.render('manager/banner/hide_banner.ejs', { banner: banner,userRole:userRole });
     } catch (error) {
         console.log("Đã có lỗi lấy danh sách banner: " + error);
     }
 };
 
 exports.Banner_Hide = async (req, res) => {
+    const userRole = req.session.userLogin ? req.session.userLogin.role : null;
     try {
         const banner = await Model.BannerModel.find({ hide: true });
         if (!banner) {
             console.log("Không tìm thấy banner");
         }
-        res.render('manager/banner/hide_banner.ejs', { banner: banner });
+        res.render('manager/banner/hide_banner.ejs', { banner: banner, userRole:userRole });
     } catch (error) {
         console.log("Đã có lỗi lấy danh sách bannner : " + error);
     }
 };
 
 exports.AddBanner = async (req, res, next) => {
+    const userRole = req.session.userLogin ? req.session.userLogin.role : null;
     try {
         const { type, title, thumbnail, description } = req.body;
         let image = "";
@@ -427,27 +437,25 @@ exports.AddBanner = async (req, res, next) => {
         await newBanner.save();
 
         // Redirect hoặc render trang sau khi thêm banner thành công
-        res.redirect('/manager/bannerlist');
+        res.redirect('/manager/bannerlist',{userRole:userRole});
     } catch (error) {
         console.error("Đã có lỗi khi thêm banner:", error);
         // Xử lý lỗi và render lại trang thêm banner với thông báo lỗi
-        res.render('manager/banner/add_banner.ejs', { error: 'Đã có lỗi khi thêm banner. Vui lòng thử lại.' });
+        res.render('manager/banner/add_banner.ejs', { error: 'Đã có lỗi khi thêm banner. Vui lòng thử lại.',userRole:userRole });
     }
 };
 
-
 exports.HideBanner = async (req, res, next) => {
+    const userRole = req.session.userLogin ? req.session.userLogin.role : null;
     try {
         const bannerId = req.params._id;
         const banner = await Model.BannerModel.findById(bannerId);
         if (!banner) {
             console.log("Không tìm thấy banner");
-            return res.redirect('/manager/bannerlist');
+            return res.redirect('/manager/bannerlist',{userRole:userRole});
         }
         banner.hide = !banner.hide;
-
         await banner.save();
-
         res.redirect('/manager/bannerlist');
     } catch (error) {
         console.log("Đã có lỗi ẩn banner : " + error);

@@ -18,7 +18,7 @@ function requireAdmin(req, res, next) {
     }
 }
 
-router.get("", Contronlers.Dashboard);
+router.get("",requireAdmin, Contronlers.Dashboard);
 
 router.post("/statistics", Contronlers.statistics);
 
