@@ -4,7 +4,7 @@ const serviceAccount = require('../Config/shoes-701d0-firebase-adminsdk-0bsy8-f7
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'gs://shoe-addbc.appspot.com',
+  storageBucket: 'gs://shoes-701d0.appspot.com',
 
 });
 

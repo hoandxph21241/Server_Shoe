@@ -10,6 +10,8 @@ const {
 
 exports.Home = async (req, res, next) => {
   try {
+    const userRole = req.session.userLogin ? req.session.userLogin.role : null;
+
 
     const orders = await OrderModel.find()
       .populate("userId", "nameAccount imageAccount")
@@ -46,6 +48,8 @@ exports.Home = async (req, res, next) => {
         quantity: detail.quantity,
         price: detail.shoeId ? detail.shoeId.price : 0,
       }));
+      console.log(details);
+      
       const formattedDate = moment(order.dateOrder).format('HH:mm:ss DD/MM/YYYY');
 
 
@@ -70,6 +74,7 @@ exports.Home = async (req, res, next) => {
       totalProducts,
       totalOrder,
       totalUser,
+      userRole: userRole
     });
 
   } catch (err) {

@@ -15,6 +15,13 @@ const { google } = require("googleapis");
 const dotenv = require("dotenv");
 dotenv.config();
 
+const cron = require('node-cron');
+
+cron.schedule('0 2 * * *', () => {
+  autoConfirmOrderReceived();
+});
+
+
 const createOrder = async (req, res) => {
   const orderData = req.body;
 
@@ -111,6 +118,7 @@ const createOrder = async (req, res) => {
       await discount.save();
     }
 
+    // Tạo đơn hàng mới
     const newOrder = await OrderModel.create({
       userId: address.userId,
       nameOrder: address.fullName, 
@@ -635,6 +643,56 @@ const confirmOrderReceived = async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi cập nhật trạng thái đơn hàng.', error: err.message });
   }
 };
+const autoConfirmOrderReceived = async () => {
+  try {
+    const daysToWait = 7; // Số ngày chờ trước khi tự động xác nhận
+    const now = new Date();
+    const cutoffDate = new Date(now.setDate(now.getDate() - daysToWait));
+console.log(cutoffDate);
+
+    // Tìm các đơn hàng đã giao nhưng chưa được xác nhận và đã vượt quá số ngày chờ
+    const ordersToConfirm = await OrderModel.find({
+      status: 5, // Giao thành công
+      dateOrder: { $lte: cutoffDate }
+    });
+
+
+
+    for (const order of ordersToConfirm) {
+      order.status = 0; // Đã nhận hàng
+      order.orderStatusDetails.push({
+        status: 'Đã nhận hàng',
+        timestamp: vietnamDate,
+        note: 'Hệ thống tự động xác nhận đơn hàng.'
+      });
+  
+    const orderDetails = await OderDetailModel.find( order.orderId );
+
+
+      await order.save();
+
+      sendNotificationUser(
+        order.userId,
+        'Đơn hàng đã được xác nhận tự động',
+        `Đơn hàng #${order._id} của bạn đã được hệ thống tự động xác nhận là đã nhận hàng.`,
+        'OrderDelivered',
+        orderDetails[0].shoeId,
+        vietnamDate
+      );
+
+      sendNotificationAdmin(
+        'Đơn hàng đã được xác nhận tự động',
+        `Đơn hàng #${order._id} đã được hệ thống tự động xác nhận là đã giao hàng.`,
+        'OrderDelivered',
+        orderDetails[0].shoeId,
+        vietnamDate
+      );
+    }
+  } catch (err) {
+    console.error('Lỗi khi tự động xác nhận đơn hàng:', err.message);
+  }
+};
+
 
 // hiển thị list đơn hàng user, lấy đơn hàng đầu tiên đại diện 1 đơn hàng
 const getUserOrdersWithFirstItem = async (req, res) => {
@@ -1227,6 +1285,7 @@ module.exports = {
   cancelOrder,
   returnOrder,
   confirmOrderReceived,
+  autoConfirmOrderReceived,
   getUserOrdersWithFirstItem,
   getOrderById,
   getOrderShoeById,

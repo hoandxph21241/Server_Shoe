@@ -59,18 +59,10 @@ exports.SignIn = async (req, res, next) => {
           console.log(user.fullName);
           console.log("==== End login ====");
           msg = "SignIn Success!";
-
-
-          if (req.body.fcmToken) {
-            objU.fcmToken = req.body.fcmToken;
-            await objU.save();
-            console.log("FCM Token saved:", req.body.fcmToken);
-          }
-
-          if (objU["role"] !== 2) {
-            return res.redirect("/home");
-          } else {
-            return res.redirect("/home");
+          if (objU.role === 2) {
+            return res.redirect("/home"); // Vai trò người dùng
+          } else if (objU.role === 3) {
+            return res.redirect("/order/orderlist"); // Vai trò shipper
           }
         } else {
           msg = "Sai mật khẩu!";
