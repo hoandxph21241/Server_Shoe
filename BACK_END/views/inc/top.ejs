@@ -104,22 +104,28 @@
             <!-- Dropdown Menu for Admin only -->
             <% if (userRole === 2) { %>
             <li class="nav-item">
-                <a class="nav-link dropdown-toggle text-dark" role="button" data-toggle="collapse" data-target="#managementMenu" aria-expanded="false" aria-controls="managementMenu">
-                    <img src="/images/icon (1).png" alt=""> Quản lý
-                </a>
-                <div class="collapse" id="managementMenu">
-                    <ul class="nav flex-column ml-3">
+
+
                         <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" href="/manager/productlist">Sản phẩm</a>
+                            <a class="nav-link dropdown-toggle text-dark" role="button" data-toggle="collapse" data-target="#managementMenu" aria-expanded="false" aria-controls="managementMenu">
+                                <img src="/images/icon (1).png" alt=""> Quản lý
+                            </a>
+                            <div class="collapse" id="managementMenu">
+                                <ul class="nav flex-column ml-3">
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark fw-bold" href="/manager/productlist">Sản phẩm</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark fw-bold" href="/manager/bannerlist">Banner</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark fw-bold" href="/discount">Giảm giá</a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" href="/manager/bannerlist">Banner</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" href="/manager/vorcherlist">Giảm giá</a>
-                        </li>
-                    </ul>
-                </div>
+
+  
             </li>
             <li class="nav-item">
                 <a href="/auth/userlist" class="nav-link d-flex align-items-center text-dark">

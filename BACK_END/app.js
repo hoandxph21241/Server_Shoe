@@ -49,6 +49,9 @@ app.use("/dashboard", DashboardRounter);
 var ManagerRouter = require('./routes/Manager_Router');
 app.use("/manager",ManagerRouter);
 
+const discountRouter = require('./routes/Discount_rounters');
+app.use("/discount", discountRouter);
+
 //Navigation
 const NavigationRouter = require("./routes/Navigation_Routers ");
 app.use("/adminNavigation", NavigationRouter);
@@ -59,6 +62,10 @@ var apiRouter = require("./routes/api_Rounters");
 app.use("/api", apiRouter);
 
 
+
+
+
+require('./Contronller/cron');
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
