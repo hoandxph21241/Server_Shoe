@@ -1,12 +1,15 @@
+const moment = require('moment'); 
 const { sendNotificationUser } = require("../Contronller/api/Navigation_api");
 const {
-  sendNotificationAdmin,
+  sendNotificationAdmin
 } = require("../Contronller/Navigation_Controller");
 const {
   OrderModel,
   OderDetailModel,
   ShoeModel,
   DiscountModel,
+  UserModel,
+  StorageShoeModel
 } = require("../Models/DB_Shoes");
 const axios = require("axios");
 const vietnamDate = new Intl.DateTimeFormat("vi-VN", {
@@ -46,53 +49,46 @@ async function createTestShipment(orderDetails) {
   }
 }
 
-function formatDateTime(dateString) {
-  const date = new Date(dateString);
-
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-
-  return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
-}
-
-const isoDateString = "2024-08-14T13:58:28.000Z";
-const formattedDate = formatDateTime(isoDateString);
 
 const getAllOrders = async (req, res) => {
   const userRole = req.session.userLogin ? req.session.userLogin.role : null;
 
   try {
     let orders = await OrderModel.find()
-      .populate("userId", "nameAccount imageAccount")
+      .populate("userId", "_id nameAccount imageAccount")
       .populate("discointId", "discountAmount")
       .lean();
 
     if (userRole === 3) {
       orders = orders.filter(
         (order) =>
-          order.status !== 1 && order.status !== 2 && order.status !== 6
+          order.status !== 1 && order.status !== 2 && order.status !== 6 && order.status !== -1
       );
     }
 
     const formattedOrders = orders.map((order) => {
+      const userImageAccount = order.userId?.imageAccount
+        ? `data:image/jpeg;base64,${order.userId.imageAccount.toString(
+            "base64"
+          )}`
+        : null;
+
+        const formattedDate = moment(order.dateOrder).format('HH:mm:ss DD/MM/YYYY');
+
+
       const formattedOrder = {
         userID: order.userId?._id || null,
         userNameAccount: order.userId?.nameAccount || null,
-        userImageAccount: order.userId?.imageAccount || null,
+        userImageAccount: userImageAccount,
 
         total: order.total,
-        dateOrder: formatDateTime(order.dateOrder),
+        dateOrder: formattedDate,
         status: order.status,
         _id: order._id,
       };
 
       return formattedOrder;
-    });
+    }).reverse();;
 
     res.render("order/order_list.ejs", { formattedOrders, userRole: userRole });
   } catch (err) {
@@ -106,17 +102,16 @@ const getOrdersDetailt = async (req, res) => {
 
   try {
     if (!orderId) {
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+      return res.status(404).json({ message: "Order not found." });
     }
 
-    // Lấy thông tin đơn hàng và chi tiết đơn hàng
+    // Get order and order details
     const order = await OrderModel.findById(orderId)
       .populate("discointId", "discountAmount")
       .lean();
-    console.log(order);
 
     if (!order) {
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+      return res.status(404).json({ message: "Order not found." });
     }
 
     const orderDetails = await OderDetailModel.find({ orderId })
@@ -136,27 +131,33 @@ const getOrdersDetailt = async (req, res) => {
       })
       .lean();
 
-    // Lấy thông tin từ GHN
-    const ghnUrl = `https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code`;
-    const ghnToken = "YOUR_API_TOKEN"; // Thay thế YOUR_API_TOKEN bằng mã token của bạn
+    let ghnData = {
+      quickCode: "N/A",
+      deliveryStatus: "N/A",
+    };
 
-    const ghnResponse = await axios.post(
-      ghnUrl,
-      {
-        client_order_code: "66e7cdd4b1af63774fdbf076", // Thay thế bằng mã đơn hàng từ order nếu cần
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Token: "2821bc5b-496b-11ef-8e53-0a00184fe694",
+    try {
+      const ghnResponse = await axios.post(
+        BASE_URL,
+        {
+          client_order_code: orderId,
         },
-      }
-    );
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Token: "2821bc5b-496b-11ef-8e53-0a00184fe694",
+          },
+        }
+      );
 
-    const ghnData = ghnResponse.data;
-    console.log(ghnData);
+      ghnData = {
+        quickCode: ghnResponse.data.data?.order_code || "N/A",
+        deliveryStatus: ghnResponse.data.data?.status || "N/A",
+      };
+    } catch (ghnError) {
+      console.error("GHN API request failed:", ghnError.message);
+    }
 
-    // Định dạng lại chi tiết đơn hàng
     const orderResponse = {
       _id: orderId,
       userId: order.userId,
@@ -165,6 +166,7 @@ const getOrdersDetailt = async (req, res) => {
       addressOrder: order.addressOrder,
       dateOrder: order.dateOrder,
       status: order.status,
+      pay: order.pay,
       orderStatusDetails: order.orderStatusDetails,
       total: order.total,
       discountAmount: order.discointId ? order.discointId.discountAmount : 0,
@@ -180,13 +182,10 @@ const getOrdersDetailt = async (req, res) => {
           quantity: detail.quantity,
         },
       })),
-      ghn: {
-        quickCode: ghnData.data?.order_code || "N/A",
-        deliveryStatus: ghnData.data?.status || "N/A",
-      },
+      ghn: ghnData,
     };
 
-    // Render dữ liệu
+    // Render data
     res.render("order/order_details.ejs", {
       orderResponse,
       userRole: userRole,
@@ -194,10 +193,9 @@ const getOrdersDetailt = async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .json({ message: "Lỗi khi lấy chi tiết đơn hàng.", error: err.message });
+      .json({ message: "Error fetching order details.", error: err.message });
   }
 };
-
 // Xác nhận hàng
 const prepareOrder = async (req, res) => {
   const { orderId } = req.params;
@@ -242,14 +240,10 @@ const prepareOrder = async (req, res) => {
       }
     }
 
-    // order.status = 2;
-    order.orderStatusDetails.push({
-      status: "Chuẩn bị hàng",
-      timestamp: vietnamDate,
-      note: "Đơn hàng đang được chuẩn bị",
-    });
-
-    await order.save();
+    const totalWeight = orderDetails.reduce((sum, detail) => {
+      const itemWeight = 200; // Weight of one item in grams
+      return sum + (itemWeight * detail.quantity);
+    }, 0);
 
     const ghnOrderDetails = {
       payment_type_id: 2,
@@ -257,22 +251,22 @@ const prepareOrder = async (req, res) => {
       required_note: "KHONGCHOXEMHANG",
       return_phone: "0332190158",
       return_address: "39 NTT",
-      return_district_id: null, // Replace with actual district id
-      return_ward_code: "", // Replace with actual ward code
+      return_district_id: null, 
+      return_ward_code: "",
       client_order_code: orderId,
 
       to_name: order.nameOrder,
       to_phone: order.phoneNumber,
       to_address: order.addressOrder,
-      to_ward_name: "Phường 14", // Replace with actual ward name
-      to_district_name: "Quận 10", // Replace with actual district name
-      to_province_name: "HCM", // Replace with actual province name
+      to_ward_name: "Phường 14", 
+      to_district_name: "Quận 10",
+      to_province_name: "HCM", 
       cod_amount: order.total,
       content: "Order content",
-      weight: 200, // Replace with actual weight
-      length: 1, // Replace with actual length
-      width: 19, // Replace with actual width
-      height: 10, // Replace with actual height
+      weight: totalWeight, 
+      length: 1, 
+      width: 19, 
+      height: 10, 
       cod_failed_amount: 2000,
       pick_station_id: 1444,
       deliver_station_id: null,
@@ -280,7 +274,7 @@ const prepareOrder = async (req, res) => {
       service_id: 0,
       service_type_id: 2,
       coupon: null,
-      pickup_time: Math.floor(Date.now() / 1000), // Current timestamp in seconds
+      pickup_time: Math.floor(Date.now() / 1000), 
       pick_shift: [2],
       items: orderDetails.map((detail) => ({
         name: detail.shoeName,
@@ -295,9 +289,16 @@ const prepareOrder = async (req, res) => {
       })),
     };
 
-    // Create shipment with GHN
     const shipment = await createTestShipment(ghnOrderDetails);
     console.log("Test Shipment created:", shipment);
+        order.status = 2;
+        order.orderStatusDetails.push({
+          status: "Chuẩn bị hàng",
+          timestamp: vietnamDate,
+          note: `Đơn hàng đang được chuẩn bị. Mã đơn hàng GHN: ${shipment.data.order_code}`, 
+        });
+    
+        await order.save();
 
     sendNotificationUser(
       order.userId,
@@ -318,7 +319,7 @@ const prepareOrder = async (req, res) => {
 
     res.status(200).json({
       message:
-        'Trạng thái đơn hàng đã được cập nhật thành "Chuẩn bị hàng" và thông báo đã được gửi.',
+        'Trạng thái đơn hàng đã được cập nhật thành Chuẩn bị hàng.',
       order,
     });
   } catch (err) {
@@ -382,7 +383,7 @@ const orderPreparedSuccessfully = async (req, res) => {
 
     res.status(200).json({
       message:
-        'Trạng thái đơn hàng đã được cập nhật thành "Chờ bàn giao đơn vị vận chuyển" và thông báo đã được gửi.',
+        'Trạng thái đơn hàng đã được cập nhật Chờ bàn giao đơn vị vận chuyển .',
       order,
     });
   } catch (err) {
@@ -447,7 +448,7 @@ const shipOrder = async (req, res) => {
 
     res.status(200).json({
       message:
-        'Trạng thái đơn hàng đã được cập nhật thành "Giao hàng" và thông báo đã được gửi.',
+        'Trạng thái đơn hàng đã được cập nhật thành "Giao hàng" .',
       order,
     });
   } catch (err) {
@@ -510,7 +511,7 @@ const confirmOrderReceived = async (req, res) => {
     );
     res.status(200).json({
       message:
-        'Trạng thái đơn hàng đã được cập nhật thành "Đã nhận hàng" và thông báo đã được gửi.',
+        'Trạng thái đơn hàng đã được cập nhật thành "Đã nhận hàng".',
       order,
     });
   } catch (err) {
@@ -524,105 +525,94 @@ const confirmOrderReceived = async (req, res) => {
 // Hủy đơn hàng trạng thái Chờ xác nhận
 const cancelOrder = async (req, res) => {
   const { orderId } = req.params;
-  const { cancelReason } = req.body; // Lý do hủy
+  const { cancelOrder } = req.body;
 
   try {
     const order = await OrderModel.findById(orderId);
-
     if (!order) {
-      return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
+      return res.status(404).json({ message: `Không tìm thấy đơn hàng với id ${orderId}` });
+    }
+    if (order.status !== 1) {
+      return res.status(400).json({ message: 'Chỉ có thể hủy đơn hàng khi trạng thái là "Chờ xác nhận".' });
     }
 
-    if (order.status !== "Chờ xác nhận") {
-      return res
-        .status(400)
-        .json({
-          message: 'Chỉ có thể hủy đơn hàng khi trạng thái là "Chờ xác nhận".',
-        });
-    }
-
-    order.status = "Đã hủy";
+    // order.status = 6;
     order.orderStatusDetails.push({
-      status: "Đã hủy",
-      timestamp: vietnamDate,
-      note: `Đơn hàng đã bị hủy. Lý do: ${cancelReason}`,
+      status: 'Đã hủy',
+      vietnamDate,
+      note: `Đơn hàng đã được hủy bởi người dùng. Lý do: ${cancelOrder || 'Không có lý do.'}`, 
     });
+
     await order.save();
 
+    // Hoàn lại số lượng sản phẩm vào kho
     const orderDetails = await OderDetailModel.find({ orderId: order._id });
+    console.log(orderDetails);
+    
     for (let item of orderDetails) {
       const shoe = await ShoeModel.findById(item.shoeId);
+      const storageItem = await StorageShoeModel.findOne({
+        shoeId: item.shoeId,
+        colorShoe: item.colorId,
+        "sizeShoe.sizeId": item.sizeId,
+      });
+console.log(storageItem);
 
-      if (!shoe) {
-        return res
-          .status(400)
-          .json({ message: `Không tìm thấy giày với id ${item.shoeId}` });
+
+      const sizeIndex = shoe.sizeShoe.findIndex(size => size.equals(item.sizeId));
+      const colorIndex = shoe.colorShoe.findIndex(color => color.equals(item.colorId));
+
+      if (sizeIndex !== -1 && colorIndex !== -1) {
+        const stockIndex = sizeIndex * shoe.colorShoe.length + colorIndex;
+
+        // Hoàn lại số lượng giày trong ShoeModel
+        shoe.storageShoe[stockIndex].soldQuanlity += item.quantity;
+        shoe.soldQuanlityAll += item.quantity;
+        await shoe.save();
+
+        // Hoàn lại số lượng giày trong StorageShoeModel
+        const sizeShoeToUpdate = storageItem.sizeShoe.find(size => size.sizeId.equals(item.sizeId));
+        sizeShoeToUpdate.quantity += item.quantity;
+        storageItem.soldQuanlity += item.quantity;
+        await storageItem.save();
       }
-
-      const sizeIndex = shoe.sizeShoe.findIndex((size) =>
-        size.equals(item.sizeId)
-      );
-      const colorIndex = shoe.colorShoe.findIndex((color) =>
-        color.equals(item.colorId)
-      );
-
-      if (sizeIndex === -1 || colorIndex === -1) {
-        return res
-          .status(400)
-          .json({
-            message: `Không tìm thấy size hoặc màu cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.`,
-          });
-      }
-
-      const storageIndex = sizeIndex * shoe.colorShoe.length + colorIndex;
-      if (storageIndex < 0 || storageIndex >= shoe.storageShoe.length) {
-        return res
-          .status(400)
-          .json({
-            message: `Không tìm thấy mục tồn kho cho giày ${item.shoeId}, size ${item.sizeId}, màu ${item.colorId}.`,
-          });
-      }
-
-      shoe.storageShoe[storageIndex].importQuanlity += item.quantity;
-      shoe.soldQuanlityAll -= item.quantity;
-      await shoe.save();
     }
 
+    // Kiểm tra và hoàn lại mã giảm giá 
     if (order.discointId) {
       const discount = await DiscountModel.findById(order.discointId);
-
-      if (discount && discount.isActive) {
-        discount.maxUser += 1;
+      if (discount) {
+        discount.maxUser += 1;  
         await discount.save();
       }
     }
 
-    sendNotificationUser(
+    await sendNotificationUser(
       order.userId,
-      "Đơn hàng đã bị hủy",
-      `Đơn hàng #${orderId}  Người bán đã hủy. Lý do: ${cancelReason}`,
-      "OrderCanceled",
-      orderDetails[0].shoeId,
-      vietnamDate
+      'Đơn hàng đã bị hủy',
+      `Đơn hàng #${order._id} đã hủy . Lý do shop: ${cancelOrder || 'Không có lý do.'}`,
+      'OrderCanceled',
+      order._id,
+      new Date()
     );
 
-    sendNotificationAdmin(
-      "Bạn đã hủy đơn hàng",
-      `Đơn hàng #${orderId} đã bị hủy. Lý do : ${cancelReason}`,
-      "OrderCanceled",
-      orderDetails[0].shoeId,
-      vietnamDate
+    await sendNotificationAdmin(
+      'Đơn hàng đã bị hủy',
+      `Đơn hàng #${order._id} đã bị hủy. Lý do: ${cancelOrder || 'Không có lý do.'}`,
+      'OrderCanceled',
+      order._id,
+      new Date()
     );
 
-    res
-      .status(200)
-      .json({ message: "Đơn hàng đã bị hủy và thông báo đã được gửi.", order });
+    res.status(200).json({ message: 'Đơn hàng đã được hủy thành công.', order });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Lỗi khi hủy đơn hàng.", error: err.message });
+    res.status(500).json({ message: 'Lỗi khi hủy đơn hàng.', error: err.message });
   }
 };
+
+
+
+
 
 const failDeliveryOrder = async (req, res) => {
   const { orderId } = req.params;

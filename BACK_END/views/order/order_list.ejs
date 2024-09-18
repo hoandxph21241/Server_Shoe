@@ -91,7 +91,11 @@
                 <% formattedOrders.forEach(order => { %>
                 <tr onclick="window.location.href='/order/orderDetails/<%= order._id %>'" class="order-row" data-status="<%= order.status %>" data-date="<%= order.dateOrder %>">
                     <td></td>
-                    <td><img src="<%= order.userImageAccount %>" class="rounded-circle mr-2" alt="Customer Image" height="50dp" width="50dp"> <%= order.userNameAccount %></td>
+                    <td>
+                        <img src="<%= order.userImageAccount %>" alt="Customer Image" height="50dp" width="50dp">
+
+                     <%= order.userNameAccount %></td>
+                     
                     <td><%= order._id %></td>
                     <td><%= order.dateOrder %></td>
                     <td>$<%= order.total %></td>

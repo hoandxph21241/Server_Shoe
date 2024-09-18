@@ -130,6 +130,9 @@
                                     // Determine the status text based on the status number
                                     let statusText;
                                     switch (orderResponse.status) {
+                                        case -1:
+                                            statusText = "Đã đánh giá";
+                                             break;
                                         case 0:
                                             statusText = "Đã nhận hàng";
                                             break;
@@ -163,20 +166,23 @@
                             </h5>
                 
                             <p>
-                                <%= orderResponse.dateOrder %><br>
-                                Mã Đơn Hàng: <span id="order-quick-code"><%= orderResponse.ghn.quickCode %></span><br>
-                                Trạng thái Giao Hàng Nhanh: <span id="delivery-status"><%= orderResponse.ghn.deliveryStatus %></span>
+                            
+                                    <%= new Date(orderResponse.dateOrder).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) %>
+                                    <%= new Date(orderResponse.dateOrder).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %>
+                                    <br>
+                                
+                                Mã Đơn Hàng GHN: <span id="order-quick-code"><%= orderResponse.ghn.quickCode %></span><br>
+                                <!-- Trạng thái Giao Hàng Nhanh: <span id="delivery-status"><%= orderResponse.ghn.deliveryStatus %></span> -->
                             </p>
                         </div>
                         <div>
-                            <button  class="btn btn-secondary hidden" >
-                                <button class="btn btn-secondary" onclick="printCustomContent()">In</button>
-                            </button>
-                            <% if (orderResponse.status !== 7) { %>
 
-                            <button class="btn btn-secondary" id="confirm-order-btn">Xác nhận</button>
+                            <% if (userRole === 2 && (orderResponse.status === 1 || orderResponse.status === 2)) { %>
+                                <button class="btn btn-secondary" id="confirm-order-btn">Xác nhận</button>
+                            <% } else if (userRole === 3 && (orderResponse.status === 3 || orderResponse.status === 4 || orderResponse.status === 0)) { %>
+                                <button class="btn btn-secondary" id="confirm-order-btn">Xác nhận</button>
                             <% } %>
-                            <% if (userRole === 2 ) { %>
+                            <% if (orderResponse.status === 1 ) { %>
 
                             <button class="btn btn-secondary" id="cancel-order-btn">Hủy</button>
                             <% } %>
@@ -492,57 +498,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Error canceling order. Please try again.');
                 }
             });
-
-
-      
-
-
-            document.addEventListener('DOMContentLoaded', () => {
-    const orderStatus = parseInt('<%= orderResponse.status %>'); 
-    const userRole = parseInt('<%= userRole %>'); 
-
-    const confirmButton = document.getElementById('confirm-order-btn');
-    const cancelButton = document.getElementById('cancel-order-btn');
-    const printButton = document.getElementById('print-btn');
-
-    if (userRole !== 3) { 
-        if (orderStatus === 0 || orderStatus === 5 || orderStatus === 3 || orderStatus === 4 || orderStatus === 6 || orderStatus === 7) {
-            if (confirmButton) confirmButton.classList.add('hidden');
-            if (cancelButton) cancelButton.classList.add('hidden');
-        }
-    } else { // Shipper role
-        if (orderStatus !== 4 && orderStatus !== 3) {
-            if (confirmButton) confirmButton.classList.add('hidden');
-            if (cancelButton) cancelButton.classList.add('hidden');
-            
-        }
-    }
-    if (orderStatus === 2 ) { // Status "Chuẩn bị hàng"
-        if (printButton) printButton.classList.remove('hidden');
-    } else {
-        if (printButton) printButton.classList.add('hidden');
-    }
-});
-
-
-function printCustomContent() {
-        // Lấy nội dung mà bạn muốn in
-        const printContent = document.getElementById('printable-area').innerHTML;
-        
-        // Tạo một cửa sổ mới
-        const printWindow = window.open('', '', 'height=600,width=800');
-        
-        // Tạo một kiểu HTML cho cửa sổ mới
-        printWindow.document.write('<html><head><title>Print</title>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write(printContent);
-        printWindow.document.write('</body></html>');
-        
-        // Đóng tài liệu và in
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-    }
 
 
         </script>
