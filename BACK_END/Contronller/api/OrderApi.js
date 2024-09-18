@@ -1164,6 +1164,7 @@ const getUserCompletedOrders = async (req, res) => {
         total: order.total,
         promo: promo,
         status: statusLabel, 
+        statusNumber:order.status,
         dateOrder: formattedDateOrder,
         dateReceived: order.dateReceived,
         pay: order.pay,
@@ -1255,6 +1256,7 @@ const getUserActiveOrders = async (req, res) => {
         total: order.total,
         promo: promo,
         status: "active",
+        statusNumber:order.status,
         dateOrder: formattedDateOrder,
         pay: order.pay,
         orderStatusDetails: order.orderStatusDetails, // Hiển thị chi tiết trạng thái đơn hàng
