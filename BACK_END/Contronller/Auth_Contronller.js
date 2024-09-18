@@ -114,19 +114,21 @@ exports.SignOut = async (req, res, next) => {
 };
 
 exports.UserList = async (req, res, next) => {
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
   try {
     const listUser = await Model.UserModel.find();
     console.log("List of users:", listUser);
     return res.render("user/user.ejs", {
-      users: listUser.length ? listUser : [],
+      users: listUser.length ? listUser : [],userRole:userRole
     });
   } catch (error) {
     console.error("Error fetching user list:", error.message);
-    res.status(500).json({ msg: "Server error: " + error.message });
+    res.status(500).json({ msg: "Server error: " + error.message,userRole:userRole });
   }
 };
 
 exports.ProfileUser = async (req, res, next) => {
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
   try {
     const { userId } = req.params;
     const user = await Model.UserModel.findById(userId);
@@ -190,6 +192,7 @@ exports.ProfileUser = async (req, res, next) => {
       user,
       orders: ordersResponse,
       totalAmount,
+      userRole:userRole
     });
   } catch (err) {
     console.error("Error fetching profile user orders:", err.message);
@@ -201,7 +204,7 @@ exports.ProfileUser = async (req, res, next) => {
 
 exports.UserOrderDetail = async (req, res, next) => {
   const { orderId } = req.params;
-
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
   try {
     if (!orderId) {
       return res.status(404).json({ message: "Không tìm thấy đơn hàng." });
@@ -259,7 +262,7 @@ exports.UserOrderDetail = async (req, res, next) => {
     };
 
     console.log(orderResponse);
-    res.render("user/user_order_details.ejs", { orderResponse });
+    res.render("user/user_order_details.ejs", { orderResponse ,userRole:userRole});
   } catch (err) {
     res
       .status(500)

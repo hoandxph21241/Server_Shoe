@@ -27,6 +27,23 @@
             width: 100px;
             height: auto;
         }
+
+        .storage-container {
+            display: flex;
+            align-items: flex-start;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .storage-color {
+            flex: 1;
+            font-weight: bold;
+        }
+
+        .storage-size-quantity {
+            flex: 2;
+        }
     </style>
 </head>
 
@@ -46,21 +63,17 @@
                         <input type="file" class="form-control" id="thumbnail">
                     </div>
                     <div class="mb-3">
-                        <label for="nameShoe" class="form-label">Ảnh sản phẩm:</label>
-                        <input type="text" class="form-control" id="nameShoe">
+                        <label for="nameShoe" class="form-label">Tên sản phẩm:</label>
+                        <input type="text" class="form-control" id="nameShoe" value="<%= product.name %>">
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label">Gía tiền:</label>
-                        <input type="number" class="form-control" id="price">
+                        <input type="number" class="form-control" id="price" value="<%= product.sellPrice %>">
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">Mô tả:</label>
-                        <textarea class="form-control" id="description" rows="3"></textarea>
+                        <textarea class="form-control" id="description" rows="3"><%= product.description %></textarea>
                     </div>
-                    <div class="d-flex justify-content-end">
-
-                    </div>
-
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
@@ -68,44 +81,30 @@
                         <input type="file" class="form-control" id="productImage" multiple>
                     </div>
                     <div class="mb-3">
-                        <label for="brand" class="form-label">Hãng:</label>
-                        <select class="form-select" id="brand">
-                            <option selected>Adidas</option>
-                        </select>
+                        <label for="typerShoe" class="form-label">Hãng:</label>
+                        <input type="text" class="form-control" id="typerShoe" value="<%= product.typerShoe.nameType %>">
                     </div>
                     <div class="mb-3">
-                        <label for="size" class="form-label">Size:</label>
-                        <input type="text" class="form-control" id="size" placeholder="...">
-                    </div>
-                    <div class="mb-3">
-                        <label for="sizes" class="form-label">Sizes:</label>
-                        <div>
-                            <button type="button" class="btn btn-outline-secondary">40</button>
-                            <button type="button" class="btn btn-outline-secondary">41</button>
-                            <button type="button" class="btn btn-outline-secondary">42</button>
-
+                        <label for="size" class="form-label">Kho:</label>
+                        <div class="row">
+                            <% storages.forEach(function(storage) { %>
+                              <div class="storage-container">
+                                <div class="storage-color">
+                                  <h6>Color: <%= storage.colorShoe ? storage.colorShoe.textColor : 'Not Available' %></h6>
+                                </div>
+                                <div class="storage-size-quantity">
+                                  <% if (Array.isArray(storage.sizeShoe) && storage.sizeShoe.length > 0) { %>
+                                    <% storage.sizeShoe.forEach(function(size) { %>
+                                      <p>Size: <%= size.sizeId.size %> - Quantity: <%= size.quantity %></p>
+                                    <% }); %>
+                                  <% } else { %>
+                                    <p>No sizes available.</p>
+                                  <% } %>
+                                </div>
+                              </div>
+                            <% }); %>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Màu:</label>
-                        <div id="colors" class="col">
-                            <div>
-                                <input type="checkbox" id="blue" value="blue" onchange="showSelectedColors()">
-                                <label for="blue">Xanh</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="red" value="red" onchange="showSelectedColors()">
-                                <label for="red">Đỏ</label>
-                            </div>
-                            <div>
-                                <input type="checkbox" id="black" value="black" onchange="showSelectedColors()">
-                                <label for="black">Đen</label>
-                            </div>
-                        </div>
-                        <div id="selectedColors" class="mt-2"></div>
-                    </div>
-
-
                 </div>
             </div>
             <div class="d-flex justify-content-center">
@@ -115,36 +114,7 @@
                     style="width: 150px; height: 40px;background-color: #4340DA;">Lưu</button>
             </div>
         </div>
-        <%- include('../../inc/end.ejs') %>
-
-
-            <script>
-                function showSelectedColors() {
-                    var checkboxes = document.querySelectorAll("#colors input[type='checkbox']");
-                    var selectedColors = [];
-                    for (var i = 0; i < checkboxes.length; i++) {
-                        if (checkboxes[i].checked) {
-                            selectedColors.push(checkboxes[i].value);
-                        }
-                    }
-                    displaySelectedColors(selectedColors);
-                }
-
-                function displaySelectedColors(selectedColors) {
-                    var selectedColorsDiv = document.getElementById("selectedColors");
-                    selectedColorsDiv.innerHTML = "";
-                    for (var i = 0; i < selectedColors.length; i++) {
-                        var colorBox = document.createElement("div");
-                        colorBox.style.width = "30px";
-                        colorBox.style.height = "30px";
-                        colorBox.style.backgroundColor = selectedColors[i];
-                        colorBox.style.marginRight = "5px";
-                        colorBox.style.display = "inline-block";
-                        selectedColorsDiv.appendChild(colorBox);
-                    }
-                }
-
-            </script>
+    <%- include('../../inc/end.ejs') %>
 </body>
 
 </html>

@@ -345,11 +345,45 @@ exports.uploadFiles = async (req, res) => {
 };
 
 
-
-
 exports.EditProduct = async (req, res, next) => {
-    res.render('manager/product/edit_product.ejs');
-};
+    try {
+        const userRole = req.session.userLogin ? req.session.userLogin.role : null; 
+        const productId = req.params._id;
+
+        const product = await Model.ShoeModel.findById(productId)
+            .populate({ 
+                path: 'typerShoe',  
+                select: 'nameType'  
+            })
+            .populate('name')
+            .lean();
+
+        const storageShoe = await Model.StorageShoeModel.find({shoeId: productId})
+            .populate({
+                path: 'colorShoe',
+                select: 'textColor'
+            })
+            .populate({
+                path: 'sizeShoe.sizeId',
+                select: 'size'
+            })
+            .lean(); 
+
+        console.log(storageShoe);
+
+        res.render('manager/product/edit_product.ejs', {
+            product: product,
+            storages: storageShoe,
+            userRole: userRole
+        });
+    } catch (error) {
+        console.error("Error in EditProduct controller:", error);
+        next(error);
+    }
+}
+
+
+
 
 exports.VorcherList = async (req, res, next) => {
    

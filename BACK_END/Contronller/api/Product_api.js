@@ -665,13 +665,13 @@ exports.ADD_Product = async (req, res) => {
             }
           ],
           importQuanlity: importQuantity,
-          soldQuanlity: 0
+          soldQuanlity: soldQuanlity
         });
 
         const savedStorage = await newStorage.save();
         storage.push({
           importQuanlity: savedStorage.importQuanlity,
-          soldQuanlity: 0,
+          soldQuanlity: soldQuanlity,
           _id: savedStorage._id
         });
       }
@@ -680,7 +680,7 @@ exports.ADD_Product = async (req, res) => {
     savedShoe.sizeShoe = [...sizeIds];
     savedShoe.storageShoe = storage;
     savedShoe.importQuanlityAll = importQuanlityAll;
-    savedShoe.soldQuanlityAll = 0;
+    savedShoe.soldQuanlityAll = soldQuanlityAll;
     await savedShoe.save();
 
     console.log("Shoe created successfully:", savedShoe);

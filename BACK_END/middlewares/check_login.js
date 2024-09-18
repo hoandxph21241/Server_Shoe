@@ -95,10 +95,10 @@ async function createDefaultData() {
   }
 
   const colors = [
-    { textColor: "White", codeColor: "#FFFFFF" },
-    { textColor: "Black", codeColor: "#000000" },
-    { textColor: "Red", codeColor: "#FF0000" },
-    { textColor: "Blue", codeColor: "#0000FF" },
+    { textColor: "Trắng", codeColor: "#FFFFFF" },
+    { textColor: "Đen", codeColor: "#000000" },
+    { textColor: "Đỏ", codeColor: "#FF0000" },
+    { textColor: "Xanh", codeColor: "#0000FF" },
   ];
 
   for (const color of colors) {

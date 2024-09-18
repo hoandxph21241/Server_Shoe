@@ -1,0 +1,15 @@
+.main-content {
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+    background-color: #e9ecef;
+    opacity: 1;
+}
+
+.img-thumbnail {
+    width: 100px;
+    height: auto;
+}

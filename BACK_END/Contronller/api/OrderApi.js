@@ -24,6 +24,8 @@ cron.schedule('0 2 * * *', () => {
 
 const createOrder = async (req, res) => {
   const orderData = req.body;
+  console.log(orderData);
+  
 
   try {
     const address = await AddressModel.findById(orderData.addressId);
@@ -149,8 +151,8 @@ const createOrder = async (req, res) => {
 
     await OderDetailModel.insertMany(orderDetails);
 
-    // const cartIds = orderData.items.map(item => item.cartId);
-    // await CartModel.deleteMany({ _id: { $in: cartIds } });
+    const cartIds = orderData.items.map(item => item.cartId);
+    await CartModel.deleteMany({ _id: { $in: cartIds } });
 
     // Gửi thông báo
     const notificationPromises = [
@@ -1099,7 +1101,8 @@ const getUserCompletedOrders = async (req, res) => {
     userId: userId, 
     $or: [
       { status: 0 },
-      { status: -1 }
+      { status: -1 },
+      { status: 6 },
     ]
   })
   .populate('userId', '_id')
@@ -1147,6 +1150,8 @@ const getUserCompletedOrders = async (req, res) => {
         statusLabel = "completed"; 
       } else if (order.status === -1) {
         statusLabel = "rateCompleted";
+      } else if (order.status === 6) {
+        statusLabel = "Đơn Đã Bị Hủy";
       }
 
       const orderData = {
