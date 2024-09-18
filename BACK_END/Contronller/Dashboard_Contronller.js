@@ -6,7 +6,10 @@ const {
 } = require('../Contronller/statisticsController');
 
 exports.Dashboard = async (req, res, next) => {
-  res.render("dashboard/viewDashboard.ejs");
+  const userRole = req.session.userLogin ? req.session.userLogin.role : null;
+
+  res.render("dashboard/viewDashboard.ejs",{ userRole: userRole,
+  });
 };
 
 exports.statistics = async (req, res) => {
