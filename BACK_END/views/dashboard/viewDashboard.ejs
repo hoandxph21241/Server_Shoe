@@ -177,7 +177,7 @@
                     const timePeriodContainer = document.getElementById('timePeriod').closest('.col-md-3');
                     const customDateRange = document.getElementById('customDateRange');
 
-                    if (queryType === 'lowStock') {
+                    if (queryType === 'lowStock' || queryType === 'leastSellingProducts' ) {
                         timePeriodContainer.style.display = 'none';
                         customDateRange.style.display = 'none';
                     } else {
@@ -509,9 +509,9 @@
                         productElement.innerHTML = `
                 <div class="product-info">
                     <img src="${product.thumbnail || '/images/default.png'}" alt="${product.name}">
-                    <span>${product.name}</span>
+                                 <span>${product.name} - Size: ${product.size}, Color: ${product.color}</span>
                 </div>
-                <span>Sl: ${product.totalSold || product.sellQuanlityAll}</span>
+                <span>Sl: ${product.totalSold || product.soldQuanlity}</span>
             `;
                         bestSellersList.appendChild(productElement);
                     });

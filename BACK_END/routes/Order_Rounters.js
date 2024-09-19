@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 var Contronlers = require("../Contronller/Order_Contronller");
 
+
 function requireAdmin(req, res, next) {
   // Check Login
   if (!req.session.userLogin) {
@@ -22,7 +23,7 @@ router.get("/orderList", Contronlers.getAllOrders);
 router.get("/orderDetails/:orderId", Contronlers.getOrdersDetailt);
 
 router.put("/cancelOrder/:orderId", Contronlers.cancelOrder);
-router.put("/prepareOrder/:orderId", Contronlers.prepareOrder);
+router.post("/prepareOrder/:orderId", Contronlers.prepareOrder);
 router.put("/orderPreparedSuccessfully/:orderId", Contronlers.orderPreparedSuccessfully);
 
 router.put("/shipOrder/:orderId", Contronlers.shipOrder);

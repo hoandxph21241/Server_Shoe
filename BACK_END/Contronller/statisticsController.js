@@ -26,28 +26,51 @@ exports.getBestSellingProduct = async function (start, end, res) {
       { $unwind: "$orderDetails" },
       {
         $group: {
-          _id: "$orderDetails.shoeId",
+          _id: {
+            shoeId: "$orderDetails.shoeId",
+            sizeId: "$orderDetails.sizeId",
+            colorId: "$orderDetails.colorId",
+          },
           totalSold: { $sum: "$orderDetails.quantity" },
         },
       },
       {
         $lookup: {
           from: "Shoe",
-          localField: "_id",
+          localField: "_id.shoeId",
           foreignField: "_id",
           as: "shoeDetails",
         },
       },
       { $unwind: "$shoeDetails" },
       {
+        $lookup: {
+          from: "SizeShoe",
+          localField: "_id.sizeId",
+          foreignField: "_id",
+          as: "sizeDetails",
+        },
+      },
+      { $unwind: "$sizeDetails" },
+      {
+        $lookup: {
+          from: "ColorShoe",
+          localField: "_id.colorId",
+          foreignField: "_id",
+          as: "colorDetails",
+        },
+      },
+      { $unwind: "$colorDetails" },
+      {
         $project: {
           _id: 0,
-          shoeId: "$_id",
+          shoeId: "$_id.shoeId",
           name: "$shoeDetails.name",
           thumbnail: "$shoeDetails.thumbnail",
           totalSold: 1,
           price: "$shoeDetails.sellPrice",
-          totalRevenue: { $multiply: ["$totalSold", "$shoeDetails.price"] },
+          size: "$sizeDetails.size",
+          color: "$colorDetails.textColor",
         },
       },
       {
@@ -58,7 +81,6 @@ exports.getBestSellingProduct = async function (start, end, res) {
       },
     ]);
     console.log(result);
-    
 
     return res.json(result);
   } catch (error) {
@@ -66,6 +88,7 @@ exports.getBestSellingProduct = async function (start, end, res) {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 exports.getRevenueBetweenDates = async function (start, end, res) {
   end.setHours(23, 59, 59, 999);
 
@@ -244,66 +267,68 @@ exports.getRevenueBetweenDates = async function (start, end, res) {
 
 exports.leastSellingProducts = async function (start, end, res) {
   try {
-    const soldProducts = await OrderModel.aggregate([
+    // Truy vấn để lấy sản phẩm bán ế dựa trên số lượng bán ra
+    const result = await StorageShoeModel.aggregate([
       {
-        $match: {
-          dateOrder: {
-            $gte: start,
-            $lte: end,
-          },
-          status: 0,
-        },
+        $sort: { sellQuanlity: 1 } // Sắp xếp theo số lượng bán ra, từ thấp đến cao
+      },
+      {
+        $limit: 5 // Giới hạn số lượng sản phẩm trả về (tùy thuộc vào yêu cầu của bạn)
       },
       {
         $lookup: {
-          from: "OrderDetail",
-          localField: "_id",
-          foreignField: "orderId",
-          as: "orderDetails",
-        },
+          from: 'Shoe', // Tên của collection chứa thông tin sản phẩm
+          localField: 'shoeId',
+          foreignField: '_id',
+          as: 'shoeDetails'
+        }
       },
-      { $unwind: "$orderDetails" },
       {
-        $group: {
-          _id: "$orderDetails.shoeId",
-          totalSold: { $sum: "$orderDetails.quantity" },
-        },
+        $unwind: '$shoeDetails' // Giải nén để có thể truy cập các trường của shoeDetails
       },
-    ]);
-
-    const soldProductIds = soldProducts.map(product => product._id);
-
-    const result = await ShoeModel.aggregate([
       {
-        $match: {
-          _id: { $nin: soldProductIds }
-        },
+        $lookup: {
+          from: 'ColorShoe', // Tên của collection chứa thông tin màu sắc
+          localField: 'colorShoe',
+          foreignField: '_id',
+          as: 'colorDetails'
+        }
+      },
+      {
+        $unwind: '$colorDetails' // Giải nén để có thể truy cập các trường của colorDetails
+      },
+      {
+        $lookup: {
+          from: 'SizeShoe', // Tên của collection chứa thông tin kích thước
+          localField: 'sizeShoe.sizeId',
+          foreignField: '_id',
+          as: 'sizeDetails'
+        }
+      },
+      {
+        $unwind: '$sizeDetails' // Giải nén để có thể truy cập các trường của sizeDetails
       },
       {
         $project: {
           _id: 0,
-          shoeId: "$_id",
-          name: 1,
-          thumbnail: 1,
-          sellQuanlityAll: 1,
-        },
-      },
-      {
-        $sort: { sellQuanlityAll: 1 }, 
-      },
-      {
-        $limit: 5,
-      },
+          shoeId: 1,
+          importQuanlity: 1,
+          soldQuanlity: 1,
+          name: '$shoeDetails.name',
+          thumbnail: '$shoeDetails.thumbnail',
+          color: '$colorDetails.textColor', // Thêm trường chi tiết màu sắc
+          size: '$sizeDetails.size' // Thêm trường chi tiết kích thước
+        }
+      }
     ]);
 
-    console.log(result);
+    console.log('Least Selling Products:', result);
     return res.json(result);
   } catch (error) {
-    console.error("Error fetching least-selling products:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error('Error fetching least selling products:', error);
+    throw error;
   }
-};
-
+}
 
 exports.getLowStockProducts = async function (res) {
   try {
